@@ -688,7 +688,7 @@ break;
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint16_t l1BuildAndSendRachInd(uint16_t slot, uint16_t sfn, uint8_t raPreambleIdx)
+uint16_t l1BuildAndSendRachInd (uint16_t slot, uint16_t sfn, uint8_t raPreambleIdx)
 {
 #ifdef INTEL_FAPI
    uint8_t   rachPduIdx = 0; 
