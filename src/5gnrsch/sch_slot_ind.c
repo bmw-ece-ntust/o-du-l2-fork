@@ -783,7 +783,7 @@ uint8_t schProcessSlotInd(SlotTimingInfo *slotInd, Inst schInst)
    }
    memset(&dlSchedInfo, 0, sizeof(DlSchedInfo));
 
-   //Calculate the timing for allocating SSB, SIB1, RAR, DCI message
+   //Calculate the timing for allocating SSB, SIB1, RAR, DCI, DL message
    schCalcSlotValues(*slotInd, &dlSchedInfo.schSlotValue, cell->numSlots);
    dlBrdcstAlloc = &dlSchedInfo.brdcstAlloc;
    dlBrdcstAlloc->ssbTrans = NO_TRANSMISSION;

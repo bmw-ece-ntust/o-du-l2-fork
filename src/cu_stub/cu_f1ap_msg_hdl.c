@@ -2910,8 +2910,8 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
    uint8_t elementCnt = 0, drbCnt = 0;
    uint8_t BuildQOSInforet = 0,BuildSNSSAIret = 0;
    uint8_t BuildFlowsMapret =0, BuildULTnlInforet =0;
-   DRBs_ToBeSetup_Item_t *drbSetItem;
    ProtocolExtensionContainer_4624P33_t *drbToBeSetupExt;
+   DRBs_ToBeSetup_Item_t *drbSetItem;
    DRBs_ToBeSetup_ItemExtIEs_t *drbToBeSetupExtIe = NULLP;
    
    if(ueCb->state == UE_HANDOVER_IN_PROGRESS)
