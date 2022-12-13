@@ -377,7 +377,7 @@ bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    /* TX_PAYLOAD_HDR_LEN: Overhead which is to be Added once for any UE while estimating Accumulated TB Size
     * Following flag added to keep the record whether TX_PAYLOAD_HDR_LEN is added to the first Node getting allocated.
     * If both Dedicated and Default LC lists are present then First LC in Dedicated List will include this overhead
-    * else if only Default list is present then first node in this List will add this overhead len*/
+    * else if only Default list is present then first node in  this List will add this overhead len*/
    bool isTxPayloadLenAdded = FALSE;
    GET_CRNTI(crnti,ueId);
    ueCb = &cell->ueCb[ueId-1];

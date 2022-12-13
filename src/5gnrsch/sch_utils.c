@@ -893,7 +893,10 @@ CmLList* isPrbAvailable(CmLListCp *freePrbBlockList, uint16_t startPrb, uint16_t
 
       /* Check if requested number of blocks can be allocated from the current block */
       if(freeBlock->numFreePrb < numPrb)
+      {
+         node = node->next; /* Dennis: Bug */
          continue;
+      }
 
       /* Check if requested PRBs belong within the range of current free block */
       if(((startPrb >= freeBlock->startPrb) && (startPrb <= freeBlock->endPrb)) && \
