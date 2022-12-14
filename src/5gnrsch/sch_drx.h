@@ -18,8 +18,13 @@
 
 #define SCH_DRX_INVALID_DISTANCE -1
 #define SCH_DRX_INVALID_INDEX 0xFFFFFF 
-#define SCH_DRX_MAX_DELTA 1
+#define SCH_DRX_MAX_DELTA 3
 #define SCH_DRX_TMRS_EXP_DELTA 1
+#define SCH_DRX_DL_HARQ_BITMASK  0x000001
+#define SCH_DRX_UL_HARQ_BITMASK  0x000001
+#define UE_ACTIVE_FOR_ONDURATION 1
+#define UE_ACTIVE_FOR_INACTIVE_TIMER 2
+#define UE_ACTIVE_FOR_SR 4
 
 /** @brief Macro to convert milli second to slots */
 #define SCH_CNVRT_MS_TO_SLOT(_numSlot, _timeInMs, _mu)\
@@ -56,6 +61,11 @@ void schDrxUeReCfgTimer(SchCellCb *cell, SchUeCb *ueCb);
 void schHdlDrxShortCycleExpiryTimer(SchCellCb  *cell);
 void schHdlDrxOnDurExpiryTimer(SchCellCb  *cell);
 void schHandleExpiryDrxTimer(SchCellCb  *cell);
+void schDrxStrtDlHqRttTmr(SchDlHqProcCb *hqP);
+void schDrxStopDlHqRetxTmr(SchCellCb  *cell, SchUeCb *uecb, SchDlHqProcCb **hqP);
+void schDrxStopUlHqRetxTmr(SchCellCb  *cell, SchUeCb *ueCb, SchUlHqProcCb **hqP);
+void schDrxStrtUlHqRttTmr(SchUlHqProcCb *hqP);
+void schHdlDrxUlHqRetxStrtTimer(SchCellCb  *cell);
 /**********************************************************************
   End of file
  **********************************************************************/
