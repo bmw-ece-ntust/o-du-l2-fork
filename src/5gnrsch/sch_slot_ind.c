@@ -510,6 +510,8 @@ bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          else
          {
             (*hqP)->dlLcPrbEst.sharedNumPrb = maxFreePRB - rsvdDedicatedPRB;
+            DU_LOG("\nDEBUG  --> SCH : DL Default and Dedicated Slice are scheduled, sharedPRB Count:%d, reservedPRB Cound:%d",\
+                  (*hqP)->dlLcPrbEst.sharedNumPrb, rsvdDedicatedPRB);
             /*PRB Alloc for Dedicated LCs*/
             prbAllocUsingRRMPolicy(&((*hqP)->dlLcPrbEst.dedLcList), TRUE, mcsIdx, pdschNumSymbols,\
                   &((*hqP)->dlLcPrbEst.sharedNumPrb), &(rsvdDedicatedPRB), &isTxPayloadLenAdded, NULLP);
@@ -783,7 +785,7 @@ uint8_t schProcessSlotInd(SlotTimingInfo *slotInd, Inst schInst)
    }
    memset(&dlSchedInfo, 0, sizeof(DlSchedInfo));
 
-   //Calculate the timing for allocating SSB, SIB1, RAR, DCI message
+   //Calculate the timing for allocating SSB, SIB1, RAR, DCI, DL message
    schCalcSlotValues(*slotInd, &dlSchedInfo.schSlotValue, cell->numSlots);
    dlBrdcstAlloc = &dlSchedInfo.brdcstAlloc;
    dlBrdcstAlloc->ssbTrans = NO_TRANSMISSION;
