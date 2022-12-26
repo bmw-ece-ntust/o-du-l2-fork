@@ -517,8 +517,6 @@ bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          else
          {
             (*hqP)->dlLcPrbEst.sharedNumPrb = maxFreePRB - rsvdDedicatedPRB;
-            DU_LOG("\nDEBUG  --> SCH : DL Default and Dedicated Slice are scheduled, sharedPRB Count:%d, reservedPRB Cound:%d",\
-                  (*hqP)->dlLcPrbEst.sharedNumPrb, rsvdDedicatedPRB);
             /*PRB Alloc for Dedicated LCs*/
             prbAllocUsingRRMPolicy(&((*hqP)->dlLcPrbEst.dedLcList), TRUE, mcsIdx, pdschNumSymbols,\
                   &((*hqP)->dlLcPrbEst.sharedNumPrb), &(rsvdDedicatedPRB), &isTxPayloadLenAdded, NULLP);

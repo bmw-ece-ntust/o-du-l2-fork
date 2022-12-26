@@ -446,7 +446,6 @@ uint8_t fillSchUeCbFrmCfgReq(Inst inst, SchUeCb *ueCb, SchUeCfgReq *ueCfg)
       {
          retDL = updateDedLcInfo(inst, ueCb->dlInfo.dlLcCtxt[ueLcIdx].snssai, &(ueCb->dlInfo.dlLcCtxt[ueLcIdx].rsvdDedicatedPRB),\
                &(ueCb->dlInfo.dlLcCtxt[ueLcIdx].isDedicated));
-         
       }
       if(ueCb->ulInfo.ulLcCtxt[ueLcIdx].snssai != NULLP)
       {
