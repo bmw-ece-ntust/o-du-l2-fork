@@ -38,6 +38,37 @@
 
 /*******************************************************************
  *
+ * @brief start the uplink data
+ *
+ * @details
+ *
+ *    Function : startUlData 
+ *
+ *    Functionality: start the uplink data
+ *
+ * @params[in]   
+ *
+ * @return void
+ *
+ * ****************************************************************/
+
+void startUlData()
+{
+   uint8_t ueIdx=0, drbIdx=0;
+
+   /* Start Pumping data from PHY stub to DU */
+   for(ueIdx=0; ueIdx < phyDb.ueDb.numActvUe; ueIdx++)
+   {
+      for(drbIdx = 0; drbIdx < NUM_DRB_TO_PUMP_DATA; drbIdx++) //Number of DRB times the loop will run
+      {
+         DU_LOG("\nDEBUG  --> PHY STUB: Sending UL User Data[DrbId:%d] for UEIdx %d\n",drbIdx,ueIdx);
+         l1SendUlUserData(drbIdx,ueIdx);
+      }
+   } 
+}
+
+/*******************************************************************
+ *
  * @brief Builds and sends param response to MAC CL
  *
  * @details
@@ -667,6 +698,13 @@ break;
    if(pduInfo->pdu_length)
       MAC_FREE(pduInfo->pduData, pduInfo->pdu_length);
    MAC_FREE(rxDataInd, sizeof(fapi_rx_data_indication_t));
+
+#ifdef START_DL_UL_DATA 
+      if(phyDb.ueDb.ueCb[ueId-1].msgRrcReconfigComp == true)
+      {
+         startUlData();
+      }
+#endif
    return ROK;
 }
 #endif
@@ -688,7 +726,7 @@ break;
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint16_t l1BuildAndSendRachInd (uint16_t slot, uint16_t sfn, uint8_t raPreambleIdx)
+uint16_t l1BuildAndSendRachInd(uint16_t slot, uint16_t sfn, uint8_t raPreambleIdx)
 {
 #ifdef INTEL_FAPI
    uint8_t   rachPduIdx = 0; 
@@ -731,6 +769,7 @@ uint16_t l1BuildAndSendRachInd (uint16_t slot, uint16_t sfn, uint8_t raPreambleI
 #endif
    return ROK;
 }
+
 
 /*******************************************************************
  *
@@ -799,6 +838,7 @@ uint16_t l1BuildAndSendSlotIndication()
       }
       CMCHKPK(oduPackPointer, (PTR)slotIndMsg, mBuf);
       ODU_POST_TASK(&pst, mBuf);
+
    }
 #endif
    return ROK;
@@ -1167,7 +1207,7 @@ S16 l1HdlUlTtiReq(uint16_t msgLen, void *msg)
             l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
             phyDb.ueDb.numActvUe++;
          }
-//#if 0
+#if 0
          /* Send RACH Ind to L2 for second UE */
          if(phyDb.ueDb.ueCb[UE_IDX_1].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_0].msgRrcReconfigComp == true)
          {
@@ -1185,7 +1225,7 @@ S16 l1HdlUlTtiReq(uint16_t msgLen, void *msg)
             l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
             phyDb.ueDb.numActvUe++;
          }
-//#endif       
+#endif       
       }
       if(ulTtiReq->pdus[numPdus-1].pduType == 1)
       {
@@ -1442,7 +1482,7 @@ S16 l1HdlUlDciReq(uint16_t msgLen, void *msg)
    {
       if(ulDciReq->pdus[numPdus-1].pduType == 0)
       {
-	 DU_LOG("\nINFO   -->  PHY STUB: Received UL DCI Request for PDCCH PDU");
+         DU_LOG("\nINFO   -->  PHY STUB: Received UL DCI Request for PDCCH PDU");
 	 //l1BuildAndSendMsg5(ulDciReq->sfn, ulDciReq->slot);
 	 //msg5Sent = true;
       }

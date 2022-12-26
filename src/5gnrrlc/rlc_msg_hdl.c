@@ -166,7 +166,6 @@ uint8_t fillLcCfg(RlcCb *gCb, RlcEntCfgInfo *rlcUeCfg, RlcBearerCfg *duRlcUeCfg)
       memcpy(rlcUeCfg->snssai, duRlcUeCfg->snssai, sizeof(Snssai));
    }
    fillEntModeAndDir(&rlcUeCfg->entMode, &rlcUeCfg->dir, duRlcUeCfg->rlcMode);
-   rlcUeCfg->cfgType               = duRlcUeCfg->configType;
    switch(rlcUeCfg->entMode)
    {
 
@@ -213,7 +212,7 @@ uint8_t fillLcCfg(RlcCb *gCb, RlcEntCfgInfo *rlcUeCfg, RlcBearerCfg *duRlcUeCfg)
  *    Function : fillRlcCfg
  *
  *    Functionality:
- *      fills LC Cfgs to be Add/Mod/Del in RLC
+ *      fills LC Cfgs to be Add in RLC
  *
  * @params[in] 
  *             RlcEntCfgInfo pointer
@@ -229,16 +228,77 @@ uint8_t fillRlcCfg(RlcCb *gCb, RlcCfgInfo *rlcUeCfg, RlcUeCfg *ueCfg)
    
    rlcUeCfg->ueId    = ueCfg->ueId;
    rlcUeCfg->cellId  = ueCfg->cellId;
-   rlcUeCfg->numEnt  = ueCfg->numLcs;
+   rlcUeCfg->numEnt  = ueCfg->numLcsToAdd;
    rlcUeCfg->transId = getTransId();
-   
    for(lcIdx = 0; lcIdx < rlcUeCfg->numEnt; lcIdx++)
    {
-      if(fillLcCfg(gCb, &rlcUeCfg->entCfg[lcIdx], &ueCfg->rlcLcCfg[lcIdx]) != ROK)
+      if(fillLcCfg(gCb, &rlcUeCfg->entCfg[lcIdx], &ueCfg->rlcLcCfgAdd[lcIdx]) != ROK)
       {
           DU_LOG("\nERROR  --> RLC : fillRlcCfg(): Failed to fill LC configuration");
           return RFAILED;
       }
+      rlcUeCfg->entCfg[lcIdx].cfgType = CONFIG_ADD; 
+   }
+   return ROK;
+}
+
+/*******************************************************************
+ *
+ * @brief updates LC Cfgs to be Added/Mod/Rel in RLC
+ *
+ * @details
+ *
+ *    Function : updateRlcCfg
+ *
+ *    Functionality:
+ *      updates LC Cfgs to be Add/Mod/Del in RLC
+ *
+ * @params[in] 
+ *             RlcEntCfgInfo pointer
+ *             RlcBearerCfg pointer
+ * @return ROK - Success
+ *          RFAILED - Failure
+ *
+ ******************************************************************/
+
+uint8_t updateRlcCfg(RlcCb *gCb, RlcCfgInfo *rlcUeCfg, RlcUeRecfg *ueRecfg)
+{
+   uint8_t lcIdx = 0;
+   
+   rlcUeCfg->ueId    = ueRecfg->ueId;
+   rlcUeCfg->cellId  = ueRecfg->cellId;
+   rlcUeCfg->transId = getTransId();
+   
+   rlcUeCfg->numEnt = 0;
+   for(lcIdx = 0; lcIdx < ueRecfg->numLcsToAdd; lcIdx++)
+   {
+      if(fillLcCfg(gCb, &rlcUeCfg->entCfg[rlcUeCfg->numEnt], &ueRecfg->rlcLcCfgAdd[lcIdx]) != ROK)
+      {
+          DU_LOG("\nERROR  --> RLC : fillRlcCfg(): Failed to fill LC configuration");
+          return RFAILED;
+      }
+      rlcUeCfg->entCfg[rlcUeCfg->numEnt].cfgType = CONFIG_ADD;
+      rlcUeCfg->numEnt++;
+   }
+   for(lcIdx = 0; lcIdx < ueRecfg->numLcsToMod; lcIdx++)
+   {
+      if(fillLcCfg(gCb, &rlcUeCfg->entCfg[rlcUeCfg->numEnt], &ueRecfg->rlcLcCfgMod[lcIdx]) != ROK)
+      {
+          DU_LOG("\nERROR  --> RLC : fillRlcCfg(): Failed to fill LC configuration");
+          return RFAILED;
+      }
+      rlcUeCfg->entCfg[rlcUeCfg->numEnt].cfgType = CONFIG_MOD;
+      rlcUeCfg->numEnt++;
+   }
+   for(lcIdx = 0; lcIdx < ueRecfg->numLcsToRel; lcIdx++)
+   {
+      if(fillLcCfg(gCb, &rlcUeCfg->entCfg[rlcUeCfg->numEnt], &ueRecfg->rlcLcCfgRel[lcIdx]) != ROK)
+      {
+          DU_LOG("\nERROR  --> RLC : fillRlcCfg(): Failed to fill LC configuration");
+          return RFAILED;
+      }
+      rlcUeCfg->entCfg[rlcUeCfg->numEnt].cfgType = CONFIG_DEL;
+      rlcUeCfg->numEnt++;
    }
    return ROK;
 }
@@ -265,15 +325,65 @@ void fillRlcCfgFailureRsp(RlcCfgCfmInfo *cfgRsp, RlcUeCfg *ueCfg)
 
    cfgRsp->ueId = ueCfg->ueId;
    cfgRsp->cellId = ueCfg->cellId;
-   cfgRsp->numEnt = ueCfg->numLcs;
-   for(cfgIdx =0; cfgIdx<ueCfg->numLcs; cfgIdx++)
+   cfgRsp->numEnt = ueCfg->numLcsToAdd;
+   for(cfgIdx =0; cfgIdx<ueCfg->numLcsToAdd; cfgIdx++)
    {
-      cfgRsp->entCfgCfm[cfgIdx].rbId = ueCfg->rlcLcCfg[cfgIdx].rbId;
-      cfgRsp->entCfgCfm[cfgIdx].rbType = ueCfg->rlcLcCfg[cfgIdx].rbType;
+      cfgRsp->entCfgCfm[cfgIdx].rbId = ueCfg->rlcLcCfgAdd[cfgIdx].rbId;
+      cfgRsp->entCfgCfm[cfgIdx].rbType = ueCfg->rlcLcCfgAdd[cfgIdx].rbType;
       cfgRsp->entCfgCfm[cfgIdx].status.status = RLC_DU_APP_RSP_NOK;
       cfgRsp->entCfgCfm[cfgIdx].status.reason = CKW_CFG_REAS_NONE;
    }
 }
+
+/*******************************************************************
+ *
+ * @brief Fill RlcCfgCfmInfo structure for sending failure response to DU
+ *
+ * @details
+ *
+ *    Function : fillRlcRecfgFailureRsp
+ *
+ *    Functionality:
+ *      Fill RlcCfgCfmInfo structure for sending failure response to DU
+ *
+ * @params[in] RlcCfgCfmInfo *cfgRsp, RlcUeCfg *ueCfg
+ *             
+ * @return void 
+ *
+ * ****************************************************************/
+void fillRlcRecfgFailureRsp(RlcCfgCfmInfo *cfgRsp, RlcUeRecfg *ueRecfg)
+{
+   uint8_t cfgIdx =0;
+
+   cfgRsp->ueId = ueRecfg->ueId;
+   cfgRsp->cellId = ueRecfg->cellId;
+   cfgRsp->numEnt = 0;
+   for(cfgIdx =0; cfgIdx<ueRecfg->numLcsToAdd; cfgIdx++)
+   {
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].rbId = ueRecfg->rlcLcCfgAdd[cfgIdx].rbId;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].rbType = ueRecfg->rlcLcCfgAdd[cfgIdx].rbType;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].status.status = RLC_DU_APP_RSP_NOK;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].status.reason = CKW_CFG_REAS_NONE;
+      cfgRsp->numEnt++;
+   }
+   for(cfgIdx =0; cfgIdx<ueRecfg->numLcsToMod; cfgIdx++)
+   {
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].rbId = ueRecfg->rlcLcCfgMod[cfgIdx].rbId;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].rbType = ueRecfg->rlcLcCfgMod[cfgIdx].rbType;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].status.status = RLC_DU_APP_RSP_NOK;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].status.reason = CKW_CFG_REAS_NONE;
+      cfgRsp->numEnt++;
+   }
+   for(cfgIdx =0; cfgIdx<ueRecfg->numLcsToRel; cfgIdx++)
+   {
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].rbId = ueRecfg->rlcLcCfgRel[cfgIdx].rbId;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].rbType = ueRecfg->rlcLcCfgRel[cfgIdx].rbType;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].status.status = RLC_DU_APP_RSP_NOK;
+      cfgRsp->entCfgCfm[cfgRsp->numEnt].status.reason = CKW_CFG_REAS_NONE;
+      cfgRsp->numEnt++;
+   }
+}
+
 /*******************************************************************
  *
  * @brief Handles Ue Create Request from DU APP
@@ -401,11 +511,11 @@ uint8_t RlcProcDlRrcMsgTransfer(Pst *pst, RlcDlRrcMsgInfo *dlRrcMsgInfo)
       return RFAILED;
    }
 
-   datReqInfo->rlcId.rbType = dlRrcMsgInfo->rbType;
-   datReqInfo->rlcId.rbId = dlRrcMsgInfo->rbId;
+   datReqInfo->rlcId.rbType = RB_TYPE_SRB;
+   datReqInfo->rlcId.rbId = dlRrcMsgInfo->lcId;
    datReqInfo->rlcId.ueId = dlRrcMsgInfo->ueId;
    datReqInfo->rlcId.cellId = dlRrcMsgInfo->cellId;
-   datReqInfo->lcType = dlRrcMsgInfo->lcType;
+   datReqInfo->lcType = LCH_DCCH;
    datReqInfo->sduId = ++(rlcCb[pst->dstInst]->dlSduId);
 
    /* Copy fixed buffer to message */
@@ -455,7 +565,7 @@ uint8_t RlcProcDlRrcMsgTransfer(Pst *pst, RlcDlRrcMsgInfo *dlRrcMsgInfo)
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t RlcProcUlData(Pst *pst, RlcData *ulData)
+uint8_t RlcProcUlData(Pst *pst, RlcUlData *ulData)
 {
    uint8_t         ret = ROK;
    uint8_t         idx, pduIdx;
@@ -464,7 +574,6 @@ uint8_t RlcProcUlData(Pst *pst, RlcData *ulData)
    bool            dLchPduPres;             /* PDU received on dedicated logical channel */
    RguLchDatInd    dLchData[MAX_NUM_LC];    /* PDU info on dedicated logical channel */
    RguDDatIndInfo  *dLchUlDat;              /* UL data on dedicated logical channel */
-   RguCDatIndInfo  *cLchUlDat;              /* UL data on common logical channel */
 
    /* Initializing dedicated logical channel Database */
    DU_LOG("\nDEBUG  -->  RLC: Received UL Data request from MAC");
@@ -479,72 +588,39 @@ uint8_t RlcProcUlData(Pst *pst, RlcData *ulData)
     * and call common channel's handler */
    for(idx = 0; idx< ulData->numPdu; idx++)
    {
-      if(ulData->pduInfo[idx].commCh)
+      if(!dLchPduPres)
       {
-         RLC_SHRABL_STATIC_BUF_ALLOC(RLC_MEM_REGION_UL, RLC_POOL, cLchUlDat, \
-               sizeof(RguCDatIndInfo));
-         if(!cLchUlDat)
-         {
-            DU_LOG("\nERROR  -->  RLC : Memory allocation failed at RlcProcUlData");
-            ret = RFAILED;
-            break;
-         }
-         memset(cLchUlDat, 0, sizeof(RguCDatIndInfo));
-
-         cLchUlDat->cellId = ulData->cellId;
-         GET_UE_ID(ulData->rnti, cLchUlDat->rnti);
-         cLchUlDat->lcId   = ulData->pduInfo[idx].lcId;
-
-         /* Copy fixed buffer to message */
-         if(ODU_GET_MSG_BUF(RLC_MEM_REGION_UL, RLC_POOL, &cLchUlDat->pdu) != ROK)
-         {
-            DU_LOG("\nERROR  -->  RLC : Memory allocation failed at RlcProcUlData");
-            RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_UL, RLC_POOL, cLchUlDat, \
-                  sizeof(RguCDatIndInfo));
-            ret = RFAILED;
-            break;
-         }
-         oduCpyFixBufToMsg(ulData->pduInfo[idx].pduBuf, cLchUlDat->pdu, \
-               ulData->pduInfo[idx].pduLen);
-
-         rlcProcCommLcUlData(pst, 0, cLchUlDat);
-      }
-      else
-      {
-         if(!dLchPduPres)
-         {
-            RLC_SHRABL_STATIC_BUF_ALLOC(RLC_MEM_REGION_UL, RLC_POOL, dLchUlDat, \
-                  sizeof(RguDDatIndInfo));
-            if(!dLchUlDat)
-            {
-               DU_LOG("\nERROR  -->  RLC : Memory allocation failed at RlcMacProcUlData");
-               ret = RFAILED;
-               break;
-            }
-            dLchPduPres = TRUE;
-         }
-
-         /* Copy fixed buffer to message */
-         lcId = ulData->pduInfo[idx].lcId;
-         if(ODU_GET_MSG_BUF(RLC_MEM_REGION_UL, RLC_POOL, \
-                  &dLchData[lcId].pdu.mBuf[dLchData[lcId].pdu.numPdu]) != ROK)
+         RLC_SHRABL_STATIC_BUF_ALLOC(RLC_MEM_REGION_UL, RLC_POOL, dLchUlDat, \
+               sizeof(RguDDatIndInfo));
+         if(!dLchUlDat)
          {
             DU_LOG("\nERROR  -->  RLC : Memory allocation failed at RlcMacProcUlData");
-            for(pduIdx=0; pduIdx < dLchData[lcId].pdu.numPdu; pduIdx++)
-            {
-               ODU_PUT_MSG_BUF(dLchData[lcId].pdu.mBuf[dLchData[lcId].pdu.numPdu]);
-            }
-            RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_UL, RLC_POOL, dLchUlDat, \
-                  sizeof(RguDDatIndInfo));
             ret = RFAILED;
             break;
          }
-         oduCpyFixBufToMsg(ulData->pduInfo[idx].pduBuf, \
-               dLchData[lcId].pdu.mBuf[dLchData[lcId].pdu.numPdu],\
-               ulData->pduInfo[idx].pduLen);
-
-         dLchData[lcId].pdu.numPdu++;
+         dLchPduPres = TRUE;
       }
+
+      /* Copy fixed buffer to message */
+      lcId = ulData->pduInfo[idx].lcId;
+      if(ODU_GET_MSG_BUF(RLC_MEM_REGION_UL, RLC_POOL, \
+               &dLchData[lcId].pdu.mBuf[dLchData[lcId].pdu.numPdu]) != ROK)
+      {
+         DU_LOG("\nERROR  -->  RLC : Memory allocation failed at RlcMacProcUlData");
+         for(pduIdx=0; pduIdx < dLchData[lcId].pdu.numPdu; pduIdx++)
+         {
+            ODU_PUT_MSG_BUF(dLchData[lcId].pdu.mBuf[dLchData[lcId].pdu.numPdu]);
+         }
+         RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_UL, RLC_POOL, dLchUlDat, \
+               sizeof(RguDDatIndInfo));
+         ret = RFAILED;
+         break;
+      }
+      oduCpyFixBufToMsg(ulData->pduInfo[idx].pduBuf, \
+            dLchData[lcId].pdu.mBuf[dLchData[lcId].pdu.numPdu],\
+            ulData->pduInfo[idx].pduLen);
+
+      dLchData[lcId].pdu.numPdu++;
    }
 
    /* If any PDU received on dedicated logical channel, copy into RguDDatIndInfo
@@ -574,7 +650,7 @@ uint8_t RlcProcUlData(Pst *pst, RlcData *ulData)
       RLC_FREE_SHRABL_BUF(pst->region, pst->pool, ulData->pduInfo[pduIdx].pduBuf, \
             ulData->pduInfo[pduIdx].pduLen);
    }
-   RLC_FREE_SHRABL_BUF(pst->region, pst->pool, ulData, sizeof(RlcData));
+   RLC_FREE_SHRABL_BUF(pst->region, pst->pool, ulData, sizeof(RlcUlData));
    return ROK;
 
 }/* End of RlcProcUlData */
@@ -602,70 +678,43 @@ uint8_t RlcProcSchedResultRpt(Pst *pst, RlcSchedResultRpt *schRep)
    uint8_t ret = ROK;
    uint8_t idx;                     /* Iterator */
    uint8_t nmbDLch = 0;                 /* Number of dedicated logical channles */
-   RguCStaIndInfo   *cLchSchInfo;    /* Common logical channel scheduling result */
    RguDStaIndInfo   *dLchSchInfo;  /* Dedicated logical channel scheduling result */
 
    DU_LOG("\nDEBUG  -->  RLC : Received scheduling report from MAC");
    for(idx=0; idx < schRep->numLc; idx++)
    {
-      /* If it is common channel, fill status indication information
-       * and trigger the handler for each common lch separately */
-      if(schRep->lcSch[idx].commCh)
+      /* Fill status info structure if at least one channel's scheduling report is received */
+      if(nmbDLch == 0)
       {
-          RLC_SHRABL_STATIC_BUF_ALLOC(RLC_MEM_REGION_DL, RLC_POOL, cLchSchInfo, \
-	     sizeof(RguCStaIndInfo));
-	  if(!cLchSchInfo)
-	  {
-	     DU_LOG("\nERROR  -->  RLC: RlcProcSchedResultRpt: Memory allocation failed for cLchSchInfo");
-	     ret = RFAILED;
-	     break;
-	  }
-          memset(cLchSchInfo, 0, sizeof(RguCStaIndInfo));
+         RLC_SHRABL_STATIC_BUF_ALLOC(RLC_MEM_REGION_DL, RLC_POOL, dLchSchInfo, \
+               sizeof(RguDStaIndInfo));
+         if(!dLchSchInfo)
+         {
+            DU_LOG("\nERROR  -->  RLC: RlcProcSchedResultRpt: Memory allocation failed for dLchSchInfo");
+            ret = RFAILED;
+            break;
+         }
 
-          cLchSchInfo->cellId  = schRep->cellId;
-          cLchSchInfo->lcId    = schRep->lcSch[idx].lcId;
-          cLchSchInfo->transId = schRep->slotInfo.sfn;
-	  cLchSchInfo->transId = (cLchSchInfo->transId << 16) | schRep->slotInfo.slot;
-          cLchSchInfo->rnti = schRep->rnti;
-          rlcProcCommLcSchedRpt(pst, 0, cLchSchInfo);
+         dLchSchInfo->cellId = schRep->cellId;
+         dLchSchInfo->nmbOfUeGrantPerTti = 1;
+         /* MAC sends Scheduling report for one UE at a time. Hence filling
+            only the 0th index of staInd */
+         dLchSchInfo->staInd[0].rnti = schRep->rnti;
 
+         /* Storing sfn/slot into a single 32-bit variable to be used later*/
+         dLchSchInfo->staInd[0].transId = schRep->slotInfo.sfn;
+         dLchSchInfo->staInd[0].transId = \
+                                          (dLchSchInfo->staInd[0].transId << 16) | schRep->slotInfo.slot; 
+         dLchSchInfo->staInd[0].nmbOfTbs = 1;
+         dLchSchInfo->staInd[0].fillCtrlPdu = true; 
       }
-      else
-      {
-          /* Fill status info structure if at least one dedicated channel
-           * scheduling report is received */
-          if(nmbDLch == 0)
-          {
-             RLC_SHRABL_STATIC_BUF_ALLOC(RLC_MEM_REGION_DL, RLC_POOL, dLchSchInfo, \
-	        sizeof(RguDStaIndInfo));
-             if(!dLchSchInfo)
-             {
-                DU_LOG("\nERROR  -->  RLC: RlcProcSchedResultRpt: Memory allocation failed for dLchSchInfo");
-                ret = RFAILED;
-                break;
-             }
 
-             dLchSchInfo->cellId = schRep->cellId;
-             dLchSchInfo->nmbOfUeGrantPerTti = 1;
-	     /* MAC sends Scheduling report for one UE at a time. Hence filling
-	     only the 0th index of staInd */
-             dLchSchInfo->staInd[0].rnti = schRep->rnti;
-
-	     /* Storing sfn/slot into a single 32-bit variable to be used later*/
-	     dLchSchInfo->staInd[0].transId = schRep->slotInfo.sfn;
-	     dLchSchInfo->staInd[0].transId = \
-	        (dLchSchInfo->staInd[0].transId << 16) | schRep->slotInfo.slot; 
-             dLchSchInfo->staInd[0].nmbOfTbs = 1;
-             dLchSchInfo->staInd[0].fillCtrlPdu = true; 
-          }
-
-          /* Fill logical channel scheduling info */
-	  dLchSchInfo->staInd[0].staIndTb[0].lchStaInd[nmbDLch].lcId = \
-	     schRep->lcSch[idx].lcId;
-	  dLchSchInfo->staInd[0].staIndTb[0].lchStaInd[nmbDLch].totBufSize = \
-	     schRep->lcSch[idx].bufSize;
-          nmbDLch++;
-      }
+      /* Fill logical channel scheduling info */
+      dLchSchInfo->staInd[0].staIndTb[0].lchStaInd[nmbDLch].lcId = \
+                                                                   schRep->lcSch[idx].lcId;
+      dLchSchInfo->staInd[0].staIndTb[0].lchStaInd[nmbDLch].totBufSize = \
+                                                                         schRep->lcSch[idx].bufSize;
+      nmbDLch++;
    }
 
    /* Calling handler for all dedicated channels scheduling*/
@@ -700,7 +749,7 @@ uint8_t RlcProcSchedResultRpt(Pst *pst, RlcSchedResultRpt *schRep)
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t RlcProcUeReconfigReq(Pst *pst, RlcUeCfg *ueCfg)
+uint8_t RlcProcUeReconfigReq(Pst *pst, RlcUeRecfg *ueRecfg)
 {
    uint8_t ret = ROK;
    RlcCfgInfo *rlcUeCfg = NULLP; //Seed code Rlc cfg struct
@@ -708,7 +757,7 @@ uint8_t RlcProcUeReconfigReq(Pst *pst, RlcUeCfg *ueCfg)
    RlcCfgCfmInfo cfgRsp; 
    Pst rspPst;
 
-   DU_LOG("\nDEBUG  -->  RLC: UE reconfig request received. CellID[%d] UEID[%d]",ueCfg->cellId, ueCfg->ueId);
+   DU_LOG("\nDEBUG  -->  RLC: UE reconfig request received. CellID[%d] UEID[%d]",ueRecfg->cellId, ueRecfg->ueId);
 
    rlcUeCb = RLC_GET_RLCCB(pst->dstInst);
    RLC_ALLOC(rlcUeCb, rlcUeCfg, sizeof(RlcCfgInfo));
@@ -720,12 +769,12 @@ uint8_t RlcProcUeReconfigReq(Pst *pst, RlcUeCfg *ueCfg)
    else
    {
       memset(rlcUeCfg, 0, sizeof(RlcCfgInfo));
-      ret = fillRlcCfg(rlcUeCb, rlcUeCfg, ueCfg);
+      ret = updateRlcCfg(rlcUeCb, rlcUeCfg, ueRecfg);
       if(ret != ROK)
       {
          DU_LOG("\nERROR  -->  RLC: Failed to fill configuration at RlcProcUeReconfigReq()");
          FILL_PST_RLC_TO_DUAPP(rspPst, RLC_UL_INST, EVENT_RLC_UE_RECONFIG_RSP);
-         fillRlcCfgFailureRsp(&cfgRsp, ueCfg);
+         fillRlcRecfgFailureRsp(&cfgRsp, ueRecfg);
          SendRlcUeCfgRspToDu(&rspPst, &cfgRsp);
       }
       else
@@ -736,7 +785,7 @@ uint8_t RlcProcUeReconfigReq(Pst *pst, RlcUeCfg *ueCfg)
       }
    }
    
-   RLC_FREE_SHRABL_BUF(pst->region, pst->pool, ueCfg, sizeof(RlcUeCfg));
+   RLC_FREE_SHRABL_BUF(pst->region, pst->pool, ueRecfg, sizeof(RlcUeRecfg));
    return ret;
 }
 

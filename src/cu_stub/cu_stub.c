@@ -269,6 +269,69 @@ void initiateInterDuHandover(uint32_t sourceDuId, uint32_t targetDuId, uint32_t 
 
 /*******************************************************************
  *
+ * @brief start Dl data
+ *
+ * @details
+ *
+ *    Function : startDlData
+ *
+ *    Functionality: start the downlink data
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+
+uint8_t startDlData()
+{
+   uint32_t teId = 0;
+   uint32_t duId;
+   uint8_t ret = ROK;
+   uint8_t cnt = 0;
+   int32_t totalNumOfTestFlow = 20; 
+   EgtpTeIdCb *teidCb = NULLP;
+   
+   while(totalNumOfTestFlow)
+   {
+      for(duId = 1; duId<=MAX_DU_SUPPORTED; duId++)
+      {
+         for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
+         {
+            teidCb = NULLP;
+            cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
+            if(teidCb)
+            {
+               cnt =0;
+               DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
+               while(cnt < NUM_DL_PACKETS)
+               {
+                  ret =  cuEgtpDatReq(duId, teId);      
+                  if(ret != ROK)
+                  {
+                     DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
+                     break;
+                  }
+                  /* TODO : sleep(1) will be removed later once we will be able to
+                   * support the continuous data pack transfer */
+                  sleep(1);
+                  cnt++;
+               }
+            }
+            else
+            {
+               DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
+            }
+         }
+      }
+      totalNumOfTestFlow--;
+   }
+   
+   return ROK;
+}
+
+/*******************************************************************
+ *
  * @brief Handles Console input
  *
  * @details
@@ -285,11 +348,6 @@ void initiateInterDuHandover(uint32_t sourceDuId, uint32_t targetDuId, uint32_t 
 void *cuConsoleHandler(void *args)
 {
    char ch;
-   uint32_t teId = 0;
-   uint32_t duId;
-   uint8_t ret = ROK;
-   uint8_t cnt = 0;
-   EgtpTeIdCb *teidCb = NULLP;
 
    while(true) 
    {
@@ -331,42 +389,8 @@ void *cuConsoleHandler(void *args)
           * NUM_TUNNEL_TO_PUMP_DATA = 9, NUM_DL_PACKETS = 1.
           * totalDataPacket = totalNumOfTestFlow * NUM_TUNNEL_TO_PUMP_DATA * NUM_DL_PACKETS 
           * totalDataPacket = [500*9*1] */
-         int32_t totalNumOfTestFlow = 2; 
-
-         while(totalNumOfTestFlow)
-         {
-            for(duId = 1; duId<=MAX_DU_SUPPORTED; duId++)
-            {
-               for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
-               {
-                  teidCb = NULLP;
-                  cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
-                  if(teidCb)
-                  {
-                     cnt =0;
-                     DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
-                     while(cnt < NUM_DL_PACKETS)
-                     {
-                        ret =  cuEgtpDatReq(duId, teId);      
-                        if(ret != ROK)
-                        {
-                           DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
-                           break;
-                        }
-                        /* TODO : sleep(1) will be removed later once we will be able to
-                         * support the continuous data pack transfer */
-                        sleep(1);
-                        cnt++;
-                     }
-                  }
-                  else
-                  {
-                     DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
-                  }
-               }
-            }
-            totalNumOfTestFlow--;
-         }
+         
+         startDlData();
 #endif
          continue;
       } 
@@ -401,6 +425,23 @@ void *cuConsoleHandler(void *args)
             DU_LOG("\nERROR --> EGTP: Failed to build and send paging message for 5gsTmsi[%lu]\n", sTmsi);   
          }
          continue;
+      }
+      else if(ch == 'm')
+      {
+         uint8_t ueId = 1;
+         uint8_t duId = 1;
+         uint8_t duIdx = 0;
+
+         DU_LOG("\nINFO  --> CU_STUB: UE Context Mod for ueId [%d] at DU ID [%d]", \
+                  ueId, duId );
+         DuDb *duDb = NULLP;
+         CuUeCb *ueCb = NULLP;
+
+         SEARCH_DU_DB(duIdx, duId, duDb); 
+         if(duDb)
+            ueCb = &duDb->ueCb[ueId-1];
+         BuildAndSendUeContextModificationReq(duId, ueCb, MODIFY_UE);
+
       }
    }
 }
