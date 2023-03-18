@@ -111,15 +111,13 @@ bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       }
    }
 
-   if(findValidK0K1Value(cell, currTime, ueId, ueCb->ueCfg.spCellCfg.servCellRecfg.initDlBwp.k0K1TblPrsnt,\
+   if(findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
             &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, isRetx, *hqP) != true )
    {
       /* If a valid combination of slots to scheduled PDCCH, PDSCH and PUCCH is
        * not found, do not perform resource allocation. Return from here. */
       return false;
    }
-   DU_LOG("\nDennis[DL MSG]  -->  UE ID:%d, PDCCH Slot:%d, PDSCH Slot:%d, PUCCH Slot:%d, PDSCH StartSymbol:%d, PDSCH NumSymbol:%d",ueId, pdcchTime.slot,\
-   pdschTime.slot, pucchTime.slot, pdschStartSymbol, pdschNumSymbols);
    
    /* allocate PDCCH and PDSCH resources for the ue */
    if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
@@ -438,7 +436,7 @@ bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, 
    if(dedMsg == true)
    {
       ueCb = &cell->ueCb[ueId-1];
-      k0K1InfoTbl = &ueCb->ueCfg.spCellCfg.servCellRecfg.initDlBwp.k0K1InfoTbl;
+      k0K1InfoTbl = &ueCb->k0K1InfoTbl;
    }
    else
    {
@@ -689,10 +687,6 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
          dlSchedInfo.isBroadcastPres = true;
          if((dlBrdcstAlloc->ssbTransmissionMode == NEW_TRANSMISSION) && (!cell->firstSsbTransmitted))
             cell->firstSsbTransmitted = true;
-         //Dennis Test
-         DU_LOG("\nDennis[SSB]  --> StartSymbol:%d, NumoofSymbol:%d, StartPRB:%d, NumOfPRB:%d",\
-         dlBrdcstAlloc->ssbInfo[0].tdAlloc.startSymb, dlBrdcstAlloc->ssbInfo[0].tdAlloc.numSymb, \
-         dlBrdcstAlloc->ssbInfo[0].fdAlloc.startPrb, dlBrdcstAlloc->ssbInfo[0].fdAlloc.numPrb);
       }
    }
 
@@ -710,21 +704,9 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
          dlSchedInfo.isBroadcastPres = true;
          if((dlBrdcstAlloc->sib1TransmissionMode == NEW_TRANSMISSION) && (!cell->firstSib1Transmitted))
             cell->firstSib1Transmitted = true;
-         
-         //Dennis Test
-         DU_LOG("\nDennis[SIB1]  --> PDSCH StartSymbol:%d, PDSCH NumoofSymbol:%d", \
-         dlBrdcstAlloc->sib1Alloc.sib1PdcchCfg->dci.pdschCfg.pdschTimeAlloc.startSymb, \
-         dlBrdcstAlloc->sib1Alloc.sib1PdcchCfg->dci.pdschCfg.pdschTimeAlloc.numSymb);
-         DU_LOG("\nDennis[SIB1]  --> CORESET Type:%d, CORESET Duration:%d, CORESET Startsymbol:%d, CORESET Freq:", \
-         dlBrdcstAlloc->sib1Alloc.sib1PdcchCfg->coresetCfg.coreSetType, dlBrdcstAlloc->sib1Alloc.sib1PdcchCfg->coresetCfg.durationSymbols, \
-         dlBrdcstAlloc->sib1Alloc.sib1PdcchCfg->coresetCfg.startSymbolIndex);
-         for(int ind=0; ind<6; ind++)
-         {
-            DU_LOG("%d ",dlBrdcstAlloc->sib1Alloc.sib1PdcchCfg->coresetCfg.freqDomainResource[ind]);
-         }
       }
    }
-   
+
    /*Process Paging Msg*/
    schProcDlPageAlloc(cell, *slotInd, schInst);
 
@@ -740,13 +722,6 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
          slot = dlSchedInfo.schSlotValue.rarTime.slot;
          dlSchedInfo.rarAlloc[ueIdx] = cell->schDlSlotInfo[slot]->rarAlloc[ueIdx];
          cell->schDlSlotInfo[slot]->rarAlloc[ueIdx] = NULLP;
-         //Dennis Test
-         DU_LOG("\nDennis[RAR]  -->  UE ID:%d, PDSCH StartSymbol:%d, PDSCH NumoofSymbol:%d", \
-         ueIdx, dlSchedInfo.rarAlloc[ueIdx]->rarPdschCfg->pdschTimeAlloc.startSymb, \
-         dlSchedInfo.rarAlloc[ueIdx]->rarPdschCfg->pdschTimeAlloc.numSymb);
-         DU_LOG("\nDennis[RAR]  -->  UE ID:%d, NumDCI:%d, CCE Index:%d, Aggregation Level:%d", \
-         ueIdx, dlSchedInfo.rarAlloc[ueIdx]->rarPdcchCfg->numDlDci, dlSchedInfo.rarAlloc[ueIdx]->rarPdcchCfg->dci.cceIndex, \
-         dlSchedInfo.rarAlloc[ueIdx]->rarPdcchCfg->dci.aggregLevel);
       }
 
       /* If DL-Msg PDCCH/PDSCH is scheduled for a UE at this slot, fill 
@@ -756,22 +731,6 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
          slot = dlSchedInfo.schSlotValue.dlMsgTime.slot;
          dlSchedInfo.dlMsgAlloc[ueIdx] = cell->schDlSlotInfo[slot]->dlMsgAlloc[ueIdx];
          cell->schDlSlotInfo[slot]->dlMsgAlloc[ueIdx] = NULLP;
-         //Dennis Test
-         DU_LOG("\nDennis[DL MSG]  -->  UE ID:%d, PDSCH StartSymbol:%d, PDSCH NumoofSymbol:%d", \
-         ueIdx, dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdschCfg->pdschTimeAlloc.startSymb, \
-         dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdschCfg->pdschTimeAlloc.numSymb);
-
-         DU_LOG("\nDennis[DL MSG]  -->  UE ID:%d, NumDCI:%d, CCE Index:%d, Aggregation Level:%d", \
-         ueIdx, dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg->numDlDci, dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg->dci.cceIndex, \
-         dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg->dci.aggregLevel);
-
-         DU_LOG("\nDennis[DL MSG]  --> CORESET Type:%d, CORESET Duration:%d, CORESET Startsymbol:%d, CORESET Freq:", \
-         dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg->coresetCfg.coreSetType, dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg->coresetCfg.durationSymbols, \
-         dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg->coresetCfg.startSymbolIndex);
-         for(int ind=0; ind<6; ind++)
-         {
-            DU_LOG("%d ",dlSchedInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg->coresetCfg.freqDomainResource[ind]);
-         }
       }
    }
 

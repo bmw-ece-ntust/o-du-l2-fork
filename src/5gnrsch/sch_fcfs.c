@@ -1082,8 +1082,6 @@ uint32_t schFcfsScheduleDlLc(SlotTimingInfo pdcchTime, SlotTimingInfo pdschTime,
          else
          {
             fcfsHqProcCb->lcCb.sharedNumPrb = maxFreePRB - rsvdDedicatedPRB;
-            DU_LOG("\nDennis  -->  SCH : DL Default Slice and Dedicated Slice is scheduled, dedicatedPRB Count:%d, sharedPRB Count:%d",\
-            rsvdDedicatedPRB, fcfsHqProcCb->lcCb.sharedNumPrb);
             /*PRB Alloc for Dedicated LCs*/
             prbAllocUsingRRMPolicy(&(fcfsHqProcCb->lcCb.dedLcList), TRUE, mcsIdx, pdschNumSymbols,\
                   &(fcfsHqProcCb->lcCb.sharedNumPrb), &(rsvdDedicatedPRB), &isTxPayloadLenAdded, NULLP);
@@ -1257,8 +1255,6 @@ void schFcfsScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst schInst)
             else
             {
                /* DL Data new transmission */
-               //Dennis Test
-               DU_LOG("\nDennis [DL Info] Slot:%d, BoIndBitMap:%d", slotInd->slot, cell->boIndBitMap);
                if((cell->boIndBitMap) & (1<<ueId))
                {
                   isDlMsgPending = true;               
