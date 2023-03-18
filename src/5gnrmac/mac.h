@@ -75,7 +75,7 @@ typedef enum
    CELL_STATE_UP,
    CELL_TO_BE_STOPPED,
    CELL_STOP_IN_PROGRESS,
-}CellState;	   
+}MacCellStatus;	   
 
 typedef enum
 {
@@ -124,6 +124,7 @@ typedef struct macCbInfo
    uint8_t     *msg4Pdu;    /* storing DL-CCCH Ind Pdu */
    uint16_t    msg4PduLen;  /* storing DL-CCCH Ind Pdu Len */
    DlHarqProcCb msg4HqInfo; /* HARQ process info for msg 4 */
+   bool         *macMsg4Status;
 }MacRaCbInfo;
 
 typedef struct macCe
@@ -228,18 +229,18 @@ typedef struct macUeCb
 
 struct macCellCb
 {
-   uint16_t    cellId;
-   uint16_t    numOfSlots;
-   CellState   state;
-   uint16_t    crntiMap;
-   MacRaCbInfo macRaCb[MAX_NUM_UE];
-   MacDlSlot   dlSlot[MAX_SLOTS];
-   MacUlSlot   ulSlot[MAX_SLOTS];
-   uint16_t    numActvUe;
-   MacUeCfg    *ueCfgTmpData[MAX_NUM_UE];
-   MacUeRecfg  *ueRecfgTmpData[MAX_NUM_UE];
-   MacUeCb     ueCb[MAX_NUM_UE];
-   MacCellCfg  macCellCfg;
+   uint16_t       cellId;
+   uint16_t       numOfSlots;
+   MacCellStatus  state;
+   uint16_t       crntiMap;
+   MacRaCbInfo    macRaCb[MAX_NUM_UE];
+   MacDlSlot      dlSlot[MAX_SLOTS];
+   MacUlSlot      ulSlot[MAX_SLOTS];
+   uint16_t       numActvUe;
+   MacUeCfg       *ueCfgTmpData[MAX_NUM_UE];
+   MacUeRecfg     *ueRecfgTmpData[MAX_NUM_UE];
+   MacUeCb        ueCb[MAX_NUM_UE];
+   MacCellCfg     macCellCfg;
    SlotTimingInfo currTime;
 };
 
@@ -258,23 +259,33 @@ typedef struct macCb
 MacCb macCb;
 
 /* Function declarations */
+uint8_t macActvInit ARGS((Ent entity, Inst inst, Region region, Reason reason));
+uint8_t macActvTsk(Pst *pst, Buffer *mBuf);
 short int macActvTmr(Ent ent,Inst inst);
+
 void fillRarPdu(RarInfo *rarInfo);
 void fillMsg4DlData(MacDlData *dlData, uint16_t msg4PduLen, uint8_t *msg4Pdu);
 void fillMacCe(MacCeInfo  *macCeData, uint8_t *msg3Pdu);
 void macMuxPdu(MacDlData *dlData, MacCeInfo *macCeData, uint8_t *msg4TxPdu, uint16_t tbSize);
 uint8_t unpackRxData(uint16_t cellId, SlotTimingInfo slotInfo, RxDataIndPdu *rxDataIndPdu);
-void fillMg4Pdu(DlMsgAlloc *msg4Alloc);
+void fillMg4Pdu(DlMsgSchInfo *msg4Alloc);
 void buildAndSendMuxPdu(SlotTimingInfo currTimingInfo);
 uint8_t macProcUlCcchInd(uint16_t cellId, uint16_t crnti, uint16_t rrcContSize, uint8_t *rrcContainer);
 uint8_t macProcShortBsr(uint16_t cellId, uint16_t crnti, uint8_t lcgId, uint32_t bufferSize);
-uint8_t macProcUlData(uint16_t cellId, uint16_t rnti, SlotTimingInfo slotInfo, \
-   uint8_t lcId, uint16_t pduLen, uint8_t *pdu);
+uint8_t macProcUlData(uint16_t cellId, uint16_t rnti, SlotTimingInfo slotInfo, uint8_t lcId, uint16_t pduLen, uint8_t *pdu);
 uint8_t sendSchedRptToRlc(DlSchedInfo dlInfo, SlotTimingInfo slotInfo, uint8_t ueIdx, uint8_t schInfoIdx);
-uint8_t macProcLongBsr(uint16_t cellId, uint16_t crnti,uint8_t numLcg,\
-                         DataVolInfo dataVolInfo[MAX_NUM_LOGICAL_CHANNEL_GROUPS]);
+uint8_t macProcLongBsr(uint16_t cellId, uint16_t crnti,uint8_t numLcg, DataVolInfo dataVolInfo[MAX_NUM_LOGICAL_CHANNEL_GROUPS]);
 void freeMacSliceCfgReq(MacSliceCfgReq *cfgReq,Pst *pst);
 void deleteMacRaCb(uint16_t cellIdx, MacUeCb *ueCb);
+
+uint8_t MacProcSchSliceCfgRsp(Pst *pst, SchSliceCfgRsp *schSliceCfgRsp);
+uint8_t MacProcSchSliceRecfgRsp(Pst *pst, SchSliceRecfgRsp *sliceRecfgrsp);
+uint8_t MacProcSchCellCfgCfm(Pst *pst, SchCellCfgCfm  *schCellCfgCfm);
+uint8_t MacProcDlAlloc(Pst *pst, DlSchedInfo *dlSchedInfo);
+uint8_t MacProcUlSchInfo(Pst *pst, UlSchedInfo *ulSchedInfo);
+uint8_t MacProcSchRachRsrcRsp(Pst *pst, SchRachRsrcRsp *schRachRsrcRsp);
+uint8_t MacProcDlPageAlloc(Pst *pst, DlPageAlloc *dlPageAlloc);
+uint8_t MacProcSchCellDeleteRsp(Pst *pst, SchCellDeleteRsp *schCellDeleteRsp);
 #endif
 /**********************************************************************
   End of file

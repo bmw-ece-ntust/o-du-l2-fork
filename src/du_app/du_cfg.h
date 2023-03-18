@@ -31,13 +31,12 @@
 #define DU_IP_V4_ADDR "192.168.130.81"
 #define CU_IP_V4_ADDR "192.168.130.82"
 #define RIC_IP_V4_ADDR "192.168.130.80"
-#define DU_PORT 38472
-#define CU_PORT 38472
-#define RIC_PORT 36421
+
+#define F1_SCTP_PORT 38472  /* As per the spec 38.472, the registered port number for F1AP is 38472 */
+#define E2_SCTP_PORT 36421
 #endif
 
-#define DU_EGTP_PORT  39001
-#define CU_EGTP_PORT  39003
+#define F1_EGTP_PORT  2152  /* As per the spec 29.281, the registered port number for GTP-U is 2152 */
 #define NR_PCI 1
 #define NR_CELL_ID 1
 
@@ -88,7 +87,8 @@
 #define OFFSET_TO_POINT_A 24                     /* PRB Offset to Point A */
 #define BETA_PSS BETA_PSS_0DB  
 #define SSB_PERIODICITY 20
-#define SSB_SUBCARRIER_OFFSET 0               
+#define SSB_SUBCARRIER_OFFSET 0         
+#define SSB_FREQUENCY  3000000   /*ssbFrequency in kHz*/
 #define SSB_MULT_CARRIER_BAND FALSE
 #define MULT_CELL_CARRIER FALSE
 #define FREQ_LOC_BW  28875             /* DL frequency location and bandwidth. Spec 38.508 Table 4.3.1.0B-1*/
@@ -129,8 +129,6 @@
 #define RSS_MEASUREMENT_UNIT DONT_REPORT_RSSI
 #define RA_CONT_RES_TIMER 64
 #define RA_RSP_WINDOW 10
-#define PRACH_RESTRICTED_SET 0 /* Unrestricted */
-#define ROOT_SEQ_LEN 139
 
 /* MACRCO Ddefine for PDCCH Configuration */
 #define PDCCH_SEARCH_SPACE_ID      1    /* Common search space id */
@@ -219,7 +217,7 @@
 /* Macro definitions for F1 procedures */
 #define CU_DU_NAME_LEN_MAX 30      /* Max length of CU/DU name string */
 #define MAX_F1_CONNECTIONS 65536    /* Max num of F1 connections */
-#define MAX_PLMN           1        /* Max num of broadcast PLMN ids */
+
 #define MAXNRARFCN         3279165  /* Maximum values of NRAFCN */
 #define MAX_NRCELL_BANDS   2       /* Maximum number of frequency bands */
 #define MAX_NUM_OF_SLICE_ITEMS 1024     /* Maximum number of signalled slice support items */
@@ -1246,29 +1244,6 @@ typedef struct sib1Params
    SrvCellCfgCommSib     srvCellCfgCommSib;
 }Sib1Params;
 
-typedef struct policyMemberList
-{
-   Plmn plmn;
-   Snssai  snssai;
-}PolicyMemberList;
-
-typedef struct rrmPolicy
-{
-   ResourceType     rsrcType;
-   uint8_t          numMemberList;
-   PolicyMemberList **memberList;
-   uint8_t          policyMaxRatio;
-   uint8_t          policyMinRatio;
-   uint8_t          policyDedicatedRatio;
-}RrmPolicy;
-
-typedef struct copyOfRecvdSliceCfg
-{
-   RrmPolicy          **rrmPolicy;
-   uint8_t            totalRrmPolicy;
-   uint8_t            totalSliceCount;
-}CopyOfRecvdSliceCfg;
-
 typedef struct duCfgParams
 {
    SctpParams         sctpParams;                  /* SCTP Params */
@@ -1282,7 +1257,7 @@ typedef struct duCfgParams
    MacCellCfg	       macCellCfg;	              /* MAC cell configuration */
    MibParams          mibParams;                  /* MIB Params */
    Sib1Params         sib1Params;                 /* SIB1 Params */
-   CopyOfRecvdSliceCfg tempSliceCfg;
+   MacSliceCfgReq     tempSliceCfg;
 }DuCfgParams;
 
 typedef struct f1SetupMsg
@@ -1329,12 +1304,11 @@ typedef struct rrmPolicyList
 DuCfgParams duCfgParam;
 
 /*function declarations */
-void FillSlotConfig();
 uint8_t readClCfg();
 uint8_t readCfg();
 uint8_t duReadCfg(); 
 uint16_t calcSliv(uint8_t startSymbol, uint8_t lengthSymbol);
-uint8_t cpyRrmPolicyInDuCfgParams(RrmPolicyList rrmPolicy[], uint8_t policyNum, CopyOfRecvdSliceCfg *tempSliceCfg);
+uint8_t cpyRrmPolicyInDuCfgParams(RrmPolicyList rrmPolicy[], uint8_t policyNum, MacSliceCfgReq *tempSliceCfg);
 
 #endif /* __DU_CONFIG_H__ */
 

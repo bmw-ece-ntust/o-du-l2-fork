@@ -44,7 +44,7 @@ PARALLEL_COMP=-j $(NUM_PARALLEL)
 # # Other apsects of tool chain set here
 # # These should be made available appropriately to the builds
 ifeq ($(MACHINE),BIT64)
-ifeq ($(COVERAGE),1)
+ifeq ($(COVERAGE),ENABLE)
 CC          =gcc -m64 --coverage
 else
 CC          =gcc -m64
@@ -74,7 +74,7 @@ endif
 # macro for output file name and makefile name
 #
 
-PLTFRM_FLAGS= -UMSPD -DODU -DINTEL_FAPI -UODU_MEMORY_DEBUG_LOG -DDEBUG_ASN_PRINT -DDEBUG_PRINT -DERROR_PRINT -USTART_DL_UL_DATA -UNR_DRX -UCALL_FLOW_DEBUG_LOG -UODU_SLOT_IND_DEBUG_LOG
+PLTFRM_FLAGS= -UMSPD -DODU -DINTEL_FAPI -UODU_MEMORY_DEBUG_LOG -DDEBUG_ASN_PRINT -DDEBUG_PRINT -DERROR_PRINT -DSTART_DL_UL_DATA -UNR_DRX -UCALL_FLOW_DEBUG_LOG -UODU_SLOT_IND_DEBUG_LOG
 
 ifeq ($(MODE),TDD)
    PLTFRM_FLAGS += -DNR_TDD
@@ -158,6 +158,7 @@ help:
 		@echo -e "$(OPTS)    MODE=TDD             - If not specified, MODE=FDD$(NORM)"
 		@echo -e "$(OPTS)    PHY=INTEL_L1         - If not specified, Phy stub is used$(NORM)"
 		@echo -e "$(OPTS)    PHY_MODE=TIMER       - Testing mode for INTEL_L1"
+		@echo -e "$(OPTS)    COVERAGE=ENABLE      - To record the code coverage stats. Disabled by default"
 		@echo -e "******************************************************************"
 
 prepare_dirs:

@@ -68,6 +68,8 @@
 #define HQ_ACK 0
 #define HQ_NACK 1
 #define HQ_DTX 2
+#define ROOT_SEQ_LEN_1 139
+#define ROOT_SEQ_LEN_2 839
 
 #ifdef NR_DRX
 /* As per 38.331 the largest offset which can be used in of size 10240.
@@ -76,12 +78,20 @@
 #define MAX_DRX_SIZE 512
 #endif
 
+#define NUM_SCH_TYPE 2  /*Supported number of Scheduler Algorithm types*/
+
 typedef struct schDlHqProcCb SchDlHqProcCb;
 typedef struct schUlHqEnt SchUlHqEnt;
 typedef struct schRaReq SchRaReq;
 typedef struct schDlHqEnt SchDlHqEnt;
 typedef struct schCellCb SchCellCb;
 typedef struct schUeCb SchUeCb;
+
+typedef enum
+{
+   SCH_FCFS,
+   SCH_SLICE_BASED
+}SchType;
 
 typedef enum
 {
@@ -127,6 +137,22 @@ typedef enum
    HQ_TB_WAITING
 }SchHqTbState;
 
+#ifdef NR_TDD
+typedef enum
+{
+   DL_SLOT,
+   UL_SLOT,
+   FLEXI_SLOT
+}SlotConfig;
+
+typedef enum
+{
+   DL_SYMBOL,
+   UL_SYMBOL,
+   FLEXI_SYMBOL
+}SchSymbolConfig;
+#endif
+
 /*Following structures to keep record and estimations of PRB allocated for each
  * LC taking into consideration the RRM policies*/
 typedef struct lcInfo
@@ -137,17 +163,6 @@ typedef struct lcInfo
    uint8_t  allocPRB; /*PRB count which is allocated based on RRM policy/FreePRB*/
 }LcInfo;
 
-typedef struct schLcPrbEstimate
-{
-   /* TODO: For Multiple RRMPolicies, Make DedicatedLcInfo as array/Double Pointer 
-    * and have separate DedLCInfo for each RRMPolcyMemberList*/
-   /* Dedicated LC List will be allocated, if any available*/
-   CmLListCp dedLcList;	/*Contain LCInfo per RRMPolicy*/
-   CmLListCp defLcList; /*Linklist of LC assoc with Default S-NSSAI(s)*/
-   /* SharedPRB number can be used by any LC.
-    * Need to calculate in every Slot based on PRB availability*/
-   uint16_t sharedNumPrb;
-}SchLcPrbEstimate;
 typedef struct schUlHqTbCb
 {
    uint32_t               tbSzReq;
@@ -207,9 +222,9 @@ typedef struct schUlHqProcCb
    CmLList           ulSlotLnk;
    uint8_t           strtSymbl;
    uint8_t           numSymbl;
-   SchLcPrbEstimate  ulLcPrbEst; /*UL PRB Alloc Estimate among different LC*/
+   void              *schSpcUlHqProcCb;  /*!< Scheduler specific HARQ Proc CB */
    CmLList           ulHqProcLink;
-   uint8_t           puschResType; /* Resource allocation type */
+   uint8_t           puschResType;       /*!< Resource allocation type */
    uint16_t          puschStartPrb;
    uint16_t          puschNumPrb;
    uint8_t           dmrsMappingType;
@@ -230,7 +245,7 @@ struct schDlHqProcCb
    CmLList           ulSlotLnk;
    SchDlHqTbCb       tbInfo[2];
    uint8_t           k1;
-   SchLcPrbEstimate  dlLcPrbEst; /*DL PRB Alloc Estimate among different LC*/
+   void              *schSpcDlHqProcCb;  /*!< Scheduler specific HARQ Proc CB */
    CmLList           dlHqProcLink;
    SlotTimingInfo    pucchTime;
 #ifdef NR_DRX
@@ -306,7 +321,7 @@ typedef struct schDlSlotInfo
    uint8_t      pdschUe;                  /*!< UE for which PDSCH is scheduled in this slot */
    RarAlloc     *rarAlloc[MAX_NUM_UE];    /*!< RAR allocation per UE*/
    DciInfo      *ulGrant;
-   DlMsgAlloc   *dlMsgAlloc[MAX_NUM_UE];  /*!< Dl msg allocation per UE*/
+   DlMsgSchInfo *dlMsgAlloc[MAX_NUM_UE];  /*!< Dl msg allocation per UE*/
 }SchDlSlotInfo;
 
 typedef struct schRaCb
@@ -467,15 +482,14 @@ typedef struct schUeCb
    SchDlCb    dlInfo;
    SchUlHqEnt ulHqEnt;
    SchDlHqEnt dlHqEnt;
-   SchDlHqProcCb *msg4Proc;
+   SchDlHqProcCb *msg4HqProc;
    SchDlHqProcCb *retxMsg4HqProc;
-   SchHqDlMap   **hqDlmap;
-   SchHqUlMap   **hqUlmap;
-   CmLListCp  ulRetxHqList;
-   CmLListCp  dlRetxHqList;
+   SchHqDlMap    **hqDlmap;
+   SchHqUlMap    **hqUlmap;
+   void          *schSpcUeCb;
 #ifdef NR_DRX
-   bool           ueDrxInfoPres;
-   SchDrxUeCb     drxUeCb;
+   bool          ueDrxInfoPres;
+   SchDrxUeCb    drxUeCb;
 #endif
 }SchUeCb;
 
@@ -531,6 +545,58 @@ typedef struct schDrxCb
 }SchDrxCb;
 #endif
 
+typedef struct schAllApis
+{
+   uint8_t (* SchCellCfgReq)(SchCellCb *cellCb);
+   void (* SchCellDeleteReq)(SchCellCb *cellCb);
+   uint8_t (* SchAddUeConfigReq)(SchUeCb  *ueCb);
+   void (* SchModUeConfigReq)(SchUeCb  *ueCb);
+   void (* SchUeDeleteReq)(SchUeCb  *ueCb);
+   void (* SchDlHarqInd)();
+   void (* SchPagingInd)();
+   void (* SchRachRsrcReq)();
+   void (* SchRachRsrcRel)();
+   void (* SchCrcInd)(SchCellCb *cellCb, uint16_t ueId);
+   void (* SchRachInd)(SchCellCb *cellCb, uint16_t ueId);
+   void (* SchDlRlcBoInfo)(SchCellCb *cellCb, uint16_t ueId);
+   void (* SchSrUciInd)(SchCellCb *cellCb, uint16_t ueId);
+   void (* SchBsr)(SchCellCb *cellCb, uint16_t ueId);
+   void (* SchHandleLcList)(void *ptr, CmLList *node, ActionTypeLL action);
+   void (* SchAddToDlHqRetxList)(SchDlHqProcCb *hqP);
+   void (* SchAddToUlHqRetxList)(SchUlHqProcCb *hqP);
+   void (* SchRemoveFrmDlHqRetxList)(SchUeCb *ueCb, CmLList *node);
+   void (* SchRemoveFrmUlHqRetxList)(SchUeCb *ueCb, CmLList *node);
+   uint8_t (* SchAddUeToSchedule)(SchCellCb *cellCb, uint16_t ueId);
+   void (* SchRemoveUeFrmScheduleLst)(SchCellCb *cell, CmLList *node);
+   uint8_t (* SchInitDlHqProcCb)(SchDlHqProcCb *hqP);
+   uint8_t (* SchInitUlHqProcCb)(SchUlHqProcCb *hqP);
+   void (* SchFreeDlHqProcCb)(SchDlHqProcCb *hqP);
+   void (* SchFreeUlHqProcCb)(SchUlHqProcCb *hqP);
+   void (* SchDeleteDlHqProcCb)(SchDlHqProcCb *hqP);
+   void (* SchDeleteUlHqProcCb)(SchUlHqProcCb *hqP);
+   void (* SchScheduleSlot)(SchCellCb *cell, SlotTimingInfo *slotInd, Inst schInst);
+   uint32_t (* SchScheduleDlLc)(SlotTimingInfo pdcchTime, SlotTimingInfo pdschTime, uint8_t pdschNumSymbols, \
+      uint16_t *startPrb, bool isRetx, SchDlHqProcCb **hqP);
+   uint8_t (* SchScheduleUlLc)(SlotTimingInfo dciTime, SlotTimingInfo puschTime, uint8_t startStmb, \
+      uint8_t symbLen, bool isRetx, SchUlHqProcCb **hqP);
+}SchAllApis;
+
+typedef struct schHqCfgParam
+{
+   uint8_t maxDlDataHqTx;
+   uint8_t maxMsg4HqTx;
+   uint8_t maxUlDataHqTx;
+}SchHqCfg;
+
+typedef struct
+{
+   /* parameters derived in scheduler */
+   uint8_t   n0;
+   BwpCfg    bwp;
+   PdcchCfg  sib1PdcchCfg;
+   PdschCfg  sib1PdschCfg;
+}SchSib1Cfg;
+
 /**
  * @brief
  * Cell Control block per cell.
@@ -555,23 +621,31 @@ typedef struct schCellCb
    uint32_t      actvUeBitMap;                      /*!< Bit map to find active UEs */
    uint32_t      boIndBitMap;                       /*!< Bit map to indicate UEs that have recevied BO */
    SchUeCb       ueCb[MAX_NUM_UE];                  /*!< Pointer to UE contexts of this cell */
-   CmLListCp     ueToBeScheduled;                   /*!< Linked list to store UEs pending to be scheduled, */
    SchPageCb     pageCb;                            /*!< Page Record at Schedular*/
 #ifdef NR_TDD
    uint8_t       numSlotsInPeriodicity;             /*!< number of slots in configured periodicity and SCS */
    uint32_t      slotFrmtBitMap;                    /*!< 2 bits must be read together to determine D/U/S slots. 00-D, 01-U, 10-S */
-   uint32_t      symbFrmtBitMap;                    /*!< 2 bits must be read together to determine D/U/S symbols. 00-D, 01-U, 10-S */
+   SchSymbolConfig       slotCfg[MAX_TDD_PERIODICITY_SLOTS][MAX_SYMB_PER_SLOT];
 #endif
 #ifdef NR_DRX
    SchDrxCb      drxCb[MAX_DRX_SIZE];                           /*!< Drx cb*/
 #endif
+   SchType       schAlgoType;                       /*!< The scheduler type which the cell is configured with.*/
+   SchAllApis    *api;                             /*!< Reference of sch APIs for this cell based on the SchType*/
+   void          *schSpcCell;                       /*Ref of Scheduler specific structure*/
+   SchHqCfg             schHqCfg;
+   SchK0K1TimingInfoTbl k0K1InfoTbl;
+   SchK2TimingInfoTbl   msg3K2InfoTbl;
+   SchK2TimingInfoTbl   k2InfoTbl;
+   SchSib1Cfg           sib1SchCfg;       /* SIB1 config */
+   uint8_t              maxMsg3Tx;         /* MAximum num of msg3 tx*/
 }SchCellCb;
 
 
 typedef struct schSliceCfg
 {
    uint8_t        numOfSliceConfigured;
-   SchRrmPolicyOfSlice **listOfConfirguration;
+   SchRrmPolicyOfSlice **listOfSlices;
 }SchSliceCfg;
 
 /**
@@ -580,12 +654,13 @@ typedef struct schSliceCfg
  */
 typedef struct schCb
 {
-   TskInit       schInit;               /*!< Task Init info */
-   SchGenCb      genCfg;                /*!< General Config info */
-   CmTqCp        tmrTqCp;               /*!< Timer Task Queue Cntrl Point */
-   CmTqType      tmrTq[SCH_TQ_SIZE];    /*!< Timer Task Queue */
-   SchCellCb     *cells[MAX_NUM_CELL];  /* Array to store cellCb ptr */
-   SchSliceCfg   sliceCfg;
+   TskInit                schInit;               /*!< Task Init info */
+   SchGenCb               genCfg;                /*!< General Config info */
+   CmTqCp                 tmrTqCp;               /*!< Timer Task Queue Cntrl Point */
+   CmTqType               tmrTq[SCH_TQ_SIZE];    /*!< Timer Task Queue */
+   SchAllApis             allApis[NUM_SCH_TYPE]; /*!<List of All Scheduler Type dependent Function pointers*/
+   SchCellCb              *cells[MAX_NUM_CELL];  /* Array to store cellCb ptr */
+   SchSliceCfg            sliceCfg;
 }SchCb;
 
 /* Declaration for scheduler control blocks */
@@ -607,9 +682,23 @@ SchUeCb* schGetUeCb(SchCellCb *cellCb, uint16_t crnti);
 uint8_t addUeToBeScheduled(SchCellCb *cell, uint8_t ueId);
 
 /* Incoming message handler function declarations */
-uint8_t schProcessSlotInd(SlotTimingInfo *slotInd, Inst inst);
-uint8_t schProcessRachInd(RachIndInfo *rachInd, Inst schInst);
-uint8_t schProcessCrcInd(CrcIndInfo *crcInd, Inst schInst);
+uint8_t SchProcCellCfgReq(Pst *pst, SchCellCfg *schCellCfg);
+uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd);
+uint8_t SchProcRachInd(Pst *pst, RachIndInfo *rachInd);
+uint8_t SchProcCrcInd(Pst *pst, CrcIndInfo *crcInd);
+uint8_t SchProcDlRlcBoInfo(Pst *pst, DlRlcBoInfo *dlBoInfo);
+uint8_t SchAddUeConfigReq(Pst *pst, SchUeCfgReq *ueCfgToSch);
+uint8_t SchProcBsr(Pst *pst, UlBufferStatusRptInd *bsrInd);
+uint8_t SchProcSrUciInd(Pst *pst, SrUciIndInfo *uciInd);
+uint8_t SchModUeConfigReq(Pst *pst, SchUeRecfgReq *ueRecfgToSch);
+uint8_t SchProcUeDeleteReq(Pst *pst, SchUeDelete  *ueDelete);
+uint8_t SchProcCellDeleteReq(Pst *pst, SchCellDeleteReq  *schCellDelete);
+uint8_t SchProcSliceCfgReq(Pst *pst, SchSliceCfgReq *schSliceCfgReq);
+uint8_t SchProcSliceRecfgReq(Pst *pst, SchSliceRecfgReq *schSliceRecfgReq);
+uint8_t SchProcRachRsrcReq(Pst *pst, SchRachRsrcReq *schRachRsrcReq);
+uint8_t SchProcRachRsrcRel(Pst *pst, SchRachRsrcRel *schRachRsrcRel);
+uint8_t SchProcPagingInd(Pst *pst,  SchPageInd *pageInd);
+uint8_t SchProcDlHarqInd(Pst *pst, DlHarqInd *dlHarqInd);
 
 /* DL scheduling related function declarations */
 PduTxOccsaion schCheckSsbOcc(SchCellCb *cell, SlotTimingInfo slotTime);
@@ -619,16 +708,18 @@ uint8_t schBroadcastSib1Alloc(SchCellCb *cell, SlotTimingInfo slotTime, DlBrdcst
 bool schProcessRaReq(Inst schInst, SchCellCb *cellCb, SlotTimingInfo currTime, uint8_t ueId);
 uint8_t schProcessMsg4Req(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId,bool isRetxMsg4, SchDlHqProcCb **hqP);
 uint8_t schFillRar(SchCellCb *cell, SlotTimingInfo rarTime, uint16_t ueId, RarAlloc *rarAlloc, uint8_t k0Index);
+bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP);
 uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t crnti,
-uint32_t tbSize, DlMsgAlloc *dlMsgAlloc, uint16_t startPRB, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols,bool isRetx, SchDlHqProcCb* hqP);
-uint8_t schDlRsrcAllocMsg4(SchCellCb *cell, SlotTimingInfo msg4Time, uint8_t ueId, DlMsgAlloc *msg4Alloc,\
+uint32_t tbSize, DlMsgSchInfo *dlMsgAlloc, uint16_t startPRB, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols,bool isRetx, SchDlHqProcCb* hqP);
+uint8_t schDlRsrcAllocMsg4(SchCellCb *cell, SlotTimingInfo msg4Time, uint8_t ueId, DlMsgSchInfo *msg4Alloc,\
 uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, bool isRetx, SchDlHqProcCb *hqP);
 uint8_t allocatePrbDl(SchCellCb *cell, SlotTimingInfo slotTime, uint8_t startSymbol, uint8_t symbolLength, \
    uint16_t *startPrb, uint16_t numPrb);
-void fillDlMsgInfo(DlMsgInfo *dlMsgInfo, uint8_t crnti, bool isRetx, SchDlHqProcCb* hqP);
+void fillDlMsgInfo(DlMsgSchInfo *dlMsgInfo, uint8_t crnti, bool isRetx, SchDlHqProcCb* hqP);
 bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool dedMsg, uint8_t *pdschStartSymbol,\
 uint8_t *pdschSymblLen, SlotTimingInfo *pdcchTime,  SlotTimingInfo *pdschTime, SlotTimingInfo *pucchTime, bool isRetx, SchDlHqProcCb *hqP);
 RaRspWindowStatus isInRaRspWindow(SchRaReq *raReq, SlotTimingInfo frameToCheck, uint16_t numSlotsPerSystemFrame);
+
 /* UL scheduling related function declarations */
 uint8_t schUlResAlloc(SchCellCb *cell, Inst schInst);
 bool schCheckPrachOcc(SchCellCb *cell, SlotTimingInfo prachOccasionTimingInfo);
@@ -641,11 +732,9 @@ uint8_t schFillPuschAlloc(SchUeCb *ueCb, SlotTimingInfo puschTime, uint32_t tbSi
 uint8_t allocatePrbUl(SchCellCb *cell, SlotTimingInfo slotTime, uint8_t startSymbol, uint8_t symbolLength, \
    uint16_t *startPrb, uint16_t numPrb);
 bool schProcessSrOrBsrReq(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchUlHqProcCb **hqP);
-uint8_t schCalculateUlTbs(SchUeCb *ueCb, SlotTimingInfo puschTime, uint8_t symbLen,\
-                             uint16_t *startPrb, uint32_t *totTBS, bool isRetx, SchUlHqProcCb *hqP);
 
 /*Generic Functions*/
-void updateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgAlloc *dlMsgAlloc, BsrInfo *bsrInfo, uint32_t *accumalatedBOSize);
+void updateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAlloc, BsrInfo *bsrInfo, uint32_t *accumalatedBOSize);
 uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_t *startPrb, Direction dir);
 LcInfo* handleLcLList(CmLListCp *lcLL, uint8_t lcId, ActionTypeLL action);
 void prbAllocUsingRRMPolicy(CmLListCp *lcLL, bool dedicatedPRB, uint16_t mcsIdx,uint8_t numSymbols,\
@@ -656,7 +745,7 @@ void updateBsrAndLcList(CmLListCp *lcLL, BsrInfo *bsrInfo, uint8_t status);
 void schProcPagingCfg(SchCellCb *cell);
 void schCfgPdcchMonOccOfPO(SchCellCb *cell);
 void schIncrSlot(SlotTimingInfo *timingInfo, uint8_t incr, uint16_t numSlotsPerRF);
-uint8_t schFillPagePdschCfg(SchCellCb *cell, PdschCfg *pagePdschCfg, SlotTimingInfo slotTime, \
+uint8_t schFillPagePdschCfg(SchCellCb *cell, PageDlSch *pageDlSch, SlotTimingInfo slotTime, \
                              uint16_t tbSize, uint8_t mcs, uint16_t startPrb);
 /*DL HARQ Functions*/
 void schDlHqEntInit(SchCellCb *cellCb, SchUeCb *ueCb);
@@ -664,6 +753,7 @@ void schMsg4FeedbackUpdate(SchDlHqProcCb *hqP, uint8_t fdbk);
 void schDlHqFeedbackUpdate(SchDlHqProcCb *hqP, uint8_t fdbk1, uint8_t fdbk2);
 uint8_t schDlGetAvlHqProcess(SchCellCb *cellCb, SchUeCb *ueCb, SchDlHqProcCb **hqP);
 void schDlReleaseHqProcess(SchDlHqProcCb *hqP);
+void schDlHqEntDelete(SchUeCb *ueCb);
 
 /*UL HARQ Functions*/
 void schUlHqEntInit(SchCellCb *cellCb, SchUeCb *ueCb);
@@ -672,6 +762,7 @@ void schUlHqProcessNack(SchUlHqProcCb *hqP);
 void schUlHqProcessAck(SchUlHqProcCb *hqP);
 uint8_t schUlGetAvlHqProcess(SchCellCb *cellCb, SchUeCb *ueCb, SchUlHqProcCb **hqP);
 void schUlReleaseHqProcess(SchUlHqProcCb *hqP, Bool togNdi);
+void schUlHqEntDelete(SchUeCb *ueCb);
 
 /* UE Manager HARQ Fun*/
 void schUpdateHarqFdbk(SchUeCb *ueCb, uint8_t numHarq, uint8_t *harqPayload,SlotTimingInfo *slotInd);

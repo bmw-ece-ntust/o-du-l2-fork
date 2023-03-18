@@ -29,6 +29,8 @@
 #include "du_mgr_main.h"
 #include "du_sctp.h"
 #include "du_egtp.h"
+#include "du_cell_mgr.h"
+#include "du_f1ap_msg_hdl.h"
 
 #ifdef O1_ENABLE
 
@@ -40,8 +42,8 @@ uint8_t rlcUlActvTsk (Pst *, Buffer *);
 uint8_t rlcUlActvInit (Ent, Inst, Region, Reason);
 uint8_t rlcDlActvTsk (Pst *, Buffer *);
 uint8_t rlcDlActvInit (Ent, Inst, Region, Reason);
-uint8_t rgActvTsk (Pst *, Buffer *);
-uint8_t rgActvInit (Ent, Inst, Region, Reason);
+uint8_t macActvTsk (Pst *, Buffer *);
+uint8_t macActvInit (Ent, Inst, Region, Reason);
 uint8_t lwrMacActvTsk(Pst *, Buffer *);
 uint8_t lwrMacActvInit(Ent, Inst, Region, Reason);
 #ifndef INTEL_WLS_MEM
@@ -160,13 +162,11 @@ uint8_t setRrmPolicy(RrmPolicyList rrmPolicy[], uint8_t policyNum)
        {
            if(duCb.sliceState == SLICE_INFO_NOT_AVAILABLE)
            {
-              BuildAndSendSliceConfigReq(duCfgParam.tempSliceCfg.rrmPolicy, duCfgParam.tempSliceCfg.totalRrmPolicy,\
-              duCfgParam.tempSliceCfg.totalSliceCount);
+              BuildAndSendSliceConfigReq();
            }
            else 
            {
-              BuildAndSendSliceRecfgReq(duCfgParam.tempSliceCfg.rrmPolicy, duCfgParam.tempSliceCfg.totalRrmPolicy,\
-              duCfgParam.tempSliceCfg.totalSliceCount);
+              BuildAndSendSliceRecfgReq();
            }
        }
     }
@@ -394,7 +394,7 @@ uint8_t rlcDlInit(SSTskId sysTskId)
 
    /* Register MAC TAPA Task */
    if(ODU_REG_TTSK((Ent)ENTMAC, (Inst)0, (Ttype)TTNORM, (Prior)PRIOR0,
-            rgActvInit, (ActvTsk)rgActvTsk) != ROK)
+            macActvInit, (ActvTsk)macActvTsk) != ROK)
    {
       return RFAILED;
    }

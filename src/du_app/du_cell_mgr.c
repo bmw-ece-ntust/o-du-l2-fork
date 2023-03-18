@@ -360,14 +360,15 @@ uint8_t duHandleCellUpInd(Pst *pst, OduCellId *cellId)
       cellCb->cellStatus = ACTIVATED;
       gCellStatus = CELL_UP;
 
-      if(duCfgParam.tempSliceCfg.rrmPolicy)
-         BuildAndSendSliceConfigReq(duCfgParam.tempSliceCfg.rrmPolicy, duCfgParam.tempSliceCfg.totalRrmPolicy, duCfgParam.tempSliceCfg.totalSliceCount);
+      if(duCfgParam.tempSliceCfg.numOfRrmPolicy)
+         BuildAndSendSliceConfigReq();
 #ifdef O1_ENABLE
       DU_LOG("\nINFO   -->  DU APP : Raise cell UP alarm for cell id=%d", cellId->cellId);
       raiseCellAlrm(CELL_UP_ALARM_ID, cellId->cellId);
       setCellOpState(cellId->cellId, ENABLED, ACTIVE);
 #endif
-
+       duCfgParam.macCellCfg.cellCfg.opState = OP_ENABLED;
+       duCfgParam.macCellCfg.cellCfg.cellState = CELL_ACTIVE;
    }
 
    if((pst->selector == ODU_SELECTOR_LWLC) || (pst->selector == ODU_SELECTOR_TC))

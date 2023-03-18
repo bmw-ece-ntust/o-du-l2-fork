@@ -38,61 +38,6 @@
 
 MacCb  macCb;
 
-/* Function pointer for sending crc ind from MAC to SCH */
-MacSchCrcIndFunc macSchCrcIndOpts[]=
-{
-   packMacSchCrcInd,
-   MacSchCrcInd,
-   packMacSchCrcInd
-};
-
-/* Function pointer for sending DL RLC BO Info from MAC to SCH */
-MacSchDlRlcBoInfoFunc macSchDlRlcBoInfoOpts[]=
-{
-   packMacSchDlRlcBoInfo,
-   MacSchDlRlcBoInfo,
-   packMacSchDlRlcBoInfo
-};
-
-/* Function pointer for sending short BSR from MAC to SCH */
-MacSchBsrFunc macSchBsrOpts[]=
-{
-   packMacSchBsr,
-   MacSchBsr,
-   packMacSchBsr
-};
-
-/* Function pointer for sending SR Uci ind from MAC to SCH */
-MacSchSrUciIndFunc macSchSrUciIndOpts[]=
-{
-   packMacSchSrUciInd,
-   MacSchSrUciInd,
-   packMacSchSrUciInd
-};
-
-/* Function pointer for sending DL HARQ Ind from MAC to SCH */
-MacSchDlHarqIndFunc macSchDlHarqIndOpts[]=
-{
-   packMacSchDlHarqInd,
-   MacSchDlHarqInd,
-   packMacSchDlHarqInd
-};
-
-/* Function pointer for sending Slice cfg  ind from MAC to SCH */
-MacSchSliceCfgReqFunc macSchSliceCfgReqOpts[]=
-{
-   packMacSchSliceCfgReq,
-   MacSchSliceCfgReq,
-   packMacSchSliceCfgReq
-};
-
-/* Function pointer for sending Slice cfg  ind from MAC to SCH */
-MacSchSliceRecfgReqFunc macSchSliceRecfgReqOpts[]=
-{
-   packMacSchSliceRecfgReq,
-   MacSchSliceRecfgReq,
-   packMacSchSliceRecfgReq
-};
 /*******************************************************************
  *
  * @brief Sends DL BO Info to SCH
@@ -114,7 +59,7 @@ uint8_t sendDlRlcBoInfoToSch(DlRlcBoInfo *dlBoInfo)
    Pst pst;
 
    FILL_PST_MAC_TO_SCH(pst, EVENT_DL_RLC_BO_INFO_TO_SCH);
-   return(*macSchDlRlcBoInfoOpts[pst.selector])(&pst, dlBoInfo);
+   return(SchMessageRouter(&pst, (void *)dlBoInfo));
 }
 
 /*******************************************************************
@@ -138,7 +83,7 @@ uint8_t sendCrcIndMacToSch(CrcIndInfo *crcInd)
    Pst pst;
 
    FILL_PST_MAC_TO_SCH(pst, EVENT_CRC_IND_TO_SCH);
-   return(*macSchCrcIndOpts[pst.selector])(&pst, crcInd);
+   return(SchMessageRouter(&pst, (void *)crcInd));
 }
 
 /*******************************************************************
@@ -245,7 +190,6 @@ uint8_t MacProcRlcDlData(Pst* pstInfo, RlcDlData *dlData)
    uint8_t   ueId  = 0;
    uint8_t   lcIdx = 0;
    uint8_t   *txPdu = NULLP;
-   uint8_t   schInfoIdx = 0 ;
    uint16_t  cellIdx = 0, txPduLen = 0;
    MacDlData macDlData;
    MacDlSlot *currDlSlot = NULLP;
@@ -277,29 +221,25 @@ uint8_t MacProcRlcDlData(Pst* pstInfo, RlcDlData *dlData)
    currDlSlot = &macCb.macCell[cellIdx]->dlSlot[dlData->slotInfo.slot];
    if(currDlSlot->dlInfo.dlMsgAlloc[ueId-1])
    {
-      for(schInfoIdx=0; schInfoIdx<currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->numSchedInfo; schInfoIdx++)
+      if(currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgPdschCfg)
       {
-         if((currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgSchedInfo[schInfoIdx].pduPres == PDSCH_PDU) ||
-               (currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgSchedInfo[schInfoIdx].pduPres == BOTH))
-            break;
-      }
+         txPduLen = currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgPdschCfg->codeword[0].tbSize\
+                    - TX_PAYLOAD_HDR_LEN;
+         MAC_ALLOC(txPdu, txPduLen);
+         if(!txPdu)
+         {
+            DU_LOG("\nERROR  -->  MAC : Memory allocation failed in MacProcRlcDlData");
+            return RFAILED;
+         }
+         macMuxPdu(&macDlData, NULLP, txPdu, txPduLen);
 
-      txPduLen = currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgSchedInfo[schInfoIdx].dlMsgPdschCfg.codeword[0].tbSize\
-                 - TX_PAYLOAD_HDR_LEN;
-      MAC_ALLOC(txPdu, txPduLen);
-      if(!txPdu)
-      {
-         DU_LOG("\nERROR  -->  MAC : Memory allocation failed in MacProcRlcDlData");
-         return RFAILED;
+         currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgPduLen = txPduLen;
+         currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgPdu = txPdu;
+         /* Add muxed TB to DL HARQ Proc CB. This will be used if retranmission of
+          * TB is requested in future. */
+         updateNewTbInDlHqProcCb(dlData->slotInfo, &macCb.macCell[cellIdx]->ueCb[ueId -1], \
+               currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgPdschCfg->codeword[0].tbSize, txPdu);
       }
-      macMuxPdu(&macDlData, NULLP, txPdu, txPduLen);
-
-      currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgSchedInfo[schInfoIdx].dlMsgInfo.dlMsgPduLen = txPduLen;
-      currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgSchedInfo[schInfoIdx].dlMsgInfo.dlMsgPdu = txPdu;
-      /* Add muxed TB to DL HARQ Proc CB. This will be used if retranmission of
-       * TB is requested in future. */
-      updateNewTbInDlHqProcCb(dlData->slotInfo, &macCb.macCell[cellIdx]->ueCb[ueId -1], \
-         currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgSchedInfo[schInfoIdx].dlMsgPdschCfg.codeword[0].tbSize, txPdu);
    }
 
    for(lcIdx = 0; lcIdx < dlData->numLc; lcIdx++)
@@ -454,11 +394,11 @@ uint8_t sendSchedRptToRlc(DlSchedInfo dlInfo, SlotTimingInfo slotInfo, uint8_t u
    if(dlInfo.dlMsgAlloc[ueIdx])
    {
       schedRpt->rnti = dlInfo.dlMsgAlloc[ueIdx]->crnti;
-      schedRpt->numLc = dlInfo.dlMsgAlloc[ueIdx]->dlMsgSchedInfo[schInfoIdx].numLc;
+      schedRpt->numLc = dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].numLc;
       for(lcIdx = 0; lcIdx < schedRpt->numLc; lcIdx++)
       {
-         schedRpt->lcSch[lcIdx].lcId = dlInfo.dlMsgAlloc[ueIdx]->dlMsgSchedInfo[schInfoIdx].lcSchInfo[lcIdx].lcId;
-         schedRpt->lcSch[lcIdx].bufSize = dlInfo.dlMsgAlloc[ueIdx]->dlMsgSchedInfo[schInfoIdx].lcSchInfo[lcIdx].schBytes;
+         schedRpt->lcSch[lcIdx].lcId = dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].lcId;
+         schedRpt->lcSch[lcIdx].bufSize = dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].schBytes;
       }
    }
 
@@ -688,7 +628,7 @@ uint8_t macProcShortBsr(uint16_t cellId, uint16_t crnti, uint8_t lcgId, uint32_t
    bsrInd.dataVolInfo[0].dataVol = bufferSize;
 
    FILL_PST_MAC_TO_SCH(pst, EVENT_SHORT_BSR);
-   return(*macSchBsrOpts[pst.selector])(&pst, &bsrInd);
+   return(SchMessageRouter(&pst, (void *)&bsrInd));
 }
 
 /*******************************************************************
@@ -730,7 +670,7 @@ uint8_t macProcLongBsr(uint16_t cellId, uint16_t crnti,uint8_t numLcg,\
       memcpy(&(bsrInd.dataVolInfo[lcgIdx]), &(dataVolInfo[lcgIdx]), sizeof(DataVolInfo));
 
    FILL_PST_MAC_TO_SCH(pst, EVENT_LONG_BSR);
-   return(*macSchBsrOpts[pst.selector])(&pst, &bsrInd);
+   return(SchMessageRouter(&pst, (void *)&bsrInd));
 }
 
 /*******************************************************************
@@ -774,7 +714,7 @@ uint8_t buildAndSendHarqInd(HarqInfoF0F1 *harqInfo, uint8_t crnti, uint16_t cell
    /* Fill Pst */
    FILL_PST_MAC_TO_SCH(pst, EVENT_DL_HARQ_IND_TO_SCH);
 
-   return(*macSchDlHarqIndOpts[pst.selector])(&pst, &dlHarqInd);
+   return SchMessageRouter(&pst, (void *)&dlHarqInd);
 }
 
 
@@ -814,7 +754,7 @@ uint8_t buildAndSendSrInd(UciInd *macUciInd, uint8_t crnti)
    /* Fill Pst */
    FILL_PST_MAC_TO_SCH(pst, EVENT_UCI_IND_TO_SCH);
 
-   return(*macSchSrUciIndOpts[pst.selector])(&pst, &srUciInd);
+   return(SchMessageRouter(&pst, (void *)&srUciInd));
 }
 
 /*******************************************************************
@@ -900,46 +840,50 @@ uint8_t FapiMacUciInd(Pst *pst, UciInd *macUciInd)
  *         RFAILED - failure
  *
  **********************************************************************/
- uint8_t fillSliceCfgInfo(SchSliceCfgReq *schSliceCfgReq, MacSliceCfgReq *macSliceCfgReq)
- {
-    uint8_t cfgIdx = 0;
-    
-    if(macSliceCfgReq->listOfSliceCfg)
-    {
-       schSliceCfgReq->numOfConfiguredSlice =  macSliceCfgReq->numOfConfiguredSlice;
-       MAC_ALLOC(schSliceCfgReq->listOfConfirguration, schSliceCfgReq->numOfConfiguredSlice *sizeof(SchRrmPolicyOfSlice*));
-       if(schSliceCfgReq->listOfConfirguration == NULLP)
-       {
-          DU_LOG("\nERROR  -->  MAC : Memory allocation failed in fillSliceCfgInfo");
-          return RFAILED;
-       }
-       for(cfgIdx = 0; cfgIdx<schSliceCfgReq->numOfConfiguredSlice; cfgIdx++)
-       {
-          MAC_ALLOC(schSliceCfgReq->listOfConfirguration[cfgIdx], sizeof(SchRrmPolicyOfSlice));
-          if(schSliceCfgReq->listOfConfirguration[cfgIdx] == NULLP)
-          {
-             DU_LOG("\nERROR  -->  MAC : Memory allocation failed in fillSliceCfgInfo");
-             return RFAILED;
-          }
-          
-          memcpy(&schSliceCfgReq->listOfConfirguration[cfgIdx]->snssai, &macSliceCfgReq->listOfSliceCfg[cfgIdx]->snssai, sizeof(Snssai));
+uint8_t fillSliceCfgInfo(SchSliceCfgReq *schSliceCfgReq, MacSliceCfgReq *macSliceCfgReq)
+{
+   uint8_t cfgIdx = 0, memberListIdx = 0, totalSliceCfgRecvd = 0;
 
-          if(macSliceCfgReq->listOfSliceCfg[cfgIdx]->rrmPolicyRatio)
-          {
-             MAC_ALLOC(schSliceCfgReq->listOfConfirguration[cfgIdx]->rrmPolicyRatioInfo, sizeof(SchRrmPolicyRatio));
-             if(schSliceCfgReq->listOfConfirguration[cfgIdx]->rrmPolicyRatioInfo == NULLP)
-             {
-                DU_LOG("\nERROR  -->  MAC : Memory allocation failed in fillSliceCfgInfo");
-                return RFAILED;
-             }
-             schSliceCfgReq->listOfConfirguration[cfgIdx]->rrmPolicyRatioInfo->policyMaxRatio = macSliceCfgReq->listOfSliceCfg[cfgIdx]->rrmPolicyRatio->policyMaxRatio;
-             schSliceCfgReq->listOfConfirguration[cfgIdx]->rrmPolicyRatioInfo->policyMinRatio = macSliceCfgReq->listOfSliceCfg[cfgIdx]->rrmPolicyRatio->policyMinRatio;
-             schSliceCfgReq->listOfConfirguration[cfgIdx]->rrmPolicyRatioInfo->policyDedicatedRatio = macSliceCfgReq->listOfSliceCfg[cfgIdx]->rrmPolicyRatio->policyDedicatedRatio;
-          }
-       }
-    }
-    return ROK;
- }
+   if(macSliceCfgReq->listOfRrmPolicy)
+   {
+      for(cfgIdx = 0; cfgIdx<macSliceCfgReq->numOfRrmPolicy; cfgIdx++)
+      {
+          totalSliceCfgRecvd += macSliceCfgReq->listOfRrmPolicy[cfgIdx]->numOfRrmPolicyMem;  
+      }
+
+      schSliceCfgReq->numOfConfiguredSlice =  totalSliceCfgRecvd;
+      MAC_ALLOC(schSliceCfgReq->listOfSlices, schSliceCfgReq->numOfConfiguredSlice *sizeof(SchRrmPolicyOfSlice*));
+      if(schSliceCfgReq->listOfSlices == NULLP)
+      {
+         DU_LOG("\nERROR  -->  MAC : Memory allocation failed in fillSliceCfgInfo");
+         return RFAILED;
+      }
+      for(cfgIdx = 0; cfgIdx<schSliceCfgReq->numOfConfiguredSlice; cfgIdx++)
+      {
+         for(memberListIdx = 0; memberListIdx<macSliceCfgReq->listOfRrmPolicy[cfgIdx]->numOfRrmPolicyMem; memberListIdx++)
+         {
+            if(macSliceCfgReq->listOfRrmPolicy[cfgIdx]->rRMPolicyMemberList[memberListIdx])
+            {
+
+               MAC_ALLOC(schSliceCfgReq->listOfSlices[cfgIdx], sizeof(SchRrmPolicyOfSlice));
+               if(schSliceCfgReq->listOfSlices[cfgIdx] == NULLP)
+               {
+                  DU_LOG("\nERROR  -->  MAC : Memory allocation failed in fillSliceCfgInfo");
+                  return RFAILED;
+               }
+
+               memcpy(&schSliceCfgReq->listOfSlices[cfgIdx]->snssai, &macSliceCfgReq->listOfRrmPolicy[cfgIdx]->rRMPolicyMemberList[memberListIdx]->snssai, sizeof(Snssai));
+
+               schSliceCfgReq->listOfSlices[cfgIdx]->rrmPolicyRatioInfo.maxRatio = macSliceCfgReq->listOfRrmPolicy[cfgIdx]->policyRatio.maxRatio;
+               schSliceCfgReq->listOfSlices[cfgIdx]->rrmPolicyRatioInfo.minRatio = macSliceCfgReq->listOfRrmPolicy[cfgIdx]->policyRatio.minRatio;
+               schSliceCfgReq->listOfSlices[cfgIdx]->rrmPolicyRatioInfo.dedicatedRatio = macSliceCfgReq->listOfRrmPolicy[cfgIdx]->policyRatio.dedicatedRatio;
+            }
+         }
+      }
+   }
+   return ROK;
+}
+
 /*******************************************************************
  *
  * @brief Processes Slice Cfg Request recived from DU
@@ -977,7 +921,7 @@ uint8_t MacProcSliceCfgReq(Pst *pst, MacSliceCfgReq *macSliceCfgReq)
          if(fillSliceCfgInfo(schSliceCfgReq, macSliceCfgReq) == ROK)
          {
             FILL_PST_MAC_TO_SCH(schPst, EVENT_SLICE_CFG_REQ_TO_SCH);
-            ret = (*macSchSliceCfgReqOpts[schPst.selector])(&schPst, schSliceCfgReq);
+            ret = SchMessageRouter(&schPst, (void *)schSliceCfgReq);
          }
       }
       freeMacSliceCfgReq(macSliceCfgReq, pst); 
@@ -1026,9 +970,8 @@ uint8_t MacProcSliceRecfgReq(Pst *pst, MacSliceRecfgReq *macSliceRecfgReq)
          if(fillSliceCfgInfo(schSliceRecfgReq, macSliceRecfgReq) == ROK)
          {
             FILL_PST_MAC_TO_SCH(schPst, EVENT_SLICE_RECFG_REQ_TO_SCH);
-            ret = (*macSchSliceRecfgReqOpts[schPst.selector])(&schPst, schSliceRecfgReq);
+            ret = SchMessageRouter(&schPst, (void *)schSliceRecfgReq);
          }
-
       }
       freeMacSliceCfgReq(macSliceRecfgReq, pst);
    }

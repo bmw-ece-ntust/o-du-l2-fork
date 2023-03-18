@@ -77,53 +77,6 @@ char encBuf[ENC_BUF_MAX_LEN];
      9   UL    UL    UL    UL    UL    UL    UL    UL    UL    UL    UL    UL    UL    UL  
  */
 
-#ifdef NR_TDD
-/*******************************************************************
- *
- * @brief Fills the Slot configuration 
- *
- * @details
- *
- *    Function : FillSlotConfig
- *
- *    Functionality:Fill the Slot configuration values
- * 
- *  @params[in] void
- * @return ROK     - success
- *         RFAILED - failure
- *
- * ****************************************************************/
-void FillSlotConfig()
-{
-   uint8_t slot = 0;
-   uint8_t symbol =0;
-   
-   memset(duCfgParam.macCellCfg.tddCfg.slotCfg, 0, sizeof(duCfgParam.macCellCfg.tddCfg.slotCfg[slot][symbol]* \
-			   MAX_TDD_PERIODICITY_SLOTS*MAX_SYMB_PER_SLOT));
-   
-   //Filling the DL Slots and initializing flexi slot
-   for(slot = 0; slot <= NUM_DL_SLOTS; slot++)
-   {
-      for(symbol =0; symbol < MAX_SYMB_PER_SLOT; symbol++)
-      {
-	 duCfgParam.macCellCfg.tddCfg.slotCfg[slot][symbol] = DL_SLOT;
-      }
-   }
-  
-   //Filling UL Slots
-   for(slot = NUM_DL_SLOTS+1; slot <= NUM_DL_SLOTS+NUM_UL_SLOTS; slot++)
-   {
-      for(symbol = 0; symbol < MAX_SYMB_PER_SLOT; symbol++)
-	 duCfgParam.macCellCfg.tddCfg.slotCfg[slot][symbol] = UL_SLOT;
-   } 
-   //Updating Flexi Slot
-   slot = NUM_DL_SLOTS;
-   duCfgParam.macCellCfg.tddCfg.slotCfg[slot][12] = FLEXI_SLOT;
-   duCfgParam.macCellCfg.tddCfg.slotCfg[slot][13] = UL_SLOT;
-
-}
-#endif
-
 /*******************************************************************
  * @brief Reads the CL Configuration.
  *
@@ -143,63 +96,78 @@ void FillSlotConfig()
 
 uint8_t readMacCfg()
 {
-   uint8_t idx=0, sliceIdx=0;
+   uint8_t idx=0, sliceIdx=0,plmnIdx = 0;
    F1TaiSliceSuppLst *taiSliceSuppLst;
 
-   duCfgParam.macCellCfg.carrierId = CARRIER_IDX;
-
-   /* Cell configuration */
-   duCfgParam.macCellCfg.numerology = NR_NUMEROLOGY;
-   duCfgParam.macCellCfg.dupType = DUPLEX_MODE;
-
    /* DL carrier configuration */
-   duCfgParam.macCellCfg.dlCarrCfg.pres = TRUE;
 #ifdef O1_ENABLE
    duCfgParam.macCellCfg.cellId = cellParams.cellLocalId;
-   duCfgParam.macCellCfg.phyCellId = cellParams.nRPCI;
-   duCfgParam.macCellCfg.dlCarrCfg.bw = cellParams.bSChannelBwUL;
-   duCfgParam.macCellCfg.dlCarrCfg.freq = cellParams.bSChannelBwDL;
+   duCfgParam.macCellCfg.carrCfg.dlBw = cellParams.bSChannelBwDL;
+   duCfgParam.macCellCfg.carrCfg.dlFreq = convertArfcnToFreqKhz(cellParams.arfcnDL);
 #else
    duCfgParam.macCellCfg.cellId = NR_CELL_ID;
-   duCfgParam.macCellCfg.phyCellId = NR_PCI;
-   duCfgParam.macCellCfg.dlCarrCfg.bw = NR_BANDWIDTH;
-   duCfgParam.macCellCfg.dlCarrCfg.freq = NR_DL_ARFCN;
+   duCfgParam.macCellCfg.carrCfg.dlBw = NR_BANDWIDTH;
+   duCfgParam.macCellCfg.carrCfg.dlFreq = convertArfcnToFreqKhz(NR_DL_ARFCN);
 #endif
-   
-   duCfgParam.macCellCfg.dlCarrCfg.k0[0] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.k0[1] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.k0[2] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.k0[3] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.k0[4] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.gridSize[0] = 273;
-   duCfgParam.macCellCfg.dlCarrCfg.gridSize[1] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.gridSize[2] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.gridSize[3] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.gridSize[4] = 1;
-   duCfgParam.macCellCfg.dlCarrCfg.numAnt = NUM_TX_ANT;
-
+   duCfgParam.macCellCfg.carrCfg.numTxAnt = NUM_TX_ANT;
    /* UL Carrier configuration */
-   duCfgParam.macCellCfg.ulCarrCfg.pres = TRUE;
 #ifdef O1_ENABLE
-   duCfgParam.macCellCfg.ulCarrCfg.bw = cellParams.bSChannelBwUL;
-   duCfgParam.macCellCfg.ulCarrCfg.freq = cellParams.bSChannelBwDL;
+   duCfgParam.macCellCfg.carrCfg.ulBw = cellParams.bSChannelBwUL;
+   duCfgParam.macCellCfg.carrCfg.ulFreq = convertArfcnToFreqKhz(cellParams.arfcnUL);
 #else   
-   duCfgParam.macCellCfg.ulCarrCfg.bw = NR_BANDWIDTH;
-   duCfgParam.macCellCfg.ulCarrCfg.freq =  NR_UL_ARFCN;
+   duCfgParam.macCellCfg.carrCfg.ulBw = NR_BANDWIDTH;
+   duCfgParam.macCellCfg.carrCfg.ulFreq =  convertArfcnToFreqKhz(NR_UL_ARFCN);
 #endif   
-   duCfgParam.macCellCfg.ulCarrCfg.k0[0] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.k0[1] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.k0[2] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.k0[3] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.k0[4] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.gridSize[0] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.gridSize[1] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.gridSize[2] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.gridSize[3] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.gridSize[4] = 1;
-   duCfgParam.macCellCfg.ulCarrCfg.numAnt = NUM_RX_ANT;
+   duCfgParam.macCellCfg.carrCfg.numRxAnt = NUM_RX_ANT;
 
-   duCfgParam.macCellCfg.freqShft = FREQ_SHIFT_7P5KHZ;
+   /* Cell configuration */
+#ifdef O1_ENABLE
+   duCfgParam.macCellCfg.cellCfg.opState    = cellParams.operationalState;
+   duCfgParam.macCellCfg.cellCfg.adminState = cellParams.administrativeState;
+   duCfgParam.macCellCfg.cellCfg.cellState  = cellParams.cellState;
+   duCfgParam.macCellCfg.cellCfg.phyCellId  = cellParams.nRPCI;
+   duCfgParam.macCellCfg.cellCfg.tac        = cellParams.nRTAC;
+   duCfgParam.macCellCfg.cellCfg.ssbFreq    = convertArfcnToFreqKhz(cellParams.ssbFrequency);
+#else
+   duCfgParam.macCellCfg.cellCfg.opState    = OP_DISABLED; 
+   duCfgParam.macCellCfg.cellCfg.adminState = ADMIN_UNLOCKED;
+   duCfgParam.macCellCfg.cellCfg.cellState  = CELL_INACTIVE;
+   duCfgParam.macCellCfg.cellCfg.phyCellId  = NR_PCI;
+   duCfgParam.macCellCfg.cellCfg.tac        = DU_TAC; 
+   duCfgParam.macCellCfg.cellCfg.ssbFreq    = SSB_FREQUENCY;
+#endif
+   /* Plmn And SNSSAI Configuration */
+   for(plmnIdx = 0; plmnIdx < MAX_PLMN; plmnIdx++)
+   {
+      memcpy(&duCfgParam.macCellCfg.cellCfg.plmnInfoList[plmnIdx].plmn, &duCfgParam.srvdCellLst[0].duCellInfo.cellInfo.srvdPlmn[plmnIdx].plmn,\
+            sizeof(Plmn));
+      taiSliceSuppLst = &duCfgParam.srvdCellLst[0].duCellInfo.cellInfo.srvdPlmn[plmnIdx].taiSliceSuppLst;
+      duCfgParam.macCellCfg.cellCfg.plmnInfoList[plmnIdx].numSupportedSlice = taiSliceSuppLst->numSupportedSlices;
+      if(taiSliceSuppLst->snssai)
+      {
+         DU_ALLOC_SHRABL_BUF(duCfgParam.macCellCfg.cellCfg.plmnInfoList[plmnIdx].snssai, (duCfgParam.macCellCfg.cellCfg.plmnInfoList[plmnIdx].numSupportedSlice) * sizeof(Snssai*));
+         if(duCfgParam.macCellCfg.cellCfg.plmnInfoList[plmnIdx].snssai == NULLP)
+         {
+            DU_LOG("\nERROR  --> DU_APP: Memory allocation failed at readMacCfg");
+            return RFAILED;
+         }
+      }
+      for(sliceIdx=0; sliceIdx < taiSliceSuppLst->numSupportedSlices; sliceIdx++)
+      {
+         if(taiSliceSuppLst->snssai[sliceIdx] != NULLP)
+         {
+            DU_ALLOC_SHRABL_BUF(duCfgParam.macCellCfg.cellCfg.plmnInfoList[plmnIdx].snssai[sliceIdx], sizeof(Snssai));
+            if(duCfgParam.macCellCfg.cellCfg.plmnInfoList[plmnIdx].snssai[sliceIdx] == NULLP)
+            {
+               DU_LOG("\nERROR  --> DU_APP: Memory allocation failed at readMacCfg");
+               return RFAILED;
+            }
+            memcpy(duCfgParam.macCellCfg.cellCfg.plmnInfoList[plmnIdx].snssai[sliceIdx], taiSliceSuppLst->snssai[sliceIdx], sizeof(Snssai));
+         }
+      }
+   }
+   duCfgParam.macCellCfg.cellCfg.numerology = NR_NUMEROLOGY;
+   duCfgParam.macCellCfg.cellCfg.dupType    = DUPLEX_MODE;
 
    /* SSB configuration */
    duCfgParam.macCellCfg.ssbCfg.ssbPbchPwr = SSB_PBCH_PWR;
@@ -225,75 +193,55 @@ uint8_t readMacCfg()
    {
       memcpy(&duCfgParam.macCellCfg.ssbCfg.mibPdu, encBuf,encBufSize);
    }
-   duCfgParam.macCellCfg.ssbCfg.multCarrBand = SSB_MULT_CARRIER_BAND;
-   duCfgParam.macCellCfg.ssbCfg.multCellCarr = MULT_CELL_CARRIER;
 
    /* PRACH configuration */
-   duCfgParam.macCellCfg.prachCfg.pres = TRUE;
-   duCfgParam.macCellCfg.prachCfg.prachCfgIdx = PRACH_CONFIG_IDX;
    duCfgParam.macCellCfg.prachCfg.prachSeqLen = PRACH_SEQ_LEN;
    duCfgParam.macCellCfg.prachCfg.prachSubcSpacing = convertScsEnumValToScsVal(PRACH_SUBCARRIER_SPACING);
-   duCfgParam.macCellCfg.prachCfg.prachRstSetCfg = PRACH_RESTRICTED_SET_CFG;
+   duCfgParam.macCellCfg.prachCfg.prachCfgIdx = PRACH_CONFIG_IDX;
    duCfgParam.macCellCfg.prachCfg.msg1Fdm = NUM_PRACH_FDM;
-   duCfgParam.macCellCfg.prachCfg.msg1FreqStart = PRACH_FREQ_START;
-   duCfgParam.macCellCfg.prachCfg.rootSeqLen    = ROOT_SEQ_LEN;
    duCfgParam.macCellCfg.prachCfg.fdm[0].rootSeqIdx = ROOT_SEQ_IDX;
    duCfgParam.macCellCfg.prachCfg.fdm[0].numRootSeq = NUM_ROOT_SEQ;
    duCfgParam.macCellCfg.prachCfg.fdm[0].k1 = 0;
    duCfgParam.macCellCfg.prachCfg.fdm[0].zeroCorrZoneCfg = ZERO_CORRELATION_ZONE_CFG;
-   duCfgParam.macCellCfg.prachCfg.fdm[0].numUnusedRootSeq = NUM_UNUSED_ROOT_SEQ;
-   if(duCfgParam.macCellCfg.prachCfg.fdm[0].numUnusedRootSeq != 0)
-   {
-	DU_ALLOC_SHRABL_BUF(duCfgParam.macCellCfg.prachCfg.fdm[0].unsuedRootSeq, 
-	NUM_UNUSED_ROOT_SEQ * sizeof(uint8_t));
-        if(duCfgParam.macCellCfg.prachCfg.fdm[0].unsuedRootSeq == NULLP)
-	{
-	    DU_LOG("\nERROR  -->  DU_APP : Memory allocation failed at readMacCfg");
-	    return RFAILED;
-	}
-	*(duCfgParam.macCellCfg.prachCfg.fdm[0].unsuedRootSeq) = UNUSED_ROOT_SEQ;
-    }
+   duCfgParam.macCellCfg.prachCfg.prachRstSetCfg = PRACH_RESTRICTED_SET_CFG;
+   duCfgParam.macCellCfg.prachCfg.ssbPerRach = SSB_PER_RACH;
+   duCfgParam.macCellCfg.prachCfg.msg1FreqStart = PRACH_FREQ_START;
 
    duCfgParam.macCellCfg.prachCfg.totalNumRaPreamble = NUM_RA_PREAMBLE;
-   duCfgParam.macCellCfg.prachCfg.ssbPerRach = SSB_PER_RACH;
    duCfgParam.macCellCfg.prachCfg.numCbPreamblePerSsb = CB_PREAMBLE_PER_SSB;
-   duCfgParam.macCellCfg.prachCfg.prachMultCarrBand = PRACH_MULT_CARRIER_BAND;
-   duCfgParam.macCellCfg.prachCfg.raContResTmr = RA_CONT_RES_TIMER;
-   duCfgParam.macCellCfg.prachCfg.rsrpThreshSsb = RSRP_THRESHOLD_SSB;
    duCfgParam.macCellCfg.prachCfg.raRspWindow = RA_RSP_WINDOW;
-   duCfgParam.macCellCfg.prachCfg.prachRestrictedSet = PRACH_RESTRICTED_SET;
-#ifdef NR_TDD   
+   
    /* TDD configuration */
-   duCfgParam.macCellCfg.tddCfg.pres = TRUE;
+#ifdef NR_TDD   
    duCfgParam.macCellCfg.tddCfg.tddPeriod = TDD_PERIODICITY;
+   duCfgParam.macCellCfg.tddCfg.nrOfDlSlots = NUM_DL_SLOTS;
+   duCfgParam.macCellCfg.tddCfg.nrOfDlSymbols = NUM_DL_SYMBOLS;
+   duCfgParam.macCellCfg.tddCfg.nrOfUlSlots = NUM_UL_SLOTS;
+   duCfgParam.macCellCfg.tddCfg.nrOfUlSymbols = NUM_UL_SYMBOLS;
 
-   FillSlotConfig();
+   //FillSlotConfig();
 
 #endif
-   /* RSSI Measurement configuration */
-   duCfgParam.macCellCfg.rssiUnit = RSS_MEASUREMENT_UNIT;
 
    /* fill SIB1 configuration */
-   duCfgParam.macCellCfg.sib1Cfg.sib1PduLen = duCfgParam.srvdCellLst[0].duSysInfo.sib1Len;
-   DU_ALLOC_SHRABL_BUF(duCfgParam.macCellCfg.sib1Cfg.sib1Pdu,duCfgParam.srvdCellLst[0].duSysInfo.sib1Len);
-   memcpy(duCfgParam.macCellCfg.sib1Cfg.sib1Pdu, duCfgParam.srvdCellLst[0].duSysInfo.sib1Msg, \
-	 duCfgParam.srvdCellLst[0].duSysInfo.sib1Len);
-   duCfgParam.macCellCfg.sib1Cfg.sib1RepetitionPeriod = SIB1_REPETITION_PERIOD;
-   duCfgParam.macCellCfg.sib1Cfg.coresetZeroIndex = CORESET_0_INDEX;
-   duCfgParam.macCellCfg.sib1Cfg.searchSpaceZeroIndex = SEARCHSPACE_0_INDEX;
-   duCfgParam.macCellCfg.sib1Cfg.sib1Mcs = DEFAULT_MCS;
-  
-   duCfgParam.macCellCfg.sib1Cfg.pagingCfg.numPO = duCfgParam.sib1Params.srvCellCfgCommSib.dlCfg.pcchCfg.ns;
+   duCfgParam.macCellCfg.cellCfg.sib1Cfg.sib1PduLen = duCfgParam.srvdCellLst[0].duSysInfo.sib1Len;
+   DU_ALLOC_SHRABL_BUF(duCfgParam.macCellCfg.cellCfg.sib1Cfg.sib1Pdu,duCfgParam.srvdCellLst[0].duSysInfo.sib1Len);
+   memcpy(duCfgParam.macCellCfg.cellCfg.sib1Cfg.sib1Pdu, duCfgParam.srvdCellLst[0].duSysInfo.sib1Msg, \
+         duCfgParam.srvdCellLst[0].duSysInfo.sib1Len);
+   duCfgParam.macCellCfg.cellCfg.sib1Cfg.pdcchCfgSib1.coresetZeroIndex = CORESET_0_INDEX;
+   duCfgParam.macCellCfg.cellCfg.sib1Cfg.pdcchCfgSib1.searchSpaceZeroIndex = SEARCHSPACE_0_INDEX;
+
+   duCfgParam.macCellCfg.cellCfg.sib1Cfg.pagingCfg.numPO = duCfgParam.sib1Params.srvCellCfgCommSib.dlCfg.pcchCfg.ns;
    if((duCfgParam.sib1Params.srvCellCfgCommSib.dlCfg.pcchCfg.firstPDCCHMontioringType != \
-             PCCH_Config__firstPDCCH_MonitoringOccasionOfPO_PR_NOTHING) && (duCfgParam.macCellCfg.sib1Cfg.pagingCfg.numPO != 0))
+            PCCH_Config__firstPDCCH_MonitoringOccasionOfPO_PR_NOTHING) && (duCfgParam.macCellCfg.cellCfg.sib1Cfg.pagingCfg.numPO != 0))
    {
-      duCfgParam.macCellCfg.sib1Cfg.pagingCfg.poPresent = TRUE;
-      memcpy(duCfgParam.macCellCfg.sib1Cfg.pagingCfg.pagingOcc, 
-              duCfgParam.sib1Params.srvCellCfgCommSib.dlCfg.pcchCfg.firstPDCCHMontioringInfo,MAX_PO_PER_PF);
+      duCfgParam.macCellCfg.cellCfg.sib1Cfg.pagingCfg.poPresent = TRUE;
+      memcpy(duCfgParam.macCellCfg.cellCfg.sib1Cfg.pagingCfg.pagingOcc, 
+            duCfgParam.sib1Params.srvCellCfgCommSib.dlCfg.pcchCfg.firstPDCCHMontioringInfo,MAX_PO_PER_PF);
    }
    else
    {
-      duCfgParam.macCellCfg.sib1Cfg.pagingCfg.poPresent = FALSE;
+      duCfgParam.macCellCfg.cellCfg.sib1Cfg.pagingCfg.poPresent = FALSE;
    }
 
    /* fill Intial DL BWP */
@@ -328,7 +276,7 @@ uint8_t readMacCfg()
       PDSCH_START_SYMBOL;
    duCfgParam.macCellCfg.initialDlBwp.pdschCommon.timeDomRsrcAllocList[idx].lengthSymbol =
       PDSCH_LENGTH_SYMBOL;
- 
+
    idx++;
    duCfgParam.macCellCfg.initialDlBwp.pdschCommon.timeDomRsrcAllocList[idx].k0 = PDSCH_K0_CFG2;
    duCfgParam.macCellCfg.initialDlBwp.pdschCommon.timeDomRsrcAllocList[idx].mappingType = 
@@ -363,39 +311,12 @@ uint8_t readMacCfg()
    duCfgParam.macCellCfg.initialUlBwp.puschCommon.timeDomRsrcAllocList[1].symbolLength =
       PUSCH_LENGTH_SYMBOL;
 
-   duCfgParam.macCellCfg.dmrsTypeAPos = DMRS_TYPE_A_POS; 
+   duCfgParam.macCellCfg.ssbCfg.dmrsTypeAPos = DMRS_TYPE_A_POS; 
 
    /* fill PUCCH config common */
    duCfgParam.macCellCfg.initialUlBwp.pucchCommon.pucchResourceCommon = PUCCH_RSRC_COMMON;
    duCfgParam.macCellCfg.initialUlBwp.pucchCommon.pucchGroupHopping = PUCCH_GROUP_HOPPING;
-   
-   /* Plmn And SNSSAI Configuration */
-   memcpy(&duCfgParam.macCellCfg.plmnInfoList.plmn, &duCfgParam.srvdCellLst[0].duCellInfo.cellInfo.srvdPlmn[0].plmn,\
-   sizeof(Plmn));
-   taiSliceSuppLst = &duCfgParam.srvdCellLst[0].duCellInfo.cellInfo.srvdPlmn[0].taiSliceSuppLst;
-   duCfgParam.macCellCfg.plmnInfoList.numSupportedSlice = taiSliceSuppLst->numSupportedSlices;
-   if(taiSliceSuppLst->snssai)
-   {
-      DU_ALLOC_SHRABL_BUF(duCfgParam.macCellCfg.plmnInfoList.snssai, (duCfgParam.macCellCfg.plmnInfoList.numSupportedSlice) * sizeof(Snssai*));
-      if(duCfgParam.macCellCfg.plmnInfoList.snssai == NULLP)
-      {
-         DU_LOG("\nERROR  --> DU_APP: Memory allocation failed at readMacCfg");
-         return RFAILED;
-      }
-   }
-   for(sliceIdx=0; sliceIdx<taiSliceSuppLst->numSupportedSlices; sliceIdx++)
-   {
-      if(taiSliceSuppLst->snssai[sliceIdx] != NULLP)
-      {
-         DU_ALLOC_SHRABL_BUF(duCfgParam.macCellCfg.plmnInfoList.snssai[sliceIdx], sizeof(Snssai));
-         if(duCfgParam.macCellCfg.plmnInfoList.snssai[sliceIdx] == NULLP)
-         {
-            DU_LOG("\nERROR  --> DU_APP: Memory allocation failed at readMacCfg");
-            return RFAILED;
-         }
-         memcpy(duCfgParam.macCellCfg.plmnInfoList.snssai[sliceIdx], taiSliceSuppLst->snssai[sliceIdx], sizeof(Snssai));
-      }
-   }
+
 
 #ifndef O1_ENABLE
 
@@ -404,8 +325,8 @@ uint8_t readMacCfg()
    rrmPolicy.id[0] = 1;
    rrmPolicy.resourceType = PRB;
    rrmPolicy.rRMMemberNum = 1;
-   memcpy(rrmPolicy.rRMPolicyMemberList[0].mcc,duCfgParam.macCellCfg.plmnInfoList.plmn.mcc, 3*sizeof(uint8_t));
-   memcpy(rrmPolicy.rRMPolicyMemberList[0].mnc,duCfgParam.macCellCfg.plmnInfoList.plmn.mnc, 3*sizeof(uint8_t));
+   memcpy(rrmPolicy.rRMPolicyMemberList[0].mcc,duCfgParam.macCellCfg.cellCfg.plmnInfoList[0].plmn.mcc, 3*sizeof(uint8_t));
+   memcpy(rrmPolicy.rRMPolicyMemberList[0].mnc,duCfgParam.macCellCfg.cellCfg.plmnInfoList[0].plmn.mnc, 3*sizeof(uint8_t));
    rrmPolicy.rRMPolicyMemberList[0].sst = 1;
    rrmPolicy.rRMPolicyMemberList[0].sd[0] = 2;
    rrmPolicy.rRMPolicyMemberList[0].sd[1] = 3;
@@ -415,7 +336,7 @@ uint8_t readMacCfg()
    rrmPolicy.rRMPolicyDedicatedRatio = 10;
 
    cpyRrmPolicyInDuCfgParams(&rrmPolicy, 1, &duCfgParam.tempSliceCfg);
-  
+
 #endif
 
    return ROK;
@@ -444,8 +365,8 @@ uint8_t fillDuPort(uint16_t *duPort)
    duPort[F1_INTERFACE]   = g_cfg.DU_Port;
    duPort[E2_INTERFACE]   = g_cfg.RIC_Port;
 #else
-   duPort[F1_INTERFACE]   = DU_PORT;     /* DU Port idx  0 38472 */
-   duPort[E2_INTERFACE]   = RIC_PORT;    /* RIC Port idx 1 38482 */
+   duPort[F1_INTERFACE]   = F1_SCTP_PORT;     /* DU Port idx  0 38472 */
+   duPort[E2_INTERFACE]   = E2_SCTP_PORT;    /* RIC Port idx 1 36421 */
 #endif
    return ROK;
 }
@@ -699,8 +620,8 @@ uint8_t readCfg()
    cmInetAddr((S8*)CU_IP_V4_ADDR, &ipv4_cu);
    cmInetAddr((S8*)RIC_IP_V4_ADDR, &ipv4_ric);
 
-   duCfgParam.sctpParams.cuPort = CU_PORT;
-   duCfgParam.sctpParams.ricPort = RIC_PORT;
+   duCfgParam.sctpParams.cuPort = F1_SCTP_PORT;
+   duCfgParam.sctpParams.ricPort = E2_SCTP_PORT;
 #endif
 
    fillDuPort(duCfgParam.sctpParams.duPort);
@@ -717,10 +638,10 @@ uint8_t readCfg()
    /* EGTP Parameters */
    duCfgParam.egtpParams.localIp.ipV4Pres = TRUE;
    duCfgParam.egtpParams.localIp.ipV4Addr = ipv4_du;
-   duCfgParam.egtpParams.localPort = DU_EGTP_PORT;
+   duCfgParam.egtpParams.localPort = F1_EGTP_PORT;
    duCfgParam.egtpParams.destIp.ipV4Pres = TRUE;
    duCfgParam.egtpParams.destIp.ipV4Addr = ipv4_cu;
-   duCfgParam.egtpParams.destPort = CU_EGTP_PORT;
+   duCfgParam.egtpParams.destPort = F1_EGTP_PORT;
    duCfgParam.egtpParams.minTunnelId = MIN_TEID;
    duCfgParam.egtpParams.maxTunnelId = MAX_TEID;
 
@@ -1046,65 +967,71 @@ uint8_t readCfg()
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t cpyRrmPolicyInDuCfgParams(RrmPolicyList rrmPolicy[], uint8_t policyNum, CopyOfRecvdSliceCfg *tempSliceCfg)
+uint8_t cpyRrmPolicyInDuCfgParams(RrmPolicyList rrmPolicy[], uint8_t policyNum, MacSliceCfgReq *tempSliceCfg)
 {
-   uint8_t policyIdx = 0, memberListIdx = 0, count = 0;
-
+   uint8_t policyIdx = 0, memberListIdx = 0;
    if(policyNum)
    {
-      tempSliceCfg->totalRrmPolicy = policyNum;
-      DU_ALLOC(tempSliceCfg->rrmPolicy, tempSliceCfg->totalRrmPolicy * sizeof(RrmPolicy*));
-      if(tempSliceCfg->rrmPolicy == NULLP)
+      tempSliceCfg->numOfRrmPolicy = policyNum;
+      DU_ALLOC_SHRABL_BUF(tempSliceCfg->listOfRrmPolicy, tempSliceCfg->numOfRrmPolicy  * sizeof(MacSliceRrmPolicy*));
+      if(!tempSliceCfg->listOfRrmPolicy)
       {
          DU_LOG("\nERROR  --> DU APP : Memory allocation failed in cpyRrmPolicyInDuCfgParams");
          return RFAILED;
       }
 
-      for(policyIdx = 0; policyIdx<tempSliceCfg->totalRrmPolicy; policyIdx++)
+      for(policyIdx = 0; policyIdx<tempSliceCfg->numOfRrmPolicy; policyIdx++)
       {
-         DU_ALLOC(tempSliceCfg->rrmPolicy[policyIdx],  sizeof(RrmPolicy));
-         if(tempSliceCfg->rrmPolicy[policyIdx] == NULLP)
+         DU_ALLOC_SHRABL_BUF(tempSliceCfg->listOfRrmPolicy[policyIdx], sizeof(MacSliceRrmPolicy));
+         if(!tempSliceCfg->listOfRrmPolicy[policyIdx])
          {
             DU_LOG("\nERROR  --> DU APP : Memory allocation failed in cpyRrmPolicyInDuCfgParams");
             return RFAILED;
          }
-         
-         if(rrmPolicy[policyIdx].rRMMemberNum)
+
+         tempSliceCfg->listOfRrmPolicy[policyIdx]->resourceType = rrmPolicy[policyIdx].resourceType;
+
+         tempSliceCfg->listOfRrmPolicy[policyIdx]->numOfRrmPolicyMem = rrmPolicy[policyIdx].rRMMemberNum;
+
+         if(tempSliceCfg->listOfRrmPolicy[policyIdx]->numOfRrmPolicyMem)
          {
-            tempSliceCfg->rrmPolicy[policyIdx]->numMemberList = rrmPolicy[policyIdx].rRMMemberNum;  
-            DU_ALLOC(tempSliceCfg->rrmPolicy[policyIdx]->memberList, tempSliceCfg->rrmPolicy[policyIdx]->numMemberList * sizeof(PolicyMemberList*))
-            if(tempSliceCfg->rrmPolicy[policyIdx]->memberList == NULLP)
+            DU_ALLOC_SHRABL_BUF(tempSliceCfg->listOfRrmPolicy[policyIdx]->rRMPolicyMemberList,\
+            tempSliceCfg->listOfRrmPolicy[policyIdx]->numOfRrmPolicyMem * sizeof(RrmPolicyMemberList*));
+
+            if(!tempSliceCfg->listOfRrmPolicy[policyIdx]->rRMPolicyMemberList)
             {
                DU_LOG("\nERROR  --> DU APP : Memory allocation failed in cpyRrmPolicyInDuCfgParams");
                return RFAILED;
             }
 
-            for(memberListIdx = 0; memberListIdx<tempSliceCfg->rrmPolicy[policyIdx]->numMemberList; memberListIdx++)
+
+            for(memberListIdx = 0; memberListIdx<tempSliceCfg->listOfRrmPolicy[policyIdx]->numOfRrmPolicyMem; memberListIdx++)
             {
-               DU_ALLOC(tempSliceCfg->rrmPolicy[policyIdx]->memberList[memberListIdx], sizeof(PolicyMemberList))
-               if(tempSliceCfg->rrmPolicy[policyIdx]->memberList[memberListIdx] == NULLP)
+               DU_ALLOC_SHRABL_BUF(tempSliceCfg->listOfRrmPolicy[policyIdx]->rRMPolicyMemberList[memberListIdx], sizeof(RrmPolicyMemberList));
+               if(!tempSliceCfg->listOfRrmPolicy[policyIdx]->rRMPolicyMemberList[memberListIdx])
                {
                   DU_LOG("\nERROR  --> DU APP : Memory allocation failed in cpyRrmPolicyInDuCfgParams");
                   return RFAILED;
                }
-               memcpy(&tempSliceCfg->rrmPolicy[policyIdx]->memberList[memberListIdx]->snssai.sd, &rrmPolicy[policyIdx].rRMPolicyMemberList[memberListIdx].sd, 3 * sizeof(uint8_t));
-               memcpy(&tempSliceCfg->rrmPolicy[policyIdx]->memberList[memberListIdx]->snssai.sst, &rrmPolicy[policyIdx].rRMPolicyMemberList[memberListIdx].sst, sizeof(uint8_t));
-               memcpy(&tempSliceCfg->rrmPolicy[policyIdx]->memberList[memberListIdx]->plmn.mcc, &rrmPolicy[policyIdx].rRMPolicyMemberList[memberListIdx].mcc, 3 * sizeof(uint8_t));
-               memcpy(&tempSliceCfg->rrmPolicy[policyIdx]->memberList[memberListIdx]->plmn.mnc, &rrmPolicy[policyIdx].rRMPolicyMemberList[memberListIdx].mnc, 3 * sizeof(uint8_t));
-               count++;
+               memcpy(&tempSliceCfg->listOfRrmPolicy[policyIdx]->rRMPolicyMemberList[memberListIdx]->snssai.sd,\
+               &rrmPolicy[policyIdx].rRMPolicyMemberList[memberListIdx].sd, 3 * sizeof(uint8_t));
+               memcpy(&tempSliceCfg->listOfRrmPolicy[policyIdx]->rRMPolicyMemberList[memberListIdx]->snssai.sst,\
+               &rrmPolicy[policyIdx].rRMPolicyMemberList[memberListIdx].sst, sizeof(uint8_t));
+               memcpy(&tempSliceCfg->listOfRrmPolicy[policyIdx]->rRMPolicyMemberList[memberListIdx]->plmn.mcc,\
+               &rrmPolicy[policyIdx].rRMPolicyMemberList[memberListIdx].mcc, 3 * sizeof(uint8_t));
+               memcpy(&tempSliceCfg->listOfRrmPolicy[policyIdx]->rRMPolicyMemberList[memberListIdx]->plmn.mnc,\
+               &rrmPolicy[policyIdx].rRMPolicyMemberList[memberListIdx].mnc, 3 * sizeof(uint8_t));
             }
+            tempSliceCfg->listOfRrmPolicy[policyIdx]->policyRatio.maxRatio = rrmPolicy[policyIdx].rRMPolicyMaxRatio;
+            tempSliceCfg->listOfRrmPolicy[policyIdx]->policyRatio.minRatio = rrmPolicy[policyIdx].rRMPolicyMinRatio;
+            tempSliceCfg->listOfRrmPolicy[policyIdx]->policyRatio.dedicatedRatio = rrmPolicy[policyIdx].rRMPolicyDedicatedRatio;
          }
-         
-         tempSliceCfg->rrmPolicy[policyIdx]->rsrcType  = rrmPolicy[policyIdx].resourceType;
-         tempSliceCfg->rrmPolicy[policyIdx]->policyMaxRatio = rrmPolicy[policyIdx].rRMPolicyMaxRatio;
-         tempSliceCfg->rrmPolicy[policyIdx]->policyMinRatio = rrmPolicy[policyIdx].rRMPolicyMinRatio;
-         tempSliceCfg->rrmPolicy[policyIdx]->policyDedicatedRatio = rrmPolicy[policyIdx].rRMPolicyDedicatedRatio;
-
       }
-      tempSliceCfg->totalSliceCount = count;
    }
+
    return ROK;
 }
+
 /*******************************************************************
  *
  * @brief Reads config and posts message to du_app on completion

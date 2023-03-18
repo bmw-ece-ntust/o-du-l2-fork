@@ -1214,7 +1214,7 @@ void freeFddNrFreqInfo(FDD_Info_t *fDD)
  * ****************************************************************/
 void FreeServedCellList( GNB_DU_Served_Cells_List_t *duServedCell)
 {
-   uint8_t   plmnCnt=MAX_PLMN;
+   uint8_t   plmnCnt= 1;
    uint8_t  extensionCnt=IE_EXTENSION_LIST_COUNT;
    uint8_t  plmnIdx=0, sliceIdx=0;
    GNB_DU_Served_Cells_Item_t *srvCellItem;
@@ -2606,7 +2606,7 @@ uint8_t BuildAndSendULRRCMessageTransfer(DuUeCb  *ueCb, uint8_t lcId, \
 
    while(true)
    {
-      DU_LOG("\n INFO   -->  F1AP : Building UL RRC Message Transfer Message\n");
+      DU_LOG("\nINFO   -->  F1AP : Building UL RRC Message Transfer Message\n");
 
       DU_ALLOC(f1apMsg, sizeof(F1AP_PDU_t));
       if(f1apMsg == NULLP)
@@ -2707,7 +2707,7 @@ uint8_t BuildAndSendULRRCMessageTransfer(DuUeCb  *ueCb, uint8_t lcId, \
       }
       else
       {
-	 DU_LOG("\nDEBUG   -->  F1AP : Created APER encoded buffer for ULRRCMessageTransfer\n");
+	 DU_LOG("\nDEBUG  -->  F1AP : Created APER encoded buffer for ULRRCMessageTransfer\n");
 #ifdef DEBUG_ASN_PRINT
 	 for(int i=0; i< encBufSize; i++)
 	 {
@@ -6717,7 +6717,7 @@ uint8_t BuildSpCellConfigCommon(ServingCellConfigCommon_t *spCellConfigCommon)
       convertSsbPeriodicityValueToEnum(duCfgParam.sib1Params.srvCellCfgCommSib.ssbPrdServingCell);
 
    /* DMRS Type A position */
-   spCellConfigCommon->dmrs_TypeA_Position = convertDmrsTypeAPosValueToEnum(duCfgParam.macCellCfg.dmrsTypeAPos);
+   spCellConfigCommon->dmrs_TypeA_Position = convertDmrsTypeAPosValueToEnum(duCfgParam.macCellCfg.ssbCfg.dmrsTypeAPos);
 
    /* SSB subcarrier spacing */
    DU_ALLOC(spCellConfigCommon->ssbSubcarrierSpacing, sizeof(SubcarrierSpacing_t));
@@ -15636,35 +15636,35 @@ uint8_t procF1DlRrcMsgTrans(F1AP_PDU_t *f1apMsg)
 	    {
 	       if(f1DlRrcMsg->protocolIEs.list.array[idx]->value.choice.RRCContainer.size > 0)
 	       {
-		  dlMsg.rrcMsgSize = f1DlRrcMsg->protocolIEs.list.array[idx]->value.choice.RRCContainer.size;
-		  DU_ALLOC_SHRABL_BUF(dlMsg.rrcMsgPdu, dlMsg.rrcMsgSize);
-		  if(dlMsg.rrcMsgPdu)
-		  {
-		     memcpy(dlMsg.rrcMsgPdu, f1DlRrcMsg->protocolIEs.list.array[idx]->value.choice.RRCContainer.buf,\
-			dlMsg.rrcMsgSize);
-	          }
-		  else
-		  {
-		     DU_LOG("\nERROR  -->  DU APP : Memory alloc Failed at RRC Container at procF1DlRrcMsgTrans()");
-                     return RFAILED;
-		  }
-	       }
-	       else
-	       {
-		  DU_LOG("\nERROR  -->  DU_APP : RRC Container Size is invalid:%ld",\
-	          f1DlRrcMsg->protocolIEs.list.array[idx]->value.choice.RRCContainer.size);
-		  return RFAILED;
-	       }
-	       break;
-	    }
-         case ProtocolIE_ID_id_RRCDeliveryStatusRequest:
-	    {
-	       dlMsg.deliveryStatRpt = true;
-	       break;
-	    }
-	 default:
-	    DU_LOG("\nERROR  -->  DU_APP : Invalid IE received in DL RRC Msg Transfer:%ld",
-		  f1DlRrcMsg->protocolIEs.list.array[idx]->id);
+             dlMsg.rrcMsgSize = f1DlRrcMsg->protocolIEs.list.array[idx]->value.choice.RRCContainer.size;
+             DU_ALLOC_SHRABL_BUF(dlMsg.rrcMsgPdu, dlMsg.rrcMsgSize);
+             if(dlMsg.rrcMsgPdu)
+             {
+                memcpy(dlMsg.rrcMsgPdu, f1DlRrcMsg->protocolIEs.list.array[idx]->value.choice.RRCContainer.buf,\
+                      dlMsg.rrcMsgSize);
+             }
+             else
+             {
+                DU_LOG("\nERROR  -->  DU APP : Memory alloc Failed at RRC Container at procF1DlRrcMsgTrans()");
+                return RFAILED;
+             }
+          }
+          else
+          {
+             DU_LOG("\nERROR  -->  DU_APP : RRC Container Size is invalid:%ld",\
+                   f1DlRrcMsg->protocolIEs.list.array[idx]->value.choice.RRCContainer.size);
+             return RFAILED;
+          }
+          break;
+       }
+    case ProtocolIE_ID_id_RRCDeliveryStatusRequest:
+       {
+          dlMsg.deliveryStatRpt = true;
+          break;
+       }
+    default:
+       DU_LOG("\nERROR  -->  DU_APP : Invalid IE received in DL RRC Msg Transfer:%ld",
+             f1DlRrcMsg->protocolIEs.list.array[idx]->id);
       }
    }
 
