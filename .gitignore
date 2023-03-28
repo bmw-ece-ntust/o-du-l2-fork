@@ -4,3 +4,6 @@ docs/_build/
 
 # build and binary
 build/
+
+# Except build_run_odu_xterm.sh
+!build_run_odu_xterm.sh

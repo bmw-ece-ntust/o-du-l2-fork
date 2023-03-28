@@ -18,7 +18,8 @@
 
 typedef struct schSliceBasedCellCb
 {
-   CmLListCp     ueToBeScheduled;                   /*!< Linked list to store UEs pending to be scheduled, */
+   CmLListCp     ueToBeScheduled;                   /*!< Linked list to store UEs pending to be scheduled */
+   CmLListCp     sliceCbList;                       /* Linked list to store slice control block with priority */
 }SchSliceBasedCellCb;
 
 typedef struct schSliceBasedLcCb
@@ -49,7 +50,18 @@ typedef struct schSliceBasedUeCb
    SchSliceBasedHqCb   hqRetxCb;
 }SchSliceBasedUeCb;
 
+typedef struct schSliceBasedSliceCb
+{
+   Snssai  snssai;
+   CmLListCp lcIdList[MAX_NUM_UE];  /* Linked list to store logical channel ID which is associated with this slice for each UE */
+   uint16_t dedicatedPrb;
+   uint16_t prioritizedPrb;
+   uint16_t sharedPrb;
+}SchSliceBasedSliceCb;
+
 uint8_t schSliceBasedAddUeToSchedule(SchCellCb *cellCb, uint16_t ueIdToAdd);
+void SchSliceBasedSliceCfgReq(SchCellCb *cellCb);
+void SchSliceBasedSliceRecfgReq(SchCellCb *cellCb);
 void schSliceBasedAllApisInit(SchAllApis *allSliceBasedApi);
 
 /**********************************************************************

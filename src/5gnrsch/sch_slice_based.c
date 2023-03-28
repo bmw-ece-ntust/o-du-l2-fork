@@ -73,6 +73,7 @@ uint8_t schSliceBasedCellCfgReq(SchCellCb *cellCb)
       return RFAILED;
    }
    cmLListInit(&schSpcCellCb->ueToBeScheduled);
+   cmLListInit(&schSpcCellCb->sliceCbList);
    cellCb->schSpcCell = (void *)schSpcCellCb;
    return ROK;
 }
@@ -99,15 +100,17 @@ void schSliceBasedCellDelReq(SchCellCb *cellCb)
 
    schSpcCellCb = (SchSliceBasedCellCb *)cellCb->schSpcCell;
    /* Remove all UE from ueToBeScheduled list and deallocate */
-   node = schSpcCellCb->ueToBeScheduled.first;
-   while(node)
-   {
-      next = node->next;
-      SCH_FREE(node->node, sizeof(uint8_t));
-      cmLListDelFrm(&schSpcCellCb->ueToBeScheduled, node);
-      SCH_FREE(node, sizeof(CmLList));
-      node = next;
-   }
+   // node = schSpcCellCb->ueToBeScheduled.first;
+   // while(node)
+   // {
+   //    next = node->next;
+   //    SCH_FREE(node->node, sizeof(uint8_t));
+   //    cmLListDelFrm(&schSpcCellCb->ueToBeScheduled, node);
+   //    SCH_FREE(node, sizeof(CmLList));
+   //    node = next;
+   // }
+   cmLListDeleteLList(&schSpcCellCb->ueToBeScheduled);
+   cmLListDeleteLList(&schSpcCellCb->sliceCbList);
    SCH_FREE(schSpcCellCb, sizeof(SchSliceBasedCellCb));
    cellCb->schSpcCell = NULLP;
 }
@@ -163,6 +166,137 @@ uint8_t SchSliceBasedAddUeConfigReq(SchUeCb *ueCb)
 void SchSliceBasedModUeConfigReq(SchUeCb *ueCb)
 {
    /*TBD: No action required for Slice Based*/
+   return;
+}
+
+/*******************************************************************
+ *
+ * @brief Handles Slice configuration request
+ *
+ * @details
+ *
+ *    Function : SchSliceBasedSliceCfgReq
+ *
+ *    Functionality: Calculate the available PRB quotas for each slice when receiving Slice Configuration Request from MAC
+ *
+ * @params[in] Pointer to Cell control block
+ * @return void
+ *
+ * ****************************************************************/
+void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
+{
+   CmLList *sliceCfg = NULLP;
+   CmLListCp *storedSliceCfg;
+   SchSliceBasedCellCb  *schSpcCell;
+   SchSliceBasedSliceCb *sliceCbToStore;
+   SchRrmPolicyOfSlice *rrmPolicyNode;
+
+   schSpcCell = (SchSliceBasedCellCb *)cellCb->schSpcCell;
+   storedSliceCfg = &schCb[cellCb->instIdx].sliceCfg;
+   sliceCfg = storedSliceCfg->first;
+   
+   while(sliceCfg)
+   {
+      rrmPolicyNode = (SchRrmPolicyOfSlice *)sliceCfg->node;
+
+      SCH_ALLOC(sliceCbToStore, sizeof(SchSliceBasedSliceCb));
+      if(sliceCbToStore)
+      {
+         memcpy(&sliceCbToStore->snssai, &rrmPolicyNode->snssai, sizeof(Snssai));  
+         sliceCbToStore->dedicatedPrb = (uint16_t)(((rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio)*(MAX_NUM_RB))/100);
+         sliceCbToStore->prioritizedPrb = (uint16_t)(((rrmPolicyNode->rrmPolicyRatioInfo.minRatio - rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio)\
+                                          *(MAX_NUM_RB))/100);
+         sliceCbToStore->sharedPrb = (uint16_t)(((rrmPolicyNode->rrmPolicyRatioInfo.maxRatio - rrmPolicyNode->rrmPolicyRatioInfo.minRatio)\
+                                       *(MAX_NUM_RB))/100);
+         addNodeToLList(&schSpcCell->sliceCbList, sliceCbToStore, NULL);
+      }
+      else
+      {
+         DU_LOG("\nERROR  -->  SCH : Memory allocation failed in SchSliceBasedSliceCfgReq");
+         return;
+      }
+
+      DU_LOG("\nDennis --> SCH: Process Slice Config Request: SST:%d, SD[0]:%d, RRMMaxRatio:%d, RRMMinRatio:%d, RRMDedicatedRatio:%d",\
+      rrmPolicyNode->snssai.sst, rrmPolicyNode->snssai.sd[0], rrmPolicyNode->rrmPolicyRatioInfo.maxRatio,\
+      rrmPolicyNode->rrmPolicyRatioInfo.minRatio, rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio);
+      DU_LOG("\nDennis --> SCH: Calculate PRB quota: Total PRB of Bandwidth:%d, Shared PRB Quota:%d, Prioritized PRB Quota:%d, Dedicated PRB Quota:%d",\
+      MAX_NUM_RB, sliceCbToStore->sharedPrb, sliceCbToStore->prioritizedPrb, sliceCbToStore->dedicatedPrb);
+
+      sliceCfg = sliceCfg->next;
+   }
+
+   /* Print the sliceCbLL for debugging */
+   // node = schSpcCell->sliceCbList.first;
+   // while(node)
+   // {
+   //    sliceCbToStore = (SchSliceBasedSliceCb *)node->node;
+   //    DU_LOG("\nDennis --> SST:%d, SD:%d, Shared PRB Quota:%d, Prioritized PRB Quota:%d, Dedicated PRB Quota:%d",\
+   //    sliceCbToStore->snssai.sst, rrmPolicyNode->snssai.sd[0], sliceCbToStore->sharedPrb,\
+   //    sliceCbToStore->prioritizedPrb, sliceCbToStore->dedicatedPrb);
+
+   //    node = node->next;
+   // }
+   return;
+}
+
+/*******************************************************************
+ *
+ * @brief Handles Slice Reconfiguration request
+ *
+ * @details
+ *
+ *    Function : SchSliceBasedSliceRecfgReq
+ *
+ *    Functionality: Calculate the available PRB quotas for each slice when receiving Slice Reconfiguration Request from MAC
+ *
+ * @params[in] Pointer to Cell control block
+ * @return void
+ *
+ * ****************************************************************/
+void SchSliceBasedSliceRecfgReq(SchCellCb *cellCb)
+{
+   CmLList *sliceCfg = NULLP;
+   CmLList *node = NULLP;
+   CmLListCp *storedSliceCfg;
+   SchSliceBasedCellCb  *schSpcCell;
+   SchSliceBasedSliceCb *sliceCbNode;
+   SchRrmPolicyOfSlice *rrmPolicyNode;
+
+   schSpcCell = (SchSliceBasedCellCb *)cellCb->schSpcCell;
+   storedSliceCfg = &schCb[cellCb->instIdx].sliceCfg;
+   sliceCfg = storedSliceCfg->first;
+   node = schSpcCell->sliceCbList.first;
+   
+   while(sliceCfg)
+   {
+      rrmPolicyNode = (SchRrmPolicyOfSlice *)sliceCfg->node;
+
+      while(node)
+      {
+         sliceCbNode = (SchSliceBasedSliceCb *)node->node;
+
+         if(memcmp(&rrmPolicyNode->snssai, &sliceCbNode->snssai, sizeof(Snssai)) == 0)
+         {
+            sliceCbNode->dedicatedPrb = (uint16_t)(((rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio)*(MAX_NUM_RB))/100);
+            sliceCbNode->prioritizedPrb = (uint16_t)(((rrmPolicyNode->rrmPolicyRatioInfo.minRatio - rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio)\
+                                             *(MAX_NUM_RB))/100);
+            sliceCbNode->sharedPrb = (uint16_t)(((rrmPolicyNode->rrmPolicyRatioInfo.maxRatio - rrmPolicyNode->rrmPolicyRatioInfo.minRatio)\
+                                          *(MAX_NUM_RB))/100);
+
+            DU_LOG("\nDennis --> SCH: Process Slice Re-config Request: SST:%d, SD[0]:%d, RRMMaxRatio:%d, RRMMinRatio:%d, RRMDedicatedRatio:%d",\
+            rrmPolicyNode->snssai.sst, rrmPolicyNode->snssai.sd[0], rrmPolicyNode->rrmPolicyRatioInfo.maxRatio,\
+            rrmPolicyNode->rrmPolicyRatioInfo.minRatio, rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio);
+            DU_LOG("\nDennis --> SCH: Calculate PRB quota: Total PRB of Bandwidth:%d, Shared PRB Quota:%d, Prioritized PRB Quota:%d, Dedicated PRB Quota:%d",\
+            MAX_NUM_RB, sliceCbNode->sharedPrb, sliceCbNode->prioritizedPrb, sliceCbNode->dedicatedPrb);
+            
+            break;
+         }
+
+         node = node->next;
+      }
+
+      sliceCfg = sliceCfg->next;
+   }
    return;
 }
 
@@ -1355,6 +1489,8 @@ void schSliceBasedAllApisInit(SchAllApis *allSliceBasedApi)
     allSliceBasedApi->SchDlRlcBoInfo = schSliceBasedDlRlcBoInfo;
     allSliceBasedApi->SchSrUciInd = schSliceBasedSrUciInd;
     allSliceBasedApi->SchBsr = schSliceBasedBsr;
+    allSliceBasedApi->SchSliceCfgReq = SchSliceBasedSliceCfgReq;
+    allSliceBasedApi->SchSliceRecfgReq = SchSliceBasedSliceRecfgReq;
 
     /* Internal API function pointers */
     allSliceBasedApi->SchAddToDlHqRetxList = schSliceBasedAddToDlHqRetxList;
