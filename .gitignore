@@ -2,6 +2,9 @@
 .tox
 docs/_build/
 
+# Library
+*.a
+
 # build and binary
 build/
 

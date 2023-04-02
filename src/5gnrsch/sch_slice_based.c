@@ -134,6 +134,9 @@ void schSliceBasedCellDelReq(SchCellCb *cellCb)
 uint8_t SchSliceBasedAddUeConfigReq(SchUeCb *ueCb)
 {
    SchSliceBasedUeCb *ueSliceBasedCb;
+   SchSliceBasedCellCb *schSpcCell;
+
+   schSpcCell = (SchSliceBasedCellCb *)ueCb->cellCb->schSpcCell;
 
    SCH_ALLOC(ueSliceBasedCb, sizeof(SchSliceBasedHqCb));
    if(!ueSliceBasedCb)
@@ -146,6 +149,7 @@ uint8_t SchSliceBasedAddUeConfigReq(SchUeCb *ueCb)
    cmLListInit(&ueSliceBasedCb->hqRetxCb.dlRetxHqList);
    ueCb->schSpcUeCb = (void *)ueSliceBasedCb;
    
+   schSliceBasedFillLcIdToSliceCb(&schSpcCell->sliceCbList, ueCb);
    return ROK;
 }
 
@@ -165,7 +169,10 @@ uint8_t SchSliceBasedAddUeConfigReq(SchUeCb *ueCb)
  * ****************************************************************/
 void SchSliceBasedModUeConfigReq(SchUeCb *ueCb)
 {
-   /*TBD: No action required for Slice Based*/
+   SchSliceBasedCellCb *schSpcCell;
+   schSpcCell = (SchSliceBasedCellCb *)ueCb->cellCb->schSpcCell;
+
+   schSliceBasedFillLcIdToSliceCb(&schSpcCell->sliceCbList, ueCb);
    return;
 }
 
@@ -1454,6 +1461,57 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
             }
          }
       }
+   }
+}
+
+/*******************************************************************
+ *
+ * @brief Fill the lcId into corresponding slice control block for each UE
+ *
+ * @details
+ *
+ *    Function : schSliceBasedFillLcIdToSliceCb
+ *
+ *    Functionality: Beacuse each LC is associated with slice, this function
+ *       fills and classifies the lcId of each UE into corresponding slice control block
+ *
+ * @params[in] Pointer to Slice Control Block List
+ *             Pointer to UE Control Block
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t schSliceBasedFillLcIdToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb)
+{
+   CmLList *sliceCbNode;
+   SchSliceBasedSliceCb *sliceCb;
+   uint8_t ueId;
+   uint8_t lcIdx;
+
+   ueId = ueCb->ueId;
+   sliceCbNode = sliceCbList->first;
+
+   while(sliceCbNode)
+   {
+      sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node; 
+
+      if(sliceCb->lcIdList[ueId-1].first != NULLP)
+         cmLListDeleteLList(&sliceCb->lcIdList[ueId-1]);
+
+      cmLListInit(&sliceCb->lcIdList[ueId-1]);
+
+      for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
+      {  
+         if(ueCb->dlInfo.dlLcCtxt[lcIdx].snssai)
+         {
+            if(memcmp(&sliceCb->snssai, ueCb->dlInfo.dlLcCtxt[lcIdx].snssai, sizeof(Snssai)) == 0)
+            {
+               DU_LOG("\nDennis --> LC ID:%d is added to SST:%d slice", lcIdx, sliceCb->snssai.sst);
+               addNodeToLList(&sliceCb->lcIdList[ueId-1], lcIdx, NULL);
+            }
+         }
+      }
+      sliceCbNode = sliceCbNode->next;
    }
 }
 
