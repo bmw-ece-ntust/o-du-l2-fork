@@ -1586,6 +1586,7 @@ uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_
    CmLList        *freePrbNode = NULLP;
    SchPrbAlloc    *prbAlloc = NULLP;
    bool           checkOccasion = FALSE;
+   PduTxOccsaion  ssbOccasion=0, sib1Occasion=0;
 
    *startPrb = 0; /*Initialize the StartPRB to zero*/
 
@@ -1595,7 +1596,6 @@ uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_
    if(dir == DIR_DL)
    {
       SchDlSlotInfo  *schDlSlotInfo = cell->schDlSlotInfo[slotTime.slot];
-      PduTxOccsaion  ssbOccasion=0, sib1Occasion=0;
 
       prbAlloc = &schDlSlotInfo->prbAlloc;
 
@@ -1689,7 +1689,9 @@ uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_
 
       }
       freePrbNode = freePrbNode->next;
-   }  
+   }
+   DU_LOG("\nDennis --> Max Free PRB is:%d, SSB Occassion, SIB1 Occcassion, Check Occassion: [%d, %d, %d]", \
+   maxFreePRB, ssbOccasion, sib1Occasion, checkOccasion);
    return(maxFreePRB);
 }
 
@@ -2321,7 +2323,7 @@ uint8_t SchProcPagingInd(Pst *pst,  SchPageInd *pageInd)
  *     File : rg_sch_lmm.c 
  *
  **********************************************************/
-Void SchFillCfmPst
+void SchFillCfmPst
 (
 Pst           *reqPst,
 Pst           *cfmPst,
