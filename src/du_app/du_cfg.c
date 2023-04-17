@@ -331,7 +331,7 @@ uint8_t readMacCfg()
    rrmPolicy[0].rRMPolicyMemberList[0].sd[0] = 2;
    rrmPolicy[0].rRMPolicyMemberList[0].sd[1] = 3;
    rrmPolicy[0].rRMPolicyMemberList[0].sd[2] = 4;
-   rrmPolicy[0].rRMPolicyMaxRatio = 90;
+   rrmPolicy[0].rRMPolicyMaxRatio = 100;
    rrmPolicy[0].rRMPolicyMinRatio = 30;
    rrmPolicy[0].rRMPolicyDedicatedRatio = 10;
 
