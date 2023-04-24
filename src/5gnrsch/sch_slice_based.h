@@ -58,7 +58,7 @@ typedef struct schSliceBasedSliceCb
    uint16_t dedicatedPrb;
    uint16_t prioritizedPrb;
    uint16_t sharedPrb;
-   uint16_t remainingPrb; /* Store the remaining PRB after intra-slice scheduling, and leave it to final-scheduling */
+   uint16_t allocatedPrb; /* Store the allocated PRB after intra-slice scheduling per slice */
    SchRrmPolicyRatio rrmPolicyRatioInfo;
 }SchSliceBasedSliceCb;
 
@@ -72,7 +72,7 @@ void schSliceBasedPrbAllocUsingRRMPolicy(CmLListCp *lcInfoList, uint16_t mcsIdx,
 void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAlloc,\
                                     BsrInfo *bsrInfo, uint32_t *accumalatedBOSize, bool isDedicated);
 /* Once the scheduler supports multi-UEs per TTI scheduling, the parameter 'ueId' should be deleted */
-uint8_t schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP);
+bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP);
 uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pdcchTime, uint8_t pdschNumSymbols, \
                                              uint16_t maxFreePRB, SchSliceBasedSliceCb *sliceCb, uint8_t ueId);
 uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTime, SlotTimingInfo pdcchTime, \
