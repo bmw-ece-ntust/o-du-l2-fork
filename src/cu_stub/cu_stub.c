@@ -400,7 +400,7 @@ uint8_t startDlData()
                   }
                   /* TODO : sleep(1) will be removed later once we will be able to
                    * support the continuous data pack transfer */
-                  sleep(1);
+                  //sleep(1);
                   cnt++;
                }
             }

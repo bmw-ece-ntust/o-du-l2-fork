@@ -16,6 +16,8 @@
 ################################################################################
 *******************************************************************************/
 
+#define SCH_MULTI_THREAD /* Enable the multi-thread intra-slice scheduling feature */
+
 typedef struct schSliceBasedCellCb
 {
    CmLListCp     ueToBeScheduled;                   /*!< Linked list to store UEs pending to be scheduled */
@@ -62,6 +64,17 @@ typedef struct schSliceBasedSliceCb
    SchRrmPolicyRatio rrmPolicyRatioInfo;
 }SchSliceBasedSliceCb;
 
+typedef struct schSliceBasedDlThreadArg
+{
+   SchCellCb *cell;
+   SlotTimingInfo pdcchTime;
+   uint8_t pdschNumSymbols;
+   uint16_t *totalRemainingPrb;
+   uint16_t maxFreePRB;
+   SchSliceBasedSliceCb *sliceCb;
+   uint8_t ueId;
+}SchSliceBasedDlThreadArg;
+
 uint8_t schSliceBasedAddUeToSchedule(SchCellCb *cellCb, uint16_t ueIdToAdd);
 void SchSliceBasedSliceCfgReq(SchCellCb *cellCb);
 void SchSliceBasedSliceRecfgReq(SchCellCb *cellCb);
@@ -74,7 +87,8 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
 /* Once the scheduler supports multi-UEs per TTI scheduling, the parameter 'ueId' should be deleted */
 bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP);
 uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pdcchTime, uint8_t pdschNumSymbols, \
-                                             uint16_t maxFreePRB, SchSliceBasedSliceCb *sliceCb, uint8_t ueId);
+                                            uint16_t *totalRemainingPrb, uint16_t maxFreePRB, SchSliceBasedSliceCb *sliceCb, uint8_t ueId);
+void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg);
 uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTime, SlotTimingInfo pdcchTime, \
                   SlotTimingInfo pucchTime, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, uint8_t ueId, \
                   bool isRetx, SchDlHqProcCb **hqP, uint16_t remainingPrb, uint16_t startPrb);

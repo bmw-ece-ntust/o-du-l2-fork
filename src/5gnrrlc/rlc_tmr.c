@@ -561,7 +561,7 @@ void rlcUeThptTmrExpiry(PTR cb)
              */
              tpt = (double)(rlcThptCb->ueTputInfo.thptPerUe[ueIdx].dataVol * 8)/(double)ODU_UE_THROUGHPUT_PRINT_TIME_INTERVAL;
       
-             DU_LOG("\nUE Id : %d   DL Tpt : %.2Lf", rlcThptCb->ueTputInfo.thptPerUe[ueIdx].ueId, tpt);
+             DU_LOG("\nUE Id : %d   DL Tpt : %.2Lf (Kbps)", rlcThptCb->ueTputInfo.thptPerUe[ueIdx].ueId, tpt);
              rlcThptCb->ueTputInfo.thptPerUe[ueIdx].dataVol = 0;
          }
       }

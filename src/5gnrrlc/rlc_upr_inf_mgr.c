@@ -1078,12 +1078,12 @@ uint8_t rlcCalculateTputPerSnssai(CmLListCp *snssaiList, Direction dir)
      
       if(dir == DIR_DL)
       {
-         DU_LOG("\nDEBUG  -->  RLC_DL: SNSSAI(sst:%d,sd [%d,%d, %d]), DL Tpt : %.5lf", snssaiNode->snssai->sst,\
+         DU_LOG("\nDEBUG  -->  RLC_DL: SNSSAI(sst:%d,sd [%d,%d, %d]), DL Tpt : %.5lf (bps)", snssaiNode->snssai->sst,\
                snssaiNode->snssai->sd[0], snssaiNode->snssai->sd[1],snssaiNode->snssai->sd[2] , snssaiNode->tpt);
       }
       if(dir == DIR_UL)
       {
-         DU_LOG("\nDEBUG  -->  RLC_UL: SNSSAI(sst:%d,sd [%d,%d, %d]), UL Tpt : %.5lf", snssaiNode->snssai->sst,\
+         DU_LOG("\nDEBUG  -->  RLC_UL: SNSSAI(sst:%d,sd [%d,%d, %d]), UL Tpt : %.5lf (bps)", snssaiNode->snssai->sst,\
                snssaiNode->snssai->sd[0], snssaiNode->snssai->sd[1],snssaiNode->snssai->sd[2] , snssaiNode->tpt);
       }
 
