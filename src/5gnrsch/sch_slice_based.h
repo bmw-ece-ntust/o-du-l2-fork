@@ -75,15 +75,29 @@ typedef struct schSliceBasedDlThreadArg
    uint8_t ueId;
 }SchSliceBasedDlThreadArg;
 
+typedef struct schSliceBasedUlThreadArg
+{
+   SchCellCb *cell;
+   SlotTimingInfo puschTime;
+   uint8_t puschNumSymbols;
+   uint16_t *totalRemainingPrb;
+   uint16_t maxFreePRB;
+   SchSliceBasedSliceCb *sliceCb;
+   uint8_t ueId;
+}SchSliceBasedUlThreadArg;
+
 uint8_t schSliceBasedAddUeToSchedule(SchCellCb *cellCb, uint16_t ueIdToAdd);
 void SchSliceBasedSliceCfgReq(SchCellCb *cellCb);
 void SchSliceBasedSliceRecfgReq(SchCellCb *cellCb);
 uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb);
-uint8_t schSliceBasedUpdateLcListReqBo(CmLListCp *lcInfoList, SchUeCb *ueCb);
+uint8_t schSliceBasedUpdateLcListReqBo(CmLListCp *lcInfoList, SchUeCb *ueCb, Direction dir);
 void schSliceBasedPrbAllocUsingRRMPolicy(CmLListCp *lcInfoList, uint16_t mcsIdx, uint8_t numSymbols, uint16_t *availablePrb, \
                                       bool *isTxPayloadLenAdded, bool *srRcvd);
 void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAlloc,\
                                     BsrInfo *bsrInfo, uint32_t *accumalatedBOSize, bool isDedicated);
+void schSliceBasedAllApisInit(SchAllApis *allSliceBasedApi);
+
+/* DL Slice-Based Function */
 /* Once the scheduler supports multi-UEs per TTI scheduling, the parameter 'ueId' should be deleted */
 bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP);
 uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pdcchTime, uint8_t pdschNumSymbols, \
@@ -92,7 +106,16 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg);
 uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTime, SlotTimingInfo pdcchTime, \
                   SlotTimingInfo pucchTime, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, uint8_t ueId, \
                   bool isRetx, SchDlHqProcCb **hqP, uint16_t remainingPrb, uint16_t startPrb);
-void schSliceBasedAllApisInit(SchAllApis *allSliceBasedApi);
+
+/* UL Slice-Based Function */
+/* Once the scheduler supports multi-UEs per TTI scheduling, the parameter 'ueId' should be deleted */
+bool schSliceBasedUlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchUlHqProcCb **hqP);
+uint8_t schSliceBasedUlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo puschTime, uint8_t puschNumSymbols, \
+                                            uint16_t *totalRemainingPrb, uint16_t maxFreePRB, SchSliceBasedSliceCb *sliceCb, uint8_t ueId);
+void *schSliceBasedUlIntraSliceThreadScheduling(void *threadArg);
+uint8_t schSliceBasedUlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo puschTime, SlotTimingInfo dciTime, \
+                  uint8_t puschStartSymbol, uint8_t puschNumSymbols, uint8_t ueId, \
+                  bool isRetx, SchUlHqProcCb **hqP, uint16_t remainingPrb, uint16_t startPrb);
 
 /**********************************************************************
     End of file
