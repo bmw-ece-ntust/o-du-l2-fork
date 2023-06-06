@@ -1169,7 +1169,7 @@ typedef struct dlSchedInfo
 {
    uint16_t     cellId;  /* Cell Id */
    SchSlotValue schSlotValue;
-  
+
    /* Allocation for broadcast messages */
    bool isBroadcastPres;
    DlBrdcstAlloc brdcstAlloc;
