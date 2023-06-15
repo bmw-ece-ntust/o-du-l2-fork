@@ -70,6 +70,10 @@ typedef struct schSliceBasedUeCb
 {
    SchSliceBasedHqCb   hqRetxCb;
    bool isTxPayloadLenAdded;
+   bool isDlMsgPending;
+   bool isDlMsgScheduled;
+   bool isUlGrantPending; 
+   bool isUlGrantScheduled;
 }SchSliceBasedUeCb;
 
 typedef struct schSliceBasedSliceCb

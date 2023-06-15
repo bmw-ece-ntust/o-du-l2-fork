@@ -218,7 +218,7 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
 
          if(tempAlgoSelection <= 1)
          {
-            sliceCbToStore->schedulingAlgorithmforLc = schSliceBasedWeightedFairQueueAlgoforLc;
+            sliceCbToStore->schedulingAlgorithmforLc = schSliceBasedRoundRobinAlgoforLc;
             sliceCbToStore->algoMethod = HIERARCHY;
          }
          else
@@ -1423,7 +1423,7 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
                }
                else
                {
-                  /* Reset the allocared PRB in each sliceCB */
+                  /* Reset the allocated PRB in each sliceCB */
                   CmLList *sliceCbNode = NULLP; 
                   SchSliceBasedSliceCb *sliceCb = NULLP;
                   SchSliceBasedCellCb *schSpcCell = NULLP;

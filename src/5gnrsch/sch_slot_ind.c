@@ -41,6 +41,7 @@ File:     sch_slot_ind.c
 #include "mac_sch_interface.h"
 #include "sch.h"
 #include "sch_utils.h"
+#include "sch_slice_based.h"
 #ifdef NR_DRX 
 #include "sch_drx.h"
 #endif
