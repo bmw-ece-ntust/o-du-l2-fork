@@ -136,6 +136,7 @@ uint8_t SchSliceBasedAddUeConfigReq(SchUeCb *ueCb)
 {
    SchSliceBasedUeCb *ueSliceBasedCb;
    SchSliceBasedCellCb *schSpcCell;
+   float_t random;
 
    schSpcCell = (SchSliceBasedCellCb *)ueCb->cellCb->schSpcCell;
 
@@ -149,7 +150,11 @@ uint8_t SchSliceBasedAddUeConfigReq(SchUeCb *ueCb)
    cmLListInit(&ueSliceBasedCb->hqRetxCb.ulRetxHqList);
    cmLListInit(&ueSliceBasedCb->hqRetxCb.dlRetxHqList);
    ueSliceBasedCb->isTxPayloadLenAdded = FALSE;
-   
+
+   /* Hard-coded the weight of each UE */
+   random = ((rand() % 10) + 1) * 0.1;
+   ueSliceBasedCb->weight = random;
+
    ueCb->schSpcUeCb = (void *)ueSliceBasedCb;
    
    schSliceBasedFillLcInfoToSliceCb(&schSpcCell->sliceCbList, ueCb);
@@ -218,12 +223,12 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
 
          if(tempAlgoSelection <= 1)
          {
-            sliceCbToStore->schedulingAlgorithmforLc = schSliceBasedRoundRobinAlgoforLc;
+            sliceCbToStore->algorithm = RR;
             sliceCbToStore->algoMethod = HIERARCHY;
          }
          else
          {
-            sliceCbToStore->schedulingAlgorithmforLc = schSliceBasedRoundRobinAlgoforLc;
+            sliceCbToStore->algorithm = RR;
             sliceCbToStore->algoMethod = FLAT;
          }
          addNodeToLList(&schSpcCell->sliceCbList, sliceCbToStore, NULL);
@@ -236,9 +241,10 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
          return;
       }
 
-      DU_LOG("\nDennis --> SCH: Process Slice Config Request: SST:%d, SD[0]:%d, RRMMaxRatio:%d, RRMMinRatio:%d, RRMDedicatedRatio:%d",\
-      rrmPolicyNode->snssai.sst, rrmPolicyNode->snssai.sd[0], rrmPolicyNode->rrmPolicyRatioInfo.maxRatio,\
-      rrmPolicyNode->rrmPolicyRatioInfo.minRatio, rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio);
+      DU_LOG("\nDennis --> SCH: Process Slice Config Request: SST:%d, SD:[%d, %d, %d] RRMMaxRatio:%d, RRMMinRatio:%d, RRMDedicatedRatio:%d",\
+            rrmPolicyNode->snssai.sst, rrmPolicyNode->snssai.sd[0], rrmPolicyNode->snssai.sd[1], \
+            rrmPolicyNode->snssai.sd[2], rrmPolicyNode->rrmPolicyRatioInfo.maxRatio, \
+            rrmPolicyNode->rrmPolicyRatioInfo.minRatio, rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio);
       // DU_LOG("\nDennis --> SCH: Calculate PRB quota: Total PRB of Bandwidth:%d, Shared PRB Quota:%d, Prioritized PRB Quota:%d, Dedicated PRB Quota:%d",\
       // MAX_NUM_RB, sliceCbToStore->sharedPrb, sliceCbToStore->prioritizedPrb, sliceCbToStore->dedicatedPrb);
 
@@ -298,8 +304,9 @@ void SchSliceBasedSliceRecfgReq(SchCellCb *cellCb)
          if(memcmp(&rrmPolicyNode->snssai, &sliceCbNode->snssai, sizeof(Snssai)) == 0)
          {
             memcpy(&sliceCbNode->rrmPolicyRatioInfo, &rrmPolicyNode->rrmPolicyRatioInfo, sizeof(SchRrmPolicyRatio));
-            DU_LOG("\nDennis --> SCH: Process Slice Re-config Request: SST:%d, SD[0]:%d, RRMMaxRatio:%d, RRMMinRatio:%d, RRMDedicatedRatio:%d",\
-            rrmPolicyNode->snssai.sst, rrmPolicyNode->snssai.sd[0], rrmPolicyNode->rrmPolicyRatioInfo.maxRatio,\
+            DU_LOG("\nDennis --> SCH: Process Slice Config Request: SST:%d, SD:[%d, %d, %d] RRMMaxRatio:%d, RRMMinRatio:%d, RRMDedicatedRatio:%d",\
+            rrmPolicyNode->snssai.sst, rrmPolicyNode->snssai.sd[0], rrmPolicyNode->snssai.sd[1], \
+            rrmPolicyNode->snssai.sd[2], rrmPolicyNode->rrmPolicyRatioInfo.maxRatio, \
             rrmPolicyNode->rrmPolicyRatioInfo.minRatio, rrmPolicyNode->rrmPolicyRatioInfo.dedicatedRatio);
             
             // DU_LOG("\nDennis --> SCH: Calculate PRB quota: Total PRB of Bandwidth:%d, Shared PRB Quota:%d, Prioritized PRB Quota:%d, Dedicated PRB Quota:%d",\
@@ -1693,6 +1700,102 @@ void schSliceBasedSortLcByPriorLevel(CmLListCp *lcInfoList, float_t totalPriorLe
 
 /*******************************************************************
  *
+ * @brief Sort the UE according to the weight
+ *
+ * @details
+ *
+ *    Function : schSliceBasedSortLcByPriorLevel
+ *
+ *    Functionality: Sort the UE according to the weight
+ *
+ * @params[in] Pointer to UE List
+ * @params[in] Sum of priority level of each UE
+ * @return void
+ *
+ * ****************************************************************/
+void schSliceBasedSortUeByWeight(SchCellCb *cellCb, CmLListCp *ueList, float_t totalWeight)
+{
+   CmLList *outerNode = NULLP, *interNode, *maxWeightNode = NULLP, *tempNode;
+   uint8_t outerUeId, interUeId, maxWeightUeId; 
+   SchSliceBasedUeCb *outerUe = NULLP, *interUe = NULLP, *maxWeightUe = NULLP;
+
+   outerNode = ueList->first;
+
+   if(!outerNode)
+   {
+      DU_LOG("\nDennis  -->  schSliceBasedSortLcByPriorLevel(): LL is empty");
+      return RFAILED;
+   }
+   else
+   {
+      while(outerNode)
+      {
+         outerUeId = *(uint8_t *)outerNode->node;
+         outerUe = (SchSliceBasedUeCb *)cellCb->ueCb[outerUeId-1].schSpcUeCb;
+
+         interNode = outerNode;
+
+         maxWeightNode = interNode;
+         maxWeightUeId = *(uint8_t *)maxWeightNode->node;
+         maxWeightUe = (SchSliceBasedUeCb *)cellCb->ueCb[maxWeightUeId-1].schSpcUeCb;
+
+         /* Find the highest weight UE (highest priority) */
+         while(interNode)
+         {
+            interUeId = *(uint8_t *)interNode->node;
+            interUe = (SchSliceBasedUeCb *)cellCb->ueCb[interUeId-1].schSpcUeCb;
+
+            if(interUe->weight >= maxWeightUe->weight)
+            {
+               maxWeightNode = interNode;
+               maxWeightUe = interUe;
+            }
+            
+            interNode = interNode->next;
+         }
+
+         if(outerNode != maxWeightNode)
+         {
+            /* Swapping maxWeightNode and outerNode */
+            tempNode = maxWeightNode->next;
+            maxWeightNode->next = outerNode->next;
+            outerNode->next = tempNode;
+         
+            if (maxWeightNode->next != NULLP)
+               maxWeightNode->next->prev = maxWeightNode;
+            else
+               ueList->last = maxWeightNode; /* ->next = NULLP means that this node is the last node */
+ 
+            if (outerNode->next != NULLP)
+               outerNode->next->prev = outerNode;
+            else
+               ueList->last = outerNode;  /* ->next = NULLP means that this node is the last node */
+         
+            tempNode = maxWeightNode->prev;
+            maxWeightNode->prev = outerNode->prev;
+            outerNode->prev = tempNode;
+         
+            if (maxWeightNode->prev != NULLP)
+               maxWeightNode->prev->next = maxWeightNode;
+            else
+               ueList->first = maxWeightNode;  /* ->prev = NULLP means that this node is the first node */
+
+            if (outerNode->prev != NULLP)
+               outerNode->prev->next = outerNode;
+            else
+               ueList->first = outerNode;  /* ->prev = NULLP means that this node is the first node */
+
+            outerNode = maxWeightNode;
+            outerUe = maxWeightUe;
+         }
+         outerUe->prbWeight = outerUe->weight / totalWeight;
+         outerNode = outerNode->next;
+      }
+   }
+}
+
+/*******************************************************************
+ *
  * @brief DL scheduling
  *
  * @details
@@ -1724,7 +1827,12 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    SchSliceBasedCellCb *schSpcCell = NULLP;
    CmLList *sliceCbNode = NULLP; 
    SchSliceBasedSliceCb *sliceCb = NULLP;
-   
+
+   /* Hard-coded the UE DL New Transmission LL for 1 UE per TTI*/
+   CmLListCp ueDlNewTransmission;
+   cmLListInit(&ueDlNewTransmission);
+   addNodeToLList(&ueDlNewTransmission, &ueId, NULLP);
+
    ueCb = &cell->ueCb[ueId-1];
 
    if (isRetx == FALSE)
@@ -1808,7 +1916,8 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       }
 
 #else
-         if(schSliceBasedDlIntraSliceScheduling(cell, pdcchTime, pdschNumSymbols, &totalRemainingPrb, maxFreePRB, sliceCb, ueId) != ROK)
+
+         if(schSliceBasedDlIntraSliceScheduling(cell, pdcchTime, pdschNumSymbols, &totalRemainingPrb, maxFreePRB, sliceCb, &ueDlNewTransmission) != ROK)
          {
             DU_LOG("\nDennis --> DL Intra Slice Scheduling Failed");
             return false;
@@ -1838,11 +1947,14 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    }
 
 
-   if(schSliceBasedDlFinalScheduling(cell, pdschTime, pdcchTime, pucchTime, pdschStartSymbol, pdschNumSymbols, ueId, isRetx, hqP, totalRemainingPrb, startPrb) != ROK)
+   if(schSliceBasedDlFinalScheduling(cell, pdschTime, pdcchTime, pucchTime, pdschStartSymbol, pdschNumSymbols, &ueDlNewTransmission, isRetx, hqP, totalRemainingPrb, startPrb) != ROK)
    {
       DU_LOG("\nDennis --> DL Final Scheduling Failed");
       return false;
    }
+
+   /* Free the hard-coded UE DL New Transmission LL for 1 UE per TTI */
+   SCH_FREE(ueDlNewTransmission.first, sizeof(CmLList));
 
    return true;
 }
@@ -1864,18 +1976,22 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
  *             Number of PDSCH Symbols
  *             Max FreePRB Block
  *             Pointer to Slice Control Block
- *             UE ID
+ *             UE DL New Transmission LL
  * @return ROK     - success
  *         RFAILED - failure
  *
  * ****************************************************************/
 uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pdcchTime, uint8_t pdschNumSymbols, \
-                                            uint16_t *totalRemainingPrb, uint16_t maxFreePRB, SchSliceBasedSliceCb *sliceCb, uint8_t ueId)
+                                            uint16_t *totalRemainingPrb, uint16_t maxFreePRB, SchSliceBasedSliceCb *sliceCb,\
+                                             CmLListCp *ueDlNewTransmission)
 {  
    uint16_t crnti = 0;
    uint16_t minimumPrb = 0, remainingPrb = 0;
    SchUeCb *ueCb = NULLP;
+   uint8_t  ueId;
+   CmLList *ueNode;
    DlMsgSchInfo *dciSlotAlloc;
+   float_t totalUeWeight = 0;
    SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
 
    /* Calculate the slice PRB quota according to RRMPolicyRatio and MaxFreePRB */
@@ -1889,14 +2005,17 @@ uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pd
    DU_LOG("\n\n===============Dennis  -->  SCH Intra-Slice : Start to run IntraSliceScheduling [SST:%d, MinimumPRB Quota:%d]===============", \
    sliceCb->snssai.sst, minimumPrb);
 
-   /* If this slice is hierarchy scheduling method */
-   if(sliceCb->algoMethod == HIERARCHY)
+
+   ueNode = ueDlNewTransmission->first;
+
+   while(ueNode)
    {
-      /* TODO: It should support multi-UEs per TTI scheduling */
-      //for(ueId=0; ueId<MAX_NUM_UE; ueId++)
-      GET_CRNTI(crnti,ueId);
+      ueId = *(uint8_t *)(ueNode->node);
       ueCb = &cellCb->ueCb[ueId-1];
       ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+
+      /* Sum the weight of each UE */
+      totalUeWeight += ueSliceBasedCb->weight;
 
       /* Allocate PDCCH and PDSCH resources for the ue */
       if(cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
@@ -1910,59 +2029,50 @@ uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pd
          cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
          memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
       }
-            
+   
       /* Update the requested BO of each LC in current slice */
       schSliceBasedUpdateLcListReqBo(&sliceCb->lcInfoList[ueId-1], ueCb, DIR_DL);
+      ueNode = ueNode->next;
+   }
 
+   if(sliceCb->algorithm == RR)
+   {
       if(minimumPrb != 0)
       {
-         remainingPrb = minimumPrb;
-         sliceCb->schedulingAlgorithmforLc(&sliceCb->lcInfoList[ueId-1], pdschNumSymbols, &remainingPrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
+         remainingPrb = minimumPrb;            
+         schSliceBasedRoundRobinAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
       }
 
       sliceCb->allocatedPrb = minimumPrb - remainingPrb;
-      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d]", sliceCb->snssai.sst, \
+      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d, Algo: RR]", sliceCb->snssai.sst, \
                sliceCb->allocatedPrb, remainingPrb);
    }
-   /* If this slice is flat scheduling method */
-   else 
+   else if(sliceCb->algorithm == WFQ)
    {
-      /* TODO: It should support multi-UEs per TTI scheduling */
-      /* TODO: For flat scheduling method, it should cascade the LC of each UEs, then sort it again 
-         After that, you could put it into RR algorithm or WFQ algorithm directly*/
-      //for(ueId=0; ueId<MAX_NUM_UE; ueId++)
-      GET_CRNTI(crnti,ueId);
-      ueCb = &cellCb->ueCb[ueId-1];
-      ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
-
-      /* Allocate PDCCH and PDSCH resources for the ue */
-      if(cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
-      {
-         SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
-         if(!dciSlotAlloc)
-         {
-            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
-            return false;
-         }
-         cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
-         memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
-      }
-            
-      /* Update the requested BO of each LC in current slice */
-      schSliceBasedUpdateLcListReqBo(&sliceCb->lcInfoList[ueId-1], ueCb, DIR_DL);
+      /* Sort the UE list in terms of the weight */
+      /* This function should be moved to schSliceBasedDlScheduling() when go through the UE list (for Jojo)*/
+      schSliceBasedSortUeByWeight(cellCb, ueDlNewTransmission, totalUeWeight);
 
       if(minimumPrb != 0)
       {
-         remainingPrb = minimumPrb;
-         sliceCb->schedulingAlgorithmforLc(&sliceCb->lcInfoList[ueId-1], pdschNumSymbols, &remainingPrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
+         remainingPrb = minimumPrb;            
+         schSliceBasedWeightedFairQueueAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
       }
 
       sliceCb->allocatedPrb = minimumPrb - remainingPrb;
-      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d]", sliceCb->snssai.sst, \
-               sliceCb->allocatedPrb, remainingPrb);
+      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d, Algo: WFQ]", sliceCb->snssai.sst, \
+               sliceCb->allocatedPrb, remainingPrb);      
+   }
+   else
+   {
+      DU_LOG("\nDennis  -->  In schSliceBasedDlIntraSliceScheduling() : Invalid Scheduling Algorithm");
+      return;
    }
    
-   /* Deal with the problem which slice PRB quotas may be not integer */
+   
+   /* Follow the rules of prioritized resource and dedicated resource */
    if(sliceCb->allocatedPrb > sliceCb->dedicatedPrb)
    {
       *totalRemainingPrb = *totalRemainingPrb - sliceCb->allocatedPrb;
@@ -2144,64 +2254,69 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
  *
  * ****************************************************************/
 uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTime, SlotTimingInfo pdcchTime, \
-                  SlotTimingInfo pucchTime, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, uint8_t ueId, \
+                  SlotTimingInfo pucchTime, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, CmLListCp *ueDlNewTransmission, \
                   bool isRetx, SchDlHqProcCb **hqP, uint16_t remainingPrb, uint16_t startPrb)
 {  
    uint8_t lcIdx = 0;
    uint16_t mcsIdx = 0;
    uint16_t crnti = 0;
+   uint8_t  ueId;
    uint16_t availablePrb = 0;
    uint32_t accumalatedSize = 0;
    SchUeCb *ueCb = NULLP;
    DlMsgSchInfo *dciSlotAlloc, *dlMsgAlloc;
    SchSliceBasedCellCb *schSpcCell = NULLP;
-   CmLList *sliceCbNode = NULLP; 
+   CmLList *sliceCbNode = NULLP;
+   CmLList *ueNode;
    CmLListCp defLcList;
    SchSliceBasedSliceCb *sliceCb = NULLP;
    SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
    
    DU_LOG("\n\n===============Dennis  -->  SCH Final : Start to run final-scheduling [Remaining PRB is:%d]===============", remainingPrb);
 
-   /* TODO: It should support multi-UEs per TTI scheduling */
-   // For(loop the uePriorityList)
-   GET_CRNTI(crnti,ueId);
-   ueCb = &cellCb->ueCb[ueId-1];
-   ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
-
-   mcsIdx = ueCb->ueCfg.dlModInfo.mcsIndex;
-   if(remainingPrb != 0)
+   ueNode = ueDlNewTransmission->first;
+   while(ueNode)
    {
-      cmLListInit(&defLcList);
+      ueId = *(uint8_t *)(ueNode->node);
+      ueCb = &cellCb->ueCb[ueId-1];
+      ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
 
-      /* Allocate the remaining PRB to default slice */
-      for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
+      mcsIdx = ueCb->ueCfg.dlModInfo.mcsIndex;
+      if(remainingPrb != 0)
       {
-         if(ueCb->dlInfo.dlLcCtxt[lcIdx].snssai == NULLP && ueCb->dlInfo.dlLcCtxt[lcIdx].bo != 0)
+         cmLListInit(&defLcList);
+
+         /* Allocate the remaining PRB to default slice */
+         for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
          {
-            /*[Step2]: Update the reqPRB and Payloadsize for this LC in the appropriate List*/
-            if(updateLcListReqPRB(&defLcList, ueCb->dlInfo.dlLcCtxt[lcIdx].lcId,\
-                     (ueCb->dlInfo.dlLcCtxt[lcIdx].bo + MAC_HDR_SIZE)) != ROK)
+            if(ueCb->dlInfo.dlLcCtxt[lcIdx].snssai == NULLP && ueCb->dlInfo.dlLcCtxt[lcIdx].bo != 0)
             {
-               DU_LOG("\nERROR  --> SCH : Updation in LC List Failed");
-               /* Free the dl ded msg info allocated in macSchDlRlcBoInfo */
-               // if(!dciSlotAlloc->dlMsgPdschCfg)
-               // {
-               //    SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
-               //    (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] = NULL;
-               // }
-            }
-            else
-            {
-               DU_LOG("\nDennis  -->  SCH : Append LC to default LL [LCID, reqBO] [%d, %d]", lcIdx, \
-               ueCb->dlInfo.dlLcCtxt[lcIdx].bo + MAC_HDR_SIZE);
+               /*[Step2]: Update the reqPRB and Payloadsize for this LC in the appropriate List*/
+               if(updateLcListReqPRB(&defLcList, ueCb->dlInfo.dlLcCtxt[lcIdx].lcId,\
+                        (ueCb->dlInfo.dlLcCtxt[lcIdx].bo + MAC_HDR_SIZE)) != ROK)
+               {
+                  DU_LOG("\nERROR  --> SCH : Updation in LC List Failed");
+                  /* Free the dl ded msg info allocated in macSchDlRlcBoInfo */
+                  // if(!dciSlotAlloc->dlMsgPdschCfg)
+                  // {
+                  //    SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+                  //    (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] = NULL;
+                  // }
+               }
+               else
+               {
+                  DU_LOG("\nDennis  -->  SCH : Append LC to default LL [LCID, reqBO] [%d, %d]", lcIdx, \
+                  ueCb->dlInfo.dlLcCtxt[lcIdx].bo + MAC_HDR_SIZE);
+               }
             }
          }
-      }
 
-      availablePrb = remainingPrb;
-      schSliceBasedPrbAllocUsingRRMPolicy(&defLcList, mcsIdx, pdschNumSymbols, &availablePrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
-      DU_LOG("\nDennis  -->  SCH Final Default Slice : [Allocated PRB: %d, Remaining PRB: %d]", remainingPrb - availablePrb, availablePrb);
-      remainingPrb = availablePrb;
+         availablePrb = remainingPrb;
+         schSliceBasedPrbAllocUsingRRMPolicy(&defLcList, mcsIdx, pdschNumSymbols, &availablePrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
+         DU_LOG("\nDennis  -->  SCH Final Default Slice : [UE ID: %d, Allocated PRB: %d, Remaining PRB: %d]", ueId, remainingPrb - availablePrb, availablePrb);
+         remainingPrb = availablePrb;
+      }
+      ueNode = ueNode->next;
    }
 
    /* Allocate the remaining PRB to slice according to slice priority
@@ -2213,16 +2328,9 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
    {
       sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
 
-      /* If this slice is hierarchy scheduling method */
-      if(sliceCb->algoMethod == HIERARCHY)
-      {
-         /* TODO: It should support multi-UEs per TTI scheduling */
-         //For(loop the uePriorityList)
-         GET_CRNTI(crnti,ueId);
-         ueCb = &cellCb->ueCb[ueId-1];
-         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
-         
-         DU_LOG("\n\n===============Dennis  -->  SCH Final : Start to run FinalScheduling [SST:%d, Shared PRB Quota:%d, Remaining PRB:%d]===============", \
+      if(sliceCb->algorithm == RR)
+      {   
+         DU_LOG("\n\n===============Dennis  -->  SCH Final : Start to run FinalScheduling [SST:%d, Shared PRB Quota:%d, Remaining PRB:%d, Algo: RR]===============", \
          sliceCb->snssai.sst, sliceCb->sharedPrb, remainingPrb);
 
          if(remainingPrb != 0)
@@ -2230,31 +2338,24 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
             if(sliceCb->sharedPrb >= remainingPrb)
             {
                availablePrb = remainingPrb; 
-               sliceCb->schedulingAlgorithmforLc(&sliceCb->lcInfoList[ueId-1], pdschNumSymbols, &availablePrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
+               schSliceBasedRoundRobinAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
                sliceCb->allocatedPrb += remainingPrb - availablePrb;
                remainingPrb = availablePrb;
             }
             else
             {
                availablePrb = sliceCb->sharedPrb;
-               sliceCb->schedulingAlgorithmforLc(&sliceCb->lcInfoList[ueId-1], pdschNumSymbols, &availablePrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
+               schSliceBasedRoundRobinAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
                sliceCb->allocatedPrb += sliceCb->sharedPrb - availablePrb;
                remainingPrb = remainingPrb - (sliceCb->sharedPrb - availablePrb);
             }
          }
       }
-      /* If this slice is flat scheduling method */
-      else
+      else if(sliceCb->algorithm == WFQ)
       {
-         /* TODO: It should support multi-UEs per TTI scheduling */
-         /* TODO: For flat scheduling method, it should cascade the LC of each UEs, then sort it again 
-            After that, you could put it into RR algorithm or WFQ algorithm directly*/
-         //for(ueId=0; ueId<MAX_NUM_UE; ueId++)
-         GET_CRNTI(crnti,ueId);
-         ueCb = &cellCb->ueCb[ueId-1];
-         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
-         
-         DU_LOG("\n\n===============Dennis  -->  SCH Final : Start to run FinalScheduling [SST:%d, Shared PRB Quota:%d, Remaining PRB:%d]===============", \
+         DU_LOG("\n\n===============Dennis  -->  SCH Final : Start to run FinalScheduling [SST:%d, Shared PRB Quota:%d, Remaining PRB:%d, Algo: WFQ]===============", \
          sliceCb->snssai.sst, sliceCb->sharedPrb, remainingPrb);
 
          if(remainingPrb != 0)
@@ -2262,189 +2363,202 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
             if(sliceCb->sharedPrb >= remainingPrb)
             {
                availablePrb = remainingPrb; 
-               sliceCb->schedulingAlgorithmforLc(&sliceCb->lcInfoList[ueId-1], pdschNumSymbols, &availablePrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
+               schSliceBasedWeightedFairQueueAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
                sliceCb->allocatedPrb += remainingPrb - availablePrb;
                remainingPrb = availablePrb;
             }
             else
             {
                availablePrb = sliceCb->sharedPrb;
-               sliceCb->schedulingAlgorithmforLc(&sliceCb->lcInfoList[ueId-1], pdschNumSymbols, &availablePrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
+               schSliceBasedWeightedFairQueueAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
                sliceCb->allocatedPrb += sliceCb->sharedPrb - availablePrb;
                remainingPrb = remainingPrb - (sliceCb->sharedPrb - availablePrb);
             }
          }
+      }
+      else
+      {
+         DU_LOG("\nDennis  -->  In schSliceBasedDlFinalScheduling() : Invalid Scheduling Algorithm");
+         return;
       }
       DU_LOG("\nDennis  -->  SCH Final Scheduling Result : [SST: %d, Allocated PRB: %d, Remaining PRB: %d]", sliceCb->snssai.sst, \
              sliceCb->allocatedPrb, remainingPrb);
       sliceCbNode = sliceCbNode->next;
    }
 
-   /* TODO: It should support multi-UEs per TTI scheduling */
-   // For(loop the uePriorityList)
-   GET_CRNTI(crnti,ueId);
-   ueCb = &cellCb->ueCb[ueId-1];
-
-   /* Allocate PDCCH and PDSCH resources for the ue */
-   if((*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] == NULL)
+   /* TODO: Although it has the loop, but HARQ List part should be checked */
+   ueNode = ueDlNewTransmission->first;
+   while(ueNode)
    {
-      SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
-      if(!dciSlotAlloc)
+      ueId = *(uint8_t *)(ueNode->node);
+      ueCb = &cellCb->ueCb[ueId-1];
+      ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+      GET_CRNTI(crnti,ueId);
+
+      /* Allocate PDCCH and PDSCH resources for the ue */
+      if((*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] == NULL)
       {
-         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
-         pthread_exit(NULL);  
-         return false;
-      }
-      (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] = dciSlotAlloc;
-      memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
-   }
-   else
-   {
-      dciSlotAlloc = (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1];
-   }
-
-   /* Dl ded Msg info is copied, this was earlier filled in macSchDlRlcBoInfo */
-   fillDlMsgInfo(dciSlotAlloc, crnti, isRetx, *hqP);
-   dciSlotAlloc->transportBlock[0].ndi = isRetx;
-
-   /*[Step5]:Traverse each LCID in LcList to calculate the exact Scheduled Bytes
-    * using allocated BO per LC and Update dlMsgAlloc BO report for MAC */
-   sliceCbNode = schSpcCell->sliceCbList.first;
-
-   if (isRetx == FALSE)
-   {
-      /* Update default slice allocation result to DCI in terms of LC */
-      if(defLcList.count != 0)
-         schSliceBasedUpdateGrantSizeForBoRpt(&defLcList, dciSlotAlloc, NULLP, &accumalatedSize, FALSE);
-      
-      /* Update dedicated slice allocation result to DCI in terms of LC */
-      while(sliceCbNode)
-      {
-         sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
-         
-         if(sliceCb->lcInfoList[ueId-1].count != 0)
-            schSliceBasedUpdateGrantSizeForBoRpt(&sliceCb->lcInfoList[ueId-1], dciSlotAlloc, NULLP, &accumalatedSize, TRUE);
-            
-         sliceCbNode = sliceCbNode->next;
-      }
-   }
-   else
-   {
-      accumalatedSize = (*hqP)->tbInfo[0].tbSzReq;
-   }
-
-   /*Below case will hit if NO LC(s) are allocated due to resource crunch*/
-   if(!accumalatedSize)
-   {
-      if(remainingPrb == 0)
-      {
-         DU_LOG("\nERROR  --> SCH : NO FREE PRB!!");
+         SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
+         if(!dciSlotAlloc)
+         {
+            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+            return false;
+         }
+         (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] = dciSlotAlloc;
+         memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
       }
       else
       {
-         /*Schedule the LC for next slot*/
-         DU_LOG("\nDEBUG  -->  SCH : No LC has been scheduled");
+         dciSlotAlloc = (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1];
       }
-      /* Not Freeing dlMsgAlloc as ZERO BO REPORT to be sent to RLC so that
-       * Allocation can be done in next slot*/
-      accumalatedSize = 0;
-      return RFAILED;
-   }
 
-    /*[Step6]: pdcch and pdsch data is filled */
-   if((schDlRsrcAllocDlMsg(cellCb, pdschTime, crnti, accumalatedSize, dciSlotAlloc, startPrb, pdschStartSymbol, pdschNumSymbols, isRetx, *hqP)) != ROK)
-   {
-      DU_LOG("\nERROR  --> SCH : Scheduling of DL dedicated message failed");
+      /* Dl ded Msg info is copied, this was earlier filled in macSchDlRlcBoInfo */
+      fillDlMsgInfo(dciSlotAlloc, crnti, isRetx, *hqP);
+      dciSlotAlloc->transportBlock[0].ndi = isRetx;
 
-      /* Free the dl ded msg info allocated in macSchDlRlcBoInfo */
-      if(!dciSlotAlloc->dlMsgPdschCfg)
+      /*[Step5]:Traverse each LCID in LcList to calculate the exact Scheduled Bytes
+      * using allocated BO per LC and Update dlMsgAlloc BO report for MAC */
+      sliceCbNode = schSpcCell->sliceCbList.first;
+
+      if (isRetx == FALSE)
       {
-         SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
-         cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = NULL;
-      }
-      return RFAILED;
-   }
-
-   /* Check if both DCI and DL_MSG are sent in the same slot.
-    * If not, allocate memory for DL_MSG PDSCH slot to store PDSCH info */
-
-   if(pdcchTime.slot == pdschTime.slot)
-   {
-      SCH_ALLOC(dciSlotAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
-      if(!dciSlotAlloc->dlMsgPdschCfg)
-      {
-         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dciSlotAlloc->dlMsgPdschCfg");
-         SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));
-         SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
-         cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
-         return false;
-      }
-      memcpy(dciSlotAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg,  sizeof(PdschCfg));
-   }
-   else
-   {
-      /* Allocate memory to schedule dlMsgAlloc to send DL_Msg, pointer will be checked at schProcessSlotInd() */
-      if(cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] == NULLP)
-      {
-         SCH_ALLOC(dlMsgAlloc, sizeof(DlMsgSchInfo));
-         if(dlMsgAlloc == NULLP)
+         /* Update default slice allocation result to DCI in terms of LC */
+         if(defLcList.count != 0)
+            schSliceBasedUpdateGrantSizeForBoRpt(&defLcList, dciSlotAlloc, NULLP, &accumalatedSize, FALSE);
+         
+         /* Update dedicated slice allocation result to DCI in terms of LC */
+         while(sliceCbNode)
          {
-            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dlMsgAlloc");
+            sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
+            
+            if(sliceCb->lcInfoList[ueId-1].count != 0)
+               schSliceBasedUpdateGrantSizeForBoRpt(&sliceCb->lcInfoList[ueId-1], dciSlotAlloc, NULLP, &accumalatedSize, TRUE);
+               
+            sliceCbNode = sliceCbNode->next;
+         }
+      }
+      else
+      {
+         accumalatedSize = (*hqP)->tbInfo[0].tbSzReq;
+      }
+
+      /*Below case will hit if NO LC(s) are allocated due to resource crunch*/
+      if(!accumalatedSize)
+      {
+         if(remainingPrb == 0)
+         {
+            DU_LOG("\nERROR  --> SCH : NO FREE PRB!!");
+         }
+         else
+         {
+            /*Schedule the LC for next slot*/
+            DU_LOG("\nDEBUG  -->  SCH : No LC has been scheduled");
+         }
+         /* Not Freeing dlMsgAlloc as ZERO BO REPORT to be sent to RLC so that
+         * Allocation can be done in next slot*/
+         accumalatedSize = 0;
+         return RFAILED;
+      }
+
+      /*[Step6]: pdcch and pdsch data is filled */
+      if((schDlRsrcAllocDlMsg(cellCb, pdschTime, crnti, accumalatedSize, dciSlotAlloc, startPrb, pdschStartSymbol, pdschNumSymbols, isRetx, *hqP)) != ROK)
+      {
+         DU_LOG("\nERROR  --> SCH : Scheduling of DL dedicated message failed");
+
+         /* Free the dl ded msg info allocated in macSchDlRlcBoInfo */
+         if(!dciSlotAlloc->dlMsgPdschCfg)
+         {
+            SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+            cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = NULL;
+         }
+         return RFAILED;
+      }
+
+      /* Check if both DCI and DL_MSG are sent in the same slot.
+      * If not, allocate memory for DL_MSG PDSCH slot to store PDSCH info */
+
+      if(pdcchTime.slot == pdschTime.slot)
+      {
+         SCH_ALLOC(dciSlotAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
+         if(!dciSlotAlloc->dlMsgPdschCfg)
+         {
+            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dciSlotAlloc->dlMsgPdschCfg");
             SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));
+            SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+            cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+            return false;
+         }
+         memcpy(dciSlotAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg,  sizeof(PdschCfg));
+      }
+      else
+      {
+         /* Allocate memory to schedule dlMsgAlloc to send DL_Msg, pointer will be checked at schProcessSlotInd() */
+         if(cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] == NULLP)
+         {
+            SCH_ALLOC(dlMsgAlloc, sizeof(DlMsgSchInfo));
+            if(dlMsgAlloc == NULLP)
+            {
+               DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dlMsgAlloc");
+               SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));
+               if(dciSlotAlloc->dlMsgPdschCfg == NULLP)
+               {
+                  SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+                  cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+               }
+               return false;
+            }
+            cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] = dlMsgAlloc;
+            memset(dlMsgAlloc, 0, sizeof(DlMsgSchInfo));
+         }
+         else
+            dlMsgAlloc = cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1];
+
+         /* Copy all DL_MSG info */
+         dlMsgAlloc->crnti =crnti;
+         dlMsgAlloc->bwp = dciSlotAlloc->bwp;
+         SCH_ALLOC(dlMsgAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
+         if(dlMsgAlloc->dlMsgPdschCfg)
+         {
+            memcpy(dlMsgAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg, sizeof(PdschCfg));
+         }
+         else
+         {
+            SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));    
             if(dciSlotAlloc->dlMsgPdschCfg == NULLP)
             {
                SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
                cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+
             }
+            SCH_FREE(dlMsgAlloc, sizeof(DlMsgSchInfo));
+            cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dlMsgAlloc->dlMsgPdschCfg");
             return false;
          }
-         cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] = dlMsgAlloc;
-         memset(dlMsgAlloc, 0, sizeof(DlMsgSchInfo));
       }
-      else
-         dlMsgAlloc = cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1];
 
-      /* Copy all DL_MSG info */
-      dlMsgAlloc->crnti =crnti;
-      dlMsgAlloc->bwp = dciSlotAlloc->bwp;
-      SCH_ALLOC(dlMsgAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
-      if(dlMsgAlloc->dlMsgPdschCfg)
+      schAllocPucchResource(cellCb, pucchTime, crnti, ueCb, isRetx, *hqP);
+
+      cellCb->schDlSlotInfo[pdcchTime.slot]->pdcchUe = ueId;
+      cellCb->schDlSlotInfo[pdschTime.slot]->pdschUe = ueId;
+      cellCb->schUlSlotInfo[pucchTime.slot]->pucchUe = ueId;
+
+      ueSliceBasedCb->isTxPayloadLenAdded = FALSE;
+      cmLListDeleteLList(&defLcList);
+
+      /*Re-setting the BO's of all DL LCs in this UE*/
+      for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
       {
-         memcpy(dlMsgAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg, sizeof(PdschCfg));
+         ueCb->dlInfo.dlLcCtxt[lcIdx].bo = 0;
       }
-      else
-      {
-         SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));    
-         if(dciSlotAlloc->dlMsgPdschCfg == NULLP)
-         {
-            SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
-            cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
 
-         }
-         SCH_FREE(dlMsgAlloc, sizeof(DlMsgSchInfo));
-         cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
-         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dlMsgAlloc->dlMsgPdschCfg");
-         return false;
-      }
+      /* after allocation is done, unset the bo bit for that ue */
+      UNSET_ONE_BIT(ueId, cellCb->boIndBitMap);
+
+      ueNode = ueNode->next;
    }
-
-   schAllocPucchResource(cellCb, pucchTime, crnti, ueCb, isRetx, *hqP);
-
-   cellCb->schDlSlotInfo[pdcchTime.slot]->pdcchUe = ueId;
-   cellCb->schDlSlotInfo[pdschTime.slot]->pdschUe = ueId;
-   cellCb->schUlSlotInfo[pucchTime.slot]->pucchUe = ueId;
-
-   ueSliceBasedCb->isTxPayloadLenAdded = FALSE;
-   cmLListDeleteLList(&defLcList);
-
-   /*Re-setting the BO's of all DL LCs in this UE*/
-   for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
-   {
-      ueCb->dlInfo.dlLcCtxt[lcIdx].bo = 0;
-   }
-
-   /* after allocation is done, unset the bo bit for that ue */
-   UNSET_ONE_BIT(ueId, cellCb->boIndBitMap);
 
    return ROK;
 }
@@ -3380,11 +3494,11 @@ void schSliceBasedRoundRobinAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols,
    remainingLc = lcInfoList->count;
    quantum = *availablePrb/lcInfoList->count;
 
-   DU_LOG("\nDennis --> SCH: Round Robin Algorithm [availablePRB: %d, Quantum: %d]", *availablePrb, quantum);
+   //DU_LOG("\nDennis --> SCH: Round Robin Algorithm [availablePRB: %d, Quantum: %d]", *availablePrb, quantum);
 
    node = lcInfoList->first;
    /*[Step1] Allocate the PRB equally among each LCs */
-   while(node)
+   while(node && quantum != 0)
    {
 #if 0
       /*For Debugging purpose*/
@@ -3548,7 +3662,7 @@ void schSliceBasedWeightedFairQueueAlgoforLc(CmLListCp *lcInfoList, uint8_t numS
 
    remainingLc = lcInfoList->count;
 
-   DU_LOG("\nDennis --> SCH: WFQ Algorithm [availablePRB: %d]", *availablePrb);
+   //DU_LOG("\nDennis --> SCH: WFQ Algorithm [availablePRB: %d]", *availablePrb);
 
    node = lcInfoList->first;
    /*[Step1] Allocate the PRB equally among each LCs */
@@ -3732,6 +3846,237 @@ uint32_t schSliceBasedcalculateEstimateTBSize(uint32_t reqBO, uint16_t mcsIdx, u
    effecBO = MIN(tbs,reqBO);
    return (effecBO);
 }
+
+/*******************************************************************
+ *
+ * @brief Allocate resource for each UE and LC with RR algorithm
+ *
+ * @details
+ *
+ *    Function : schSliceBasedRoundRobinAlgo
+ *
+ *    Functionality: Allocate resource for each UE and LC with RR algorithm
+ * 
+ * @params[in] Pointer to Cell Control Block
+ *             Pointer to UE List
+ *             Pointer to LC Info Control Block List
+ *             Number of PDSCH symbols
+ *             Number of available PRBs
+ *             Scheduling Method (0:Flat, 1:Hierarchy)
+ *             srRcvd Flag[For UL] : Decision flag to add UL_GRANT_SIZE     
+ * @return ROK
+ *         RFAIL
+ *
+ * ****************************************************************/
+uint8_t schSliceBasedRoundRobinAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
+                                 uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd)
+{
+   SchUeCb *ueCb = NULLP;
+   uint8_t  ueId;
+   CmLList *ueNode;
+   CmLList *lcNode;
+   CmLList *next;
+   CmLListCp casLcInfoList; /* Cascade LC Info LL */
+   SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
+   uint16_t ueQuantum, remainingPrb;
+
+   ueNode = ueList->first;
+
+   if(algoMethod == HIERARCHY)
+   {    
+      ueQuantum = *availablePrb / ueList->count;
+
+      while(ueNode)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;    
+         remainingPrb = ueQuantum;
+
+         schSliceBasedRoundRobinAlgoforLc(&lcInfoList[ueId-1], numSymbols, &remainingPrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+                 
+         *availablePrb -= ueQuantum - remainingPrb;
+         ueNode = ueNode->next;
+      }
+
+      /* If there are remaining PRBs, do the scheduling again */
+      ueNode = ueList->first;
+      while(ueNode && *availablePrb > 0)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+
+         schSliceBasedRoundRobinAlgoforLc(&lcInfoList[ueId-1], numSymbols, availablePrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+               
+         ueNode = ueNode->next;
+      }     
+   }
+
+   else if(algoMethod == FLAT)
+   {
+      cmLListInit(&casLcInfoList);
+
+      /* Cascade the LC Info List of each UEs */
+      while(ueNode)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+
+         lcNode = lcInfoList[ueId-1].first;
+
+         while(lcNode)
+         {
+            if(addNodeToLList(&casLcInfoList, lcNode->node, NULLP) != ROK)
+            {
+               DU_LOG("\nERROR  --> Dennis : Failed to add the LC Info in FLAT algorithm method");
+            }
+            lcNode = lcNode->next;
+         }
+         ueNode = ueNode->next;
+      }
+
+      /* Sort the cascade LC Info List in terms of priority level */
+      schSliceBasedSortLcByPriorLevel(&casLcInfoList, 1);
+
+      /* Allocate the resouce for cascade LC Info list */
+      schSliceBasedRoundRobinAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+
+      /* Free the cascade LC Info list */
+      lcNode = casLcInfoList.first;
+      while(lcNode)
+      {
+         next = lcNode->next;
+         SCH_FREE(lcNode, sizeof(CmLList));
+         lcNode = next;
+      }
+   }
+   else
+   {
+      DU_LOG("\n In schSliceBasedRoundRobinAlgo(), invalid algoMethod");
+   }
+}
+
+/*******************************************************************
+ *
+ * @brief Allocate resource for each UE and LC with WFQ(Weight Fair Queue) algorithm
+ *
+ * @details
+ *
+ *    Function : schSliceBasedWeightedFairQueueAlgo
+ *
+ *    Functionality: Allocate resource for each UE and LC with WFQ(Weight Fair Queue) algorithm
+ * 
+ * @params[in] Pointer to Cell Control Block
+ *             Pointer to UE List
+ *             Pointer to LC Info Control Block List
+ *             Number of PDSCH symbols
+ *             Number of available PRBs
+ *             Scheduling Method (0:Flat, 1:Hierarchy)
+ *             srRcvd Flag[For UL] : Decision flag to add UL_GRANT_SIZE     
+ * @return ROK
+ *         RFAILED
+ *
+ * ****************************************************************/
+uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
+                                 uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd)
+{
+   SchUeCb *ueCb = NULLP;
+   uint8_t  ueId;
+   CmLList *ueNode;
+   CmLList *lcNode;
+   CmLList *next;
+   CmLListCp casLcInfoList; /* Cascade LC Info LL */
+   SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
+   uint16_t ueQuantum, remainingPrb;
+
+   ueNode = ueList->first;
+
+   if(algoMethod == HIERARCHY)
+   {    
+      
+      while(ueNode)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+         ueQuantum = *availablePrb * ueSliceBasedCb->prbWeight;
+         remainingPrb = ueQuantum;
+
+         /* Although this is WFQ algorithm, but it is for UE level (HIERARCHY) */
+         /* In LC level, we are still using RR */
+         schSliceBasedRoundRobinAlgoforLc(&lcInfoList[ueId-1], numSymbols, &remainingPrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+                 
+         *availablePrb -= ueQuantum - remainingPrb;
+         ueNode = ueNode->next;
+      }
+
+      /* If there are remaining PRBs, do the scheduling again */
+      ueNode = ueList->first;
+      while(ueNode && *availablePrb > 0)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+
+         schSliceBasedRoundRobinAlgoforLc(&lcInfoList[ueId-1], numSymbols, availablePrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+               
+         ueNode = ueNode->next;
+      }     
+   }
+
+   else if(algoMethod == FLAT)
+   {
+      cmLListInit(&casLcInfoList);
+
+      /* Cascade the LC Info List of each UEs */
+      while(ueNode)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+
+         lcNode = lcInfoList[ueId-1].first;
+
+         while(lcNode)
+         {
+            if(addNodeToLList(&casLcInfoList, lcNode->node, NULLP) != ROK)
+            {
+               DU_LOG("\nERROR  --> Dennis : Failed to add the LC Info in FLAT algorithm method");
+            }
+            lcNode = lcNode->next;
+         }
+         ueNode = ueNode->next;
+      }
+
+      /* Sort the cascade LC Info List in terms of priority level */
+      schSliceBasedSortLcByPriorLevel(&casLcInfoList, 1);
+
+      /* Allocate the resouce for cascade LC Info list */
+      schSliceBasedWeightedFairQueueAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+
+      /* Free the cascade LC Info list */
+      lcNode = casLcInfoList.first;
+      while(lcNode)
+      {
+         next = lcNode->next;
+         SCH_FREE(lcNode, sizeof(CmLList));
+         lcNode = next;
+      }
+   }
+   else
+   {
+      DU_LOG("\n In schSliceBasedRoundRobinAlgo(), invalid algoMethod");
+   }
+}
+
 /*******************************************************************
  *
  * @brief Initializes all function pointers to Slice Based function handler
