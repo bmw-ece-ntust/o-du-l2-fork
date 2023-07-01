@@ -76,6 +76,10 @@ uint8_t schSliceBasedCellCfgReq(SchCellCb *cellCb)
    cmLListInit(&schSpcCellCb->ueToBeScheduled);
    cmLListInit(&schSpcCellCb->sliceCbList);
    cellCb->schSpcCell = (void *)schSpcCellCb;
+
+   schSpcCellCb->timer_sec = 0;
+   schSpcCellCb->slot_ind_count = 0;
+   schSpcCellCb->isTimerStart = false;
    return ROK;
 }
 
@@ -224,7 +228,7 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
          if(tempAlgoSelection <= 1)
          {
             sliceCbToStore->algorithm = RR;
-            sliceCbToStore->algoMethod = HIERARCHY;
+            sliceCbToStore->algoMethod = FLAT;
          }
          else
          {
@@ -1316,6 +1320,12 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
 
    schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
    
+   if(schSpcCell->isTimerStart)
+   {
+      setRrmPolicyWithTimer(cell);
+   }
+
+
    /* Select first UE in the linked list to be scheduled next */
    pendingUeNode = schSpcCell->ueToBeScheduled.first;
    if(pendingUeNode)
@@ -4075,6 +4085,123 @@ uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList,
    {
       DU_LOG("\n In schSliceBasedRoundRobinAlgo(), invalid algoMethod");
    }
+}
+
+/*******************************************************************
+ *
+ * @brief 
+ *
+ * @details
+ *
+ *    Function : setRrmPolicyWithTimer
+ *
+ *    Functionality: 
+ *
+ * @params[in] Pointer to Cell
+ *            
+ * @return void
+ *
+ * ****************************************************************/
+void setRrmPolicyWithTimer(SchCellCb *cell)
+{
+   SchSliceBasedCellCb  *schSpcCell;
+   SchSliceBasedSliceCb *sliceCb = NULLP;
+   CmLList *sliceCbNode = NULLP;
+
+   schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
+
+   schSpcCell->slot_ind_count++;
+
+   if(schSpcCell->slot_ind_count >= 250)
+   {
+      schSpcCell->timer_sec++;
+      DU_LOG("\nDennis --> Timer: %d s", schSpcCell->timer_sec);
+      schSpcCell->slot_ind_count = 0;
+   }
+
+   if(schSpcCell->timer_sec == 20)
+   {
+      sliceCbNode = schSpcCell->sliceCbList.first;
+      
+      while(sliceCbNode)
+      {
+         sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
+         
+         /* Adjust the RRMPolicyRatio of first slice */
+         if(sliceCbNode == schSpcCell->sliceCbList.first)
+         {
+            sliceCb->rrmPolicyRatioInfo.dedicatedRatio = 10;
+            sliceCb->rrmPolicyRatioInfo.minRatio = 70;
+            sliceCb->rrmPolicyRatioInfo.maxRatio = 100;
+         }
+         /* Adjust the RRMPolicyRatio of second slice */
+         else
+         {
+            sliceCb->rrmPolicyRatioInfo.dedicatedRatio = 10;
+            sliceCb->rrmPolicyRatioInfo.minRatio = 30;
+            sliceCb->rrmPolicyRatioInfo.maxRatio = 100;
+         }
+
+         sliceCbNode = sliceCbNode->next;
+      }
+   }
+   else if(schSpcCell->timer_sec == 40)
+   {
+      sliceCbNode = schSpcCell->sliceCbList.first;
+
+      while(sliceCbNode)
+      {
+         sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
+         
+         /* Adjust the RRMPolicyRatio of first slice */
+         if(sliceCbNode == schSpcCell->sliceCbList.first)
+         {
+            sliceCb->rrmPolicyRatioInfo.dedicatedRatio = 10;
+            sliceCb->rrmPolicyRatioInfo.minRatio = 30;
+            sliceCb->rrmPolicyRatioInfo.maxRatio = 100;
+         }
+         /* Adjust the RRMPolicyRatio of second slice */
+         else
+         {
+            sliceCb->rrmPolicyRatioInfo.dedicatedRatio = 10;
+            sliceCb->rrmPolicyRatioInfo.minRatio = 70;
+            sliceCb->rrmPolicyRatioInfo.maxRatio = 100;
+         }
+
+         sliceCbNode = sliceCbNode->next;
+      }   
+   }
+   else if(schSpcCell->timer_sec == 60)
+   {    
+      sliceCbNode = schSpcCell->sliceCbList.first;
+
+      while(sliceCbNode)
+      {
+         sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
+         
+         /* Adjust the RRMPolicyRatio of first slice */
+         if(sliceCbNode == schSpcCell->sliceCbList.first)
+         {
+            sliceCb->rrmPolicyRatioInfo.dedicatedRatio = 10;
+            sliceCb->rrmPolicyRatioInfo.minRatio = 50;
+            sliceCb->rrmPolicyRatioInfo.maxRatio = 100;
+         }
+         /* Adjust the RRMPolicyRatio of second slice */
+         else
+         {
+            sliceCb->rrmPolicyRatioInfo.dedicatedRatio = 10;
+            sliceCb->rrmPolicyRatioInfo.minRatio = 50;
+            sliceCb->rrmPolicyRatioInfo.maxRatio = 100;
+         }
+
+         sliceCbNode = sliceCbNode->next;
+      }
+
+      schSpcCell->timer_sec = 0;
+   }
+
+   
+   DU_LOG("");
 }
 
 /*******************************************************************

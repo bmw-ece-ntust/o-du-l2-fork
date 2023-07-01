@@ -1075,6 +1075,7 @@ uint8_t SchProcDlRlcBoInfo(Pst *pst, DlRlcBoInfo *dlBoInfo)
    bool isLcIdValid = false;
    SchUeCb *ueCb = NULLP;
    SchCellCb *cell = NULLP;
+   SchSliceBasedCellCb *schSpcCellCb;
    Inst  inst = pst->dstInst-SCH_INST_START;   
 
    DU_LOG("\nDEBUG  -->  SCH : Received RLC BO Status indication LCId [%d] BO [%d]", dlBoInfo->lcId, dlBoInfo->dataVolume);
@@ -1122,6 +1123,8 @@ uint8_t SchProcDlRlcBoInfo(Pst *pst, DlRlcBoInfo *dlBoInfo)
       /* TODO : These part of changes will be corrected during DL scheduling as
        * per K0 - K1 -K2 */
       SET_ONE_BIT(ueId, cell->boIndBitMap);
+      schSpcCellCb = (SchSliceBasedCellCb *)cell->schSpcCell;
+
       if(ueCb->dlInfo.dlLcCtxt[lcId].lcId == lcId)
       {
          ueCb->dlInfo.dlLcCtxt[lcId].bo = dlBoInfo->dataVolume;
@@ -1130,6 +1133,12 @@ uint8_t SchProcDlRlcBoInfo(Pst *pst, DlRlcBoInfo *dlBoInfo)
       {
          DU_LOG("ERROR --> SCH: LCID:%d is not configured in SCH Cb",lcId);
          return RFAILED;
+      }
+
+      /* For thesis Experiment 1.2: Set timer up when receive traffic */
+      if(lcId != 1)
+      {
+         schSpcCellCb->isTimerStart = true;
       }
    }
    /* Adding UE Id to list of pending UEs to be scheduled */

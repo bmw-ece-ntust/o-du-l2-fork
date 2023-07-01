@@ -12002,7 +12002,7 @@ uint8_t procUeContextModificationResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, ch
    }
    
 #ifdef START_DL_UL_DATA
-   startDlData();
+   //startDlDataForExperiment1();
 #endif
 
    return ROK;

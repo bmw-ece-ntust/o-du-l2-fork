@@ -375,7 +375,7 @@ uint8_t startDlData()
    uint32_t duId;
    uint8_t ret = ROK;
    uint8_t cnt = 0;
-   int32_t totalNumOfTestFlow = 15; 
+   int32_t totalNumOfTestFlow = 10; 
    EgtpTeIdCb *teidCb = NULLP;
    
    while(totalNumOfTestFlow)
@@ -422,7 +422,7 @@ uint8_t startDlData()
  *
  * @details
  *
- *    Function : startDlDataForSliceTesting
+ *    Function : startDlDataForExperiment1
  *
  *    Functionality: start the downlink data
  *
@@ -437,6 +437,7 @@ uint8_t startDlDataForExperiment1()
    uint32_t teId = 0;
    uint32_t tmpTeId = 0;
    uint32_t duId;
+   uint8_t numOfSlice = 2;
    uint8_t ret = ROK;
    uint8_t cnt = 0;
    uint8_t i = 0;
@@ -458,7 +459,7 @@ uint8_t startDlDataForExperiment1()
                {
                   if(i == 1)
                   {
-                     tmpTeId = teId + 3;
+                     tmpTeId = teId + numOfSlice;
                   }
                   else
                   {
@@ -566,12 +567,12 @@ void *cuConsoleHandler(void *args)
           * totalDataPacket = totalNumOfTestFlow * NUM_TUNNEL_TO_PUMP_DATA * NUM_DL_PACKETS 
           * totalDataPacket = [500*9*1] */
          
-         // while(true)
-         // {
-         //    sleep(1);
-         //    startDlDataForSliceTesting();
-         // }
-         startDlDataForExperiment1();
+         while(true)
+         {
+            sleep(1);
+            startDlData();
+         }
+         //startDlDataForExperiment1();
 #endif
          continue;
       } 

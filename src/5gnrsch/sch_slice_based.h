@@ -34,6 +34,12 @@ typedef struct schSliceBasedCellCb
 {
    CmLListCp     ueToBeScheduled;                   /*!< Linked list to store UEs pending to be scheduled */
    CmLListCp     sliceCbList;                       /* Linked list to store slice control block with priority, the last node */
+
+   /* For thesis experiment */
+   bool isTimerStart;
+   uint16_t slot_ind_count;
+   uint16_t timer_sec;
+
 }SchSliceBasedCellCb;
 
 /*Following structures to keep record and estimations of PRB allocated for each
@@ -136,7 +142,6 @@ uint32_t schSliceBasedcalculateEstimateTBSize(uint32_t reqBO, uint16_t mcsIdx, u
 void schSliceBasedAllApisInit(SchAllApis *allSliceBasedApi);
 
 /* DL Slice-Based Function */
-/* Once the scheduler supports multi-UEs per TTI scheduling, the parameter 'ueId' should be deleted */
 bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP);
 uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pdcchTime, uint8_t pdschNumSymbols, \
                                             uint16_t *totalRemainingPrb, uint16_t maxFreePRB, SchSliceBasedSliceCb *sliceCb, \
@@ -170,6 +175,8 @@ void schSliceBasedWeightedFairQueueAlgoforLc(CmLListCp *lcInfoList, uint8_t numS
 void schSliceBasedPrbAllocUsingRRMPolicy(CmLListCp *lcInfoList, uint16_t mcsIdx, uint8_t numSymbols, uint16_t *availablePrb, \
                                       bool *isTxPayloadLenAdded, bool *srRcvd);
 
+/* For thesis experiment */
+void setRrmPolicyWithTimer(SchCellCb *cell); /* For experiment 1.1 */
 /**********************************************************************
     End of file
  *********************************************************************/
