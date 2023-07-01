@@ -1320,10 +1320,10 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
 
    schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
    
-   if(schSpcCell->isTimerStart)
-   {
-      setRrmPolicyWithTimer(cell);
-   }
+   // if(schSpcCell->isTimerStart)
+   // {
+   //    setRrmPolicyWithTimer(cell);
+   // }
 
 
    /* Select first UE in the linked list to be scheduled next */

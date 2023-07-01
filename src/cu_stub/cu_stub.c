@@ -437,7 +437,7 @@ uint8_t startDlDataForExperiment1()
    uint32_t teId = 0;
    uint32_t tmpTeId = 0;
    uint32_t duId;
-   uint8_t numOfSlice = 2;
+   uint8_t numOfSlice = 3;
    uint8_t ret = ROK;
    uint8_t cnt = 0;
    uint8_t i = 0;
@@ -446,7 +446,7 @@ uint8_t startDlDataForExperiment1()
    int32_t totalNumOfTestFlow; 
    EgtpTeIdCb *teidCb = NULLP;
    
-   while(timerCnt < 90)
+   while(timerCnt < 60)
    {
       totalNumOfTestFlow = 15;
       while(totalNumOfTestFlow)
@@ -498,7 +498,7 @@ uint8_t startDlDataForExperiment1()
       sleep(1);
       timerCnt++;
       DU_LOG("\nDEBUG  -->  Timer Count: %d\n", timerCnt);
-      if(timerCnt % 30 == 0)
+      if(timerCnt % 20 == 0)
       {
          DU_LOG("\nDEBUG  -->  tnlStage: %d\n", tnlStage);
          tnlStage++;
@@ -567,12 +567,12 @@ void *cuConsoleHandler(void *args)
           * totalDataPacket = totalNumOfTestFlow * NUM_TUNNEL_TO_PUMP_DATA * NUM_DL_PACKETS 
           * totalDataPacket = [500*9*1] */
          
-         while(true)
-         {
-            sleep(1);
-            startDlData();
-         }
-         //startDlDataForExperiment1();
+         // while(true)
+         // {
+         //    sleep(1);
+         //    startDlData();
+         // }
+         startDlDataForExperiment1();
 #endif
          continue;
       } 
