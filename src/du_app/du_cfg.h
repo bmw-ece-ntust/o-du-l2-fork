@@ -296,7 +296,7 @@
 #define MAX_RATIO        30
 #define MIN_RATIO        20
 #define DEDICATED_RATIO  10
-#define NUM_OF_SUPPORTED_SLICE  3
+#define NUM_OF_SUPPORTED_SLICE  2
 
 #ifdef NR_DRX
 /* Macros for Drx configuration */

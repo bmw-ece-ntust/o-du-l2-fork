@@ -567,12 +567,12 @@ void *cuConsoleHandler(void *args)
           * totalDataPacket = totalNumOfTestFlow * NUM_TUNNEL_TO_PUMP_DATA * NUM_DL_PACKETS 
           * totalDataPacket = [500*9*1] */
          
-         // while(true)
-         // {
-         //    sleep(1);
-         //    startDlData();
-         // }
-         startDlDataForExperiment1();
+         while(true)
+         {
+            sleep(1);
+            startDlData();
+         }
+         //startDlDataForExperiment1();
 #endif
          continue;
       } 

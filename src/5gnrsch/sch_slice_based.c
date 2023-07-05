@@ -225,9 +225,9 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
          memcpy(&sliceCbToStore->snssai, &rrmPolicyNode->snssai, sizeof(Snssai));
          memcpy(&sliceCbToStore->rrmPolicyRatioInfo, &rrmPolicyNode->rrmPolicyRatioInfo, sizeof(SchRrmPolicyRatio));
 
-         if(tempAlgoSelection <= 1)
+         if(tempAlgoSelection < 1)
          {
-            sliceCbToStore->algorithm = RR;
+            sliceCbToStore->algorithm = WFQ;
             sliceCbToStore->algoMethod = FLAT;
          }
          else
@@ -3525,8 +3525,8 @@ void schSliceBasedRoundRobinAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols,
       }
 
       mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
-      quantumSize = schCalcTbSizeFromNPrb(quantum, mcsIdx, numSymbols);
-      quantumSize = quantumSize >> 3; /* Transfer from Bits to Bytes */
+      // quantumSize = schCalcTbSizeFromNPrb(quantum, mcsIdx, numSymbols);
+      // quantumSize = quantumSize >> 3; /* Transfer from Bits to Bytes */
       if(lcInfoNode->reqBO != 0)
       {
          if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
@@ -3534,17 +3534,11 @@ void schSliceBasedRoundRobinAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols,
             *isTxPayloadLenAdded = TRUE;
             DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
                   lcInfoNode->lcId);
-            if(lcInfoNode->reqBO >= quantumSize)
-            {
-               allocBO = schSliceBasedcalculateEstimateTBSize(quantumSize + TX_PAYLOAD_HDR_LEN , mcsIdx, numSymbols, *availablePrb, &estPrb);
-               lcInfoNode->allocBO += allocBO - TX_PAYLOAD_HDR_LEN;
-            }
-            else
-            {
-               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, *availablePrb, &estPrb);
-               lcInfoNode->allocBO += allocBO - TX_PAYLOAD_HDR_LEN;
-               remainingLc--;
-            }
+
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
+            lcInfoNode->allocBO += allocBO - TX_PAYLOAD_HDR_LEN;
+            remainingLc--;
+      
          }
          else if((srRcvd != NULLP) && (*srRcvd == TRUE))
          {
@@ -3552,22 +3546,14 @@ void schSliceBasedRoundRobinAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols,
                   lcInfoNode->lcId);
             *srRcvd = FALSE;
             lcInfoNode->reqBO += UL_GRANT_SIZE;
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
             lcInfoNode->allocBO += allocBO;
          }
          else
          {
-            if(lcInfoNode->reqBO >= quantumSize)
-            {
-               allocBO = schSliceBasedcalculateEstimateTBSize(quantumSize, mcsIdx, numSymbols, *availablePrb, &estPrb);
-               lcInfoNode->allocBO += allocBO;
-            }
-            else
-            {
-               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
-               lcInfoNode->allocBO += allocBO;
-               remainingLc--;
-            }
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            lcInfoNode->allocBO += allocBO;
+            remainingLc--;
          }
 
          /*[Step6]:Re-adjust the availablePrb Count based on
@@ -3657,6 +3643,7 @@ void schSliceBasedWeightedFairQueueAlgoforLc(CmLListCp *lcInfoList, uint8_t numS
    uint32_t quantumSize = 0;
    uint8_t remainingLc = 0;
    uint16_t mcsIdx;
+   uint16_t totalAvaiPrb = *availablePrb;
 
    if(lcInfoList == NULLP)
    {
@@ -3696,26 +3683,26 @@ void schSliceBasedWeightedFairQueueAlgoforLc(CmLListCp *lcInfoList, uint8_t numS
 
       if(lcInfoNode->reqBO != 0)
       {
-         quantum = *availablePrb * lcInfoNode->weight;
-         quantumSize = schCalcTbSizeFromNPrb(quantum, mcsIdx, numSymbols);
-         quantumSize = quantumSize >> 3; /* Transfer from Bits to Bytes */
+         quantum = totalAvaiPrb * lcInfoNode->weight;
+         // quantumSize = schCalcTbSizeFromNPrb(quantum, mcsIdx, numSymbols);
+         // quantumSize = quantumSize >> 3; /* Transfer from Bits to Bytes */
 
          if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
          {
             *isTxPayloadLenAdded = TRUE;
             DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
                   lcInfoNode->lcId);
-            if(lcInfoNode->reqBO >= quantumSize)
-            {
-               allocBO = schSliceBasedcalculateEstimateTBSize(quantumSize + TX_PAYLOAD_HDR_LEN , mcsIdx, numSymbols, *availablePrb, &estPrb);
-               lcInfoNode->allocBO += allocBO - TX_PAYLOAD_HDR_LEN;
-            }
-            else
-            {
-               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, *availablePrb, &estPrb);
+            // if(lcInfoNode->reqBO >= quantumSize)
+            // {
+            //    allocBO = schSliceBasedcalculateEstimateTBSize(quantumSize + TX_PAYLOAD_HDR_LEN , mcsIdx, numSymbols, quantum, &estPrb);
+            //    lcInfoNode->allocBO += allocBO - TX_PAYLOAD_HDR_LEN;
+            // }
+            // else
+            // {
+               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
                lcInfoNode->allocBO += allocBO - TX_PAYLOAD_HDR_LEN;
                remainingLc--;
-            }
+            // }
          }
          else if((srRcvd != NULLP) && (*srRcvd == TRUE))
          {
@@ -3723,22 +3710,22 @@ void schSliceBasedWeightedFairQueueAlgoforLc(CmLListCp *lcInfoList, uint8_t numS
                   lcInfoNode->lcId);
             *srRcvd = FALSE;
             lcInfoNode->reqBO += UL_GRANT_SIZE;
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
             lcInfoNode->allocBO += allocBO;
          }
          else
          {
-            if(lcInfoNode->reqBO >= quantumSize)
-            {
-               allocBO = schSliceBasedcalculateEstimateTBSize(quantumSize, mcsIdx, numSymbols, *availablePrb, &estPrb);
-               lcInfoNode->allocBO += allocBO;
-            }
-            else
-            {
-               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+            // if(lcInfoNode->reqBO >= quantumSize)
+            // {
+            //    allocBO = schSliceBasedcalculateEstimateTBSize(quantumSize, mcsIdx, numSymbols, quantum, &estPrb);
+            //    lcInfoNode->allocBO += allocBO;
+            // }
+            // else
+            // {
+               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
                lcInfoNode->allocBO += allocBO;
                remainingLc--;
-            }
+            // }
          }
 
          /*[Step6]:Re-adjust the availablePrb Count based on
@@ -4002,8 +3989,12 @@ uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList,
    CmLList *next;
    CmLListCp casLcInfoList; /* Cascade LC Info LL */
    SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
-   uint16_t ueQuantum, remainingPrb;
+   SchSliceBasedLcInfo *lcInfoNode = NULLP;
+   uint16_t ueQuantum, remainingPrb, totalAvaiPrb;
+   float_t totalPriorityLevel = 0;
 
+   totalAvaiPrb = *availablePrb;
+   
    ueNode = ueList->first;
 
    if(algoMethod == HIERARCHY)
@@ -4056,6 +4047,9 @@ uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList,
 
          while(lcNode)
          {
+            lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
+            totalPriorityLevel += lcInfoNode->priorLevel;
+
             if(addNodeToLList(&casLcInfoList, lcNode->node, NULLP) != ROK)
             {
                DU_LOG("\nERROR  --> Dennis : Failed to add the LC Info in FLAT algorithm method");
@@ -4066,7 +4060,7 @@ uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList,
       }
 
       /* Sort the cascade LC Info List in terms of priority level */
-      schSliceBasedSortLcByPriorLevel(&casLcInfoList, 1);
+      schSliceBasedSortLcByPriorLevel(&casLcInfoList, totalPriorityLevel);
 
       /* Allocate the resouce for cascade LC Info list */
       schSliceBasedWeightedFairQueueAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
