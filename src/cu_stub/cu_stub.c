@@ -375,7 +375,8 @@ uint8_t startDlData()
    uint32_t duId;
    uint8_t ret = ROK;
    uint8_t cnt = 0;
-   int32_t totalNumOfTestFlow = 10; 
+   uint8_t numOfPackets;
+   int32_t totalNumOfTestFlow = 1; 
    EgtpTeIdCb *teidCb = NULLP;
    
    while(totalNumOfTestFlow)
@@ -384,13 +385,26 @@ uint8_t startDlData()
       {
          for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
          {
+            if(teId == 1)
+            {
+               numOfPackets = 8;
+            }
+            else if(teId == 3)
+            {
+               numOfPackets = 4;
+            }
+            else
+            {
+               numOfPackets = 6;
+            }
+
             teidCb = NULLP;
             cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
             if(teidCb)
             {
                cnt =0;
                DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
-               while(cnt < NUM_DL_PACKETS)
+               while(cnt < numOfPackets)
                {
                   ret =  cuEgtpDatReq(duId, teId);      
                   if(ret != ROK)
@@ -525,7 +539,7 @@ uint8_t startDlDataForExperiment1()
 void *cuConsoleHandler(void *args)
 {
    char ch;
-
+   uint8_t cnt = 0;
    while(true) 
    {
       ch = getchar();
@@ -569,8 +583,14 @@ void *cuConsoleHandler(void *args)
          
          while(true)
          {
-            sleep(1);
+            if(cnt >= 500)
+            {
+               cnt = 0;
+               break;
+            }
             startDlData();
+            usleep(60000);
+            cnt++;
          }
          //startDlDataForExperiment1();
 #endif

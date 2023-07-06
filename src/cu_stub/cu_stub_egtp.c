@@ -820,7 +820,7 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
    egtpMsg->msgHdr.msgType = EGTPU_MSG_GPDU;
    egtpMsg->msgHdr.nPdu.pres = TRUE;
 
-   if(egtpCb.gCntPdu[egtpMsg->msgHdr.teId] != NUM_DL_PACKETS)
+   if(egtpCb.gCntPdu[egtpMsg->msgHdr.teId] != NUM_DL_PACKETS + 5)
      egtpCb.gCntPdu[egtpMsg->msgHdr.teId]++;
    else
      egtpCb.gCntPdu[egtpMsg->msgHdr.teId] = 1;

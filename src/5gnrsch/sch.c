@@ -1078,7 +1078,10 @@ uint8_t SchProcDlRlcBoInfo(Pst *pst, DlRlcBoInfo *dlBoInfo)
    SchSliceBasedCellCb *schSpcCellCb;
    Inst  inst = pst->dstInst-SCH_INST_START;   
 
+#ifdef SLICE_BASED_DEBUG_LOG
    DU_LOG("\nDEBUG  -->  SCH : Received RLC BO Status indication LCId [%d] BO [%d]", dlBoInfo->lcId, dlBoInfo->dataVolume);
+#endif
+
    cell = schCb[inst].cells[inst];
 
    if(cell == NULLP)
@@ -1699,8 +1702,10 @@ uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_
       }
       freePrbNode = freePrbNode->next;
    }
+#ifdef SLICE_BASED_DEBUG_LOG
    DU_LOG("\nDennis --> Max Free PRB is:%d, SSB Occassion, SIB1 Occcassion, Check Occassion: [%d, %d, %d]", \
    maxFreePRB, ssbOccasion, sib1Occasion, checkOccasion);
+#endif
    return(maxFreePRB);
 }
 

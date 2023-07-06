@@ -1330,11 +1330,11 @@ uint8_t rlcCalculateTputPerDrb(CmLListCp *drbList, Direction dir)
    while(node)
    {
       drbNode = (RlcTptPerDrb *)node->node;
-      drbNode->tpt =  (double)(drbNode->dataVol * 8)/(double)(ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL * 0.001);
+      drbNode->tpt =  (double)(drbNode->dataVol * 8)/(double)(ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL);
      
       if(dir == DIR_DL)
       {
-         DU_LOG("\nDEBUG  -->  Tput per DRB: UE ID: %d, LC ID: %d, SNSSAI(sst:%d,sd [%d,%d,%d]), DL Tpt : %.5lf (bps)", \
+         DU_LOG("\nDEBUG  -->  Tput per DRB: UE ID: %d, LC ID: %d, SNSSAI(sst:%d,sd [%d,%d,%d]), DL Tpt : %.5lf (kbps)", \
          drbNode->ueId, drbNode->lcId, drbNode->snssai->sst, drbNode->snssai->sd[0], drbNode->snssai->sd[1], \
          drbNode->snssai->sd[2] , drbNode->tpt);
       }
