@@ -391,11 +391,11 @@ uint8_t startDlData()
             }
             else if(teId == 3)
             {
-               numOfPackets = 4;
+               numOfPackets = 8;
             }
             else
             {
-               numOfPackets = 6;
+               numOfPackets = 8;
             }
 
             teidCb = NULLP;
@@ -446,7 +446,7 @@ uint8_t startDlData()
  *
  * ****************************************************************/
 
-uint8_t startDlDataForExperiment1()
+uint8_t startDlDataForExperiment12()
 {
    uint32_t teId = 0;
    uint32_t tmpTeId = 0;
@@ -523,6 +523,111 @@ uint8_t startDlDataForExperiment1()
 
 /*******************************************************************
  *
+ * @brief start Dl data for slice testing
+ *
+ * @details
+ *
+ *    Function : startDlDataForExperiment11
+ *
+ *    Functionality: start the downlink data to generate packet accordingly
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+
+uint8_t startDlDataForExperiment11()
+{
+   uint32_t teId = 0;
+   uint32_t duId;
+   uint8_t numOfSlice = 2;
+   uint8_t numOfPacket;
+   uint8_t ret = ROK;
+   uint8_t cnt = 0;
+   uint8_t i = 0;
+   uint16_t timerCnt = 0;
+   uint8_t tnlStage = 1;
+   int32_t totalNumOfTestFlow; 
+   EgtpTeIdCb *teidCb = NULLP;
+   
+   while(timerCnt < 1200)
+   {
+      totalNumOfTestFlow = 1;
+      while(totalNumOfTestFlow)
+      {
+         for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
+         {
+            for(teId = 1; teId <= 4; teId++)
+            {
+               if(tnlStage == 1)
+               {
+                  numOfPacket = 5;
+               }
+               else if(tnlStage == 2)
+               {
+                  if(teId == 1 || teId == 3)
+                  {
+                     numOfPacket = 7;
+                  }
+                  else
+                  {
+                     numOfPacket = 3;
+                  }
+               }
+               else
+               {
+                  if(teId == 2 || teId == 4)
+                  {
+                     numOfPacket = 7;
+                  }
+                  else
+                  {
+                     numOfPacket = 3;
+                  }
+               }
+               teidCb = NULLP;
+               cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
+               if(teidCb)
+               {
+                  cnt =0;
+                  //DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
+                  while(cnt < numOfPacket)
+                  {
+                     ret =  cuEgtpDatReq(duId, teId);      
+                     if(ret != ROK)
+                     {
+                        DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
+                        break;
+                     }
+                     /* TODO : sleep(1) will be removed later once we will be able to
+                     * support the continuous data pack transfer */
+                     //sleep(1);
+                     cnt++;
+                  }
+               }
+               else
+               {
+                  DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
+               }            
+            }
+         }
+         totalNumOfTestFlow--;
+      }
+      usleep(50000);
+      timerCnt++;
+      DU_LOG("\nDEBUG  -->  Timer Count: %d\n", timerCnt);
+      if(timerCnt % 400 == 0)
+      {
+         DU_LOG("\nDEBUG  -->  tnlStage: %d\n", tnlStage);
+         tnlStage++;
+      }
+   }
+   return ROK;
+}
+
+/*******************************************************************
+ *
  * @brief Handles Console input
  *
  * @details
@@ -581,18 +686,18 @@ void *cuConsoleHandler(void *args)
           * totalDataPacket = totalNumOfTestFlow * NUM_TUNNEL_TO_PUMP_DATA * NUM_DL_PACKETS 
           * totalDataPacket = [500*9*1] */
          
-         while(true)
-         {
-            if(cnt >= 500)
-            {
-               cnt = 0;
-               break;
-            }
-            startDlData();
-            usleep(60000);
-            cnt++;
-         }
-         //startDlDataForExperiment1();
+         // while(true)
+         // {
+         //    if(cnt >= 500)
+         //    {
+         //       cnt = 0;
+         //       break;
+         //    }
+         //    startDlData();
+         //    usleep(80000);
+         //    cnt++;
+         // }
+         startDlDataForExperiment11();
 #endif
          continue;
       } 

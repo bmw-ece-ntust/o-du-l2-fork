@@ -227,7 +227,7 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
 
          if(tempAlgoSelection < 1)
          {
-            sliceCbToStore->algorithm = WFQ;
+            sliceCbToStore->algorithm = RR;
             sliceCbToStore->algoMethod = FLAT;
          }
          else
@@ -1853,14 +1853,14 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
 
    if (isRetx == FALSE)
    {
-      if(schDlGetAvlHqProcess(cell, ueCb, hqP) != ROK)
+      if(schDlGetAvlHqProcess(cell, ueCb, &ueNewHarqList[ueId-1]) != ROK)
       {
          return false;
       }
    }
 
    if(findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
-            &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, isRetx, *hqP) != true )
+            &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, isRetx, ueNewHarqList[ueId-1]) != true )
    {
       /* If a valid combination of slots to scheduled PDCCH, PDSCH and PUCCH is
        * not found, do not perform resource allocation. Return from here. */
@@ -1870,7 +1870,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
    sliceCbNode = schSpcCell->sliceCbList.first;
 
-   maxFreePRB = searchLargestFreeBlock((*hqP)->hqEnt->cell, pdschTime, &startPrb, DIR_DL);
+   maxFreePRB = searchLargestFreeBlock(ueNewHarqList[ueId-1]->hqEnt->cell, pdschTime, &startPrb, DIR_DL);
    totalRemainingPrb = maxFreePRB;
 
    
@@ -1954,7 +1954,6 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          if(!dciSlotAlloc)
          {
             DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
-            pthread_exit(NULL);  
             return false;
          }
          cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
@@ -1963,7 +1962,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    }
 
 
-   if(schSliceBasedDlFinalScheduling(cell, pdschTime, pdcchTime, pucchTime, pdschStartSymbol, pdschNumSymbols, &ueDlNewTransmission, isRetx, hqP, totalRemainingPrb, startPrb) != ROK)
+   if(schSliceBasedDlFinalScheduling(cell, pdschTime, pdcchTime, pucchTime, pdschStartSymbol, pdschNumSymbols, &ueDlNewTransmission, isRetx, ueNewHarqList, totalRemainingPrb, startPrb) != ROK)
    {
       DU_LOG("\nDennis --> DL Final Scheduling Failed");
       return false;
@@ -4190,7 +4189,7 @@ void setRrmPolicyWithTimer(SchCellCb *cell)
 
    schSpcCell->slot_ind_count++;
 
-   if(schSpcCell->slot_ind_count >= 250)
+   if(schSpcCell->slot_ind_count >= 500)
    {
       schSpcCell->timer_sec++;
       DU_LOG("\nDennis --> Timer: %d s", schSpcCell->timer_sec);

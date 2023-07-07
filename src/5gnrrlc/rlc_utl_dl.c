@@ -717,6 +717,8 @@ uint8_t rlcUtlSendDedLcBoStatus(RlcCb *gCb, RlcDlRbCb *rbCb, int32_t bo, \
    boStatus->bo = bo + estHdrSz;
 
    FILL_PST_RLC_TO_MAC(pst, RLC_DL_INST, EVENT_BO_STATUS_TO_MAC);
+
+   //DU_LOG("\nDennis --> RLC: Send the Bo Status to MAC triggered by new PDU");
    /* Send Status Response to MAC layer */
    if(RlcSendBoStatusToMac(&pst, boStatus) != ROK)
    {
