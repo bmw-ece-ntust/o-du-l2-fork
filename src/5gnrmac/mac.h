@@ -113,7 +113,7 @@ typedef struct macDlSlot
 
 typedef struct macUlSlot
 {
-   UlSchedInfo  ulInfo;
+   UlSchedInfo  ulInfo[MAX_NUM_UE]; /*JOJO: Store scheduling info. in UL slot of multiple UEs.*/
 }MacUlSlot;
 
 typedef struct macCbInfo

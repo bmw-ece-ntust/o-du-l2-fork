@@ -238,9 +238,10 @@ bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
 
    schAllocPucchResource(cell, pucchTime, crnti, ueCb, isRetx, *hqP);
 
-   cell->schDlSlotInfo[pdcchTime.slot]->pdcchUe = ueId;
-   cell->schDlSlotInfo[pdschTime.slot]->pdschUe = ueId;
-   cell->schUlSlotInfo[pucchTime.slot]->pucchUe = ueId;
+   /* JOJO: Store UE id into specific element in UE list.*/
+   cell->schDlSlotInfo[pdcchTime.slot]->pdcchUe[ueId-1] = ueId;
+   cell->schDlSlotInfo[pdschTime.slot]->pdschUe[ueId-1] = ueId;
+   cell->schUlSlotInfo[pucchTime.slot]->pucchUe[ueId-1] = ueId;
 
    /*Re-setting the BO's of all DL LCs in this UE*/
    for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
@@ -429,10 +430,11 @@ bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, 
    }
 #endif
 
-   if(cell->schDlSlotInfo[pdcchTime->slot]->pdcchUe != 0)
-   {
-      return false;
-   }
+   /* JOJO: Scheduler should be able to schedule PDCCH for multiple UEs here. */
+   // if(cell->schDlSlotInfo[pdcchTime->slot]->pdcchUe != 0)
+   // {
+   //    return false;
+   // }
 
    if(dedMsg == true)
    {
@@ -471,10 +473,11 @@ bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, 
          continue;
       }
 #endif
-      if(cell->schDlSlotInfo[pdschTime->slot]->pdschUe != 0)
-      {
-         continue; 
-      }
+      /* JOJO: Scheduler should be able to schedule PDSCH for multiple UEs here. */
+      // if(cell->schDlSlotInfo[pdschTime->slot]->pdschUe != 0)
+      // {
+      //    continue; 
+      // }
 
       numK1 = k0K1InfoTbl->k0k1TimingInfo[pdcchTime->slot].k0Indexes[k0TblIdx].k1TimingInfo.numK1;
       for(k1TblIdx = 0; k1TblIdx < numK1; k1TblIdx++)
@@ -498,10 +501,11 @@ bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, 
             continue;
          }
 #endif
-         if(cell->schUlSlotInfo[pucchTime->slot]->pucchUe != 0)
-         {
-            continue; 
-         }
+         /* JOJO: Scheduler should be able to schedule PUCCH for multiple UEs here. */
+         // if(cell->schUlSlotInfo[pucchTime->slot]->pucchUe != 0)
+         // {
+         //    continue; 
+         // }
          if(hqP)
          {
             ADD_DELTA_TO_TIME((*pucchTime), hqP->pucchTime, 0, cell->numSlots);

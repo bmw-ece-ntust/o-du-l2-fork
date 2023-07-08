@@ -86,10 +86,10 @@ typedef struct schSliceBasedUeCb
    float_t prbWeight; /*  prbWeight (0 ~ 1) is used for calculate the number of PRB within this TTI */
    float_t weight; /*  Weight (0 ~ 1) which is used for WFQ algorithm */
    bool isTxPayloadLenAdded;
-   bool isDlMsgPending;
-   bool isDlMsgScheduled;
-   bool isUlGrantPending; 
-   bool isUlGrantScheduled;
+   bool isDlMsgPending; /*JOJO: Flag for checking if there is DL data for UE.*/
+   bool isDlMsgScheduled; /*JOJO: Flag for checking if DL data for UE is scheduled.*/
+   bool isUlGrantPending; /*JOJO: Flag for checking if there is UL data for UE.*/
+   bool isUlGrantScheduled; /*JOJO: Flag for checking if UL data for UE is scheduled.*/
 }SchSliceBasedUeCb;
 
 typedef struct schSliceBasedSliceCb
@@ -151,7 +151,7 @@ uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pd
 void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg);
 uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTime, SlotTimingInfo pdcchTime, \
                   SlotTimingInfo pucchTime, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, CmLListCp *ueDlNewTransmission, \
-                  bool isRetx, SchDlHqProcCb **hqP, uint16_t remainingPrb, uint16_t startPrb);
+                  bool isRetx, SchDlHqProcCb **ueNewHarqList, uint16_t remainingPrb, uint16_t startPrb);
 
 /* UL Slice-Based Function */
 /* Once the scheduler supports multi-UEs per TTI scheduling, the parameter 'ueId' should be deleted */

@@ -1315,8 +1315,10 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
    uint8_t        ueId;
    bool           isRarPending = false, isRarScheduled = false;
    bool           isMsg4Pending = false, isMsg4Scheduled = false;
-   bool           isDlMsgPending = false, isDlMsgScheduled = false;
-   bool           isUlGrantPending = false, isUlGrantScheduled = false;
+   /* JOJO: Put the flags into UE control block.*/
+   // bool           isDlMsgPending = false, isDlMsgScheduled = false;
+   // bool           isUlGrantPending = false, isUlGrantScheduled = false;
+   CmLList        *pendingUeNodeNext; /* JOJO: For the maintanance of UE schedule list.*/
 
    schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
    
@@ -1403,61 +1405,10 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
          {
 
             /* DL Data */
-            node = NULLP;
-            if(schSpcUeCb)
-               node = schSpcUeCb->hqRetxCb.dlRetxHqList.first;
-            if(node != NULLP)
+            /*JOJO: Only check if there is new transmission and retransmission in function "schSliceBasedDlScheduling"*/
+            if(!schSliceBasedDlScheduling(cell, *slotInd, ueId, FALSE, &hqP))
             {
-               /* DL Data ReTransmisson */
-               isDlMsgPending = true;
-               isDlMsgScheduled = schFillBoGrantDlSchedInfo(cell, *slotInd, ueId, TRUE, ((SchDlHqProcCb**) &(node->node)));
-               DU_LOG("\nDennis --> DL Retransmission is triggered");
-               if(isDlMsgScheduled)
-               {
-#ifdef NR_DRX 
-                  schDrxStopDlHqRetxTmr(cell, &cell->ueCb[ueId-1], ((SchDlHqProcCb**) &(node->node)));
-#endif
-                  schSliceBasedRemoveFrmDlHqRetxList(&cell->ueCb[ueId-1], node);
-               }
-            }
-            else
-            {
-               /* DL Data new transmission */
-               if((cell->boIndBitMap) & (1<<ueId))
-               {
-                  DU_LOG("\nDennis  --> SCH Has UE to be scheduled New DL. [%d : %d]", slotInd->sfn, slotInd->slot);
-                  isDlMsgPending = true;
-                  //isDlMsgScheduled = schFillBoGrantDlSchedInfo(cell, *slotInd, ueId, FALSE, &hqP);
-                  isDlMsgScheduled = schSliceBasedDlScheduling(cell, *slotInd, ueId, FALSE, &hqP);
-
-                  /* If DL scheduling failed, free the newly assigned HARQ process */
-                  if(!isDlMsgScheduled)
-                     schDlReleaseHqProcess(hqP);
-                  else
-                  {
-#ifdef NR_DRX
-                     schHdlDrxInActvStrtTmr(cell, &cell->ueCb[ueId-1], PHY_DELTA_DL + SCHED_DELTA);
-#endif
-                  }
-               }
-               else
-               {
-                  /* Reset the allocated PRB in each sliceCB */
-                  CmLList *sliceCbNode = NULLP; 
-                  SchSliceBasedSliceCb *sliceCb = NULLP;
-                  SchSliceBasedCellCb *schSpcCell = NULLP;
-
-                  schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
-                  sliceCbNode = schSpcCell->sliceCbList.first;
-
-                  while(sliceCbNode)
-                  {
-                     sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
-                     sliceCb->allocatedPrb = 0;
-
-                     sliceCbNode = sliceCbNode->next;
-                  }
-               }
+               DU_LOG("\nJOJO --> Slice-based DL scheduling failed.");
             }
 
             /* Scheduling of UL grant */
@@ -1467,47 +1418,73 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
             if(node != NULLP)
             {
                /* UL Data ReTransmisson */
-               isUlGrantPending = true;
-               isUlGrantScheduled = schProcessSrOrBsrReq(cell, *slotInd, ueId, TRUE, (SchUlHqProcCb**) &(node->node));
-               DU_LOG("\nDennis --> UL Retransmission is triggered");
-               if(isUlGrantScheduled)
+               schSpcUeCb->isUlGrantPending = true;
+               schSpcUeCb->isUlGrantScheduled = schProcessSrOrBsrReq(cell, *slotInd, ueId, TRUE, (SchUlHqProcCb**) &(node->node));
+               DU_LOG("\nJOJO --> UL retransmission is triggered.");
+               if(schSpcUeCb->isUlGrantScheduled)
                {
-#ifdef NR_DRX 
+            #ifdef NR_DRX 
                   schDrxStopUlHqRetxTmr(cell, &cell->ueCb[ueId-1], ((SchUlHqProcCb**) &(node->node)));
-#endif
+            #endif
                   schSliceBasedRemoveFrmUlHqRetxList(&cell->ueCb[ueId-1], node);
                }
             }
             else
             {
                /* UL Data new transmission */
+               DU_LOG("\nJOJO --> UL new transmission is triggered.");
                if(cell->ueCb[ueId-1].srRcvd || cell->ueCb[ueId-1].bsrRcvd)
                {
-                  isUlGrantPending = true;
-                  isUlGrantScheduled = schProcessSrOrBsrReq(cell, *slotInd, ueId, FALSE, &ulHqP);
+                  schSpcUeCb->isUlGrantPending = true;
+                  schSpcUeCb->isUlGrantScheduled = schProcessSrOrBsrReq(cell, *slotInd, ueId, FALSE, &ulHqP);
                   //isUlGrantScheduled = schSliceBasedUlScheduling(cell, *slotInd, ueId, FALSE, &ulHqP);
-                  if(!isUlGrantScheduled)
+                  if(!schSpcUeCb->isUlGrantScheduled)
                      schUlReleaseHqProcess(ulHqP, FALSE);
                   else
                   {
-#ifdef NR_DRX
+            #ifdef NR_DRX
                      schHdlDrxInActvStrtTmr(cell, &cell->ueCb[ueId-1], PHY_DELTA_UL + SCHED_DELTA);
-#endif
+            #endif
                   }
                }
             }
 
-            if(!isUlGrantPending && !isDlMsgPending)
+            /*JOJO: Maintain UE scheduling list for multiple UE scheduling per TTI.*/
+            DU_LOG("\nJOJO --> SCH is maintaining UE scheduling list, length of UE scheduling list: %d", schSpcCell->ueToBeScheduled.count);
+            pendingUeNode = schSpcCell->ueToBeScheduled.first;
+            CmLList        *pendingUeNodeNext;
+            bool isUEPermuted[MAX_NUM_UE] = {0};
+            while(pendingUeNode)
             {
-               /* No action required */  
-            }
-            else if((isUlGrantPending && !isUlGrantScheduled) || (isDlMsgPending && !isDlMsgScheduled))
-            {
-               cmLListAdd2Tail(&schSpcCell->ueToBeScheduled, cmLListDelFrm(&schSpcCell->ueToBeScheduled, pendingUeNode));
-            }
-            else
-            {
-               schSliceBasedRemoveUeFrmScheduleLst(cell, pendingUeNode);
+               pendingUeNodeNext = pendingUeNode->next;
+               ueId = *(uint8_t *)(pendingUeNode->node);
+               schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+
+               // if(schSpcUeCb)
+               if(schSpcUeCb && !isUEPermuted[ueId-1])
+               {
+                  if(!schSpcUeCb->isUlGrantPending && !schSpcUeCb->isDlMsgPending)
+                  {
+                     /* No action required */  
+                     DU_LOG("\nJOJO --> UE id: %d, no action for pendingUeNode.", ueId);
+                  }
+                  else if((schSpcUeCb->isUlGrantPending && !schSpcUeCb->isUlGrantScheduled) || (schSpcUeCb->isDlMsgPending && !schSpcUeCb->isDlMsgScheduled))
+                  {
+                     DU_LOG("\nJOJO --> UE id: %d, add UE into the tail of pendingUeNode.", ueId);
+                     cmLListAdd2Tail(&schSpcCell->ueToBeScheduled, cmLListDelFrm(&schSpcCell->ueToBeScheduled, pendingUeNode));
+                  }
+                  else
+                  {
+                     DU_LOG("\nJOJO --> UE id: %d, remove UE from pendingUeNode.", ueId);
+                     schSliceBasedRemoveUeFrmScheduleLst(cell, pendingUeNode);
+                  }
+                  isUEPermuted[ueId-1] = 1;
+                  schSpcUeCb->isDlMsgPending = false;
+                  schSpcUeCb->isDlMsgScheduled = false;
+                  schSpcUeCb->isUlGrantPending = false;
+                  schSpcUeCb->isUlGrantScheduled = false;
+               }
+               pendingUeNode = pendingUeNodeNext;
             }
          }
       }
@@ -1839,38 +1816,88 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    SchSliceBasedCellCb *schSpcCell = NULLP;
    CmLList *sliceCbNode = NULLP; 
    SchSliceBasedSliceCb *sliceCb = NULLP;
-
-   /* Hard-coded the UE DL Retransmission LL for 1 UE per TTI */
-   SchDlHqProcCb *ueNewHarqList[MAX_NUM_UE];
-   ueNewHarqList[ueId-1] = *hqP;
-
-   /* Hard-coded the UE DL New Transmission LL for 1 UE per TTI*/
+/*JOJO: Declare the parameters which are used to store HARQ list and transmission list for multiple UEs per TTI.*/
+   CmLList *ueNode, *ueNodeNext = NULLP;
    CmLListCp ueDlNewTransmission;
+   CmLListCp ueDlRetransmission;
+   SchDlHqProcCb  *ueNewHarqList[MAX_NUM_UE];
+   CmLList *node;
+   uint8_t UEWillBeScheduled = 0;
+   uint8_t UENeedToBeScheduled = 0;
+
+   // memset(&ueNewHarqList, 0, MAX_NUM_UE * sizeof(SchDlHqProcCb*));
+   schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
    cmLListInit(&ueDlNewTransmission);
-   addNodeToLList(&ueDlNewTransmission, &ueId, NULLP);
+   cmLListInit(&ueDlRetransmission);
 
-   ueCb = &cell->ueCb[ueId-1];
-
-   if (isRetx == FALSE)
+   if(cell->boIndBitMap != 0)
+      DU_LOG("\nJOJO --> BO Indication Bitmap: %d", cell->boIndBitMap);
+   /*JOJO: Loop over each UE in UE to be scheduled list for DL transmission.*/
+   ueNode = schSpcCell->ueToBeScheduled.first;
+   while(ueNode)
    {
-      if(schDlGetAvlHqProcess(cell, ueCb, &ueNewHarqList[ueId-1]) != ROK)
+      uint8_t ueId = *(uint8_t *)(ueNode->node);
+      uint8_t *ueIdToAdd;
+      SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+
+      ueCb = &cell->ueCb[ueId-1];
+      node = NULLP;
+
+      if(schSpcUeCb)
+         node = schSpcUeCb->hqRetxCb.dlRetxHqList.first;
+      if(node != NULLP)
       {
-         return false;
+         if(ueId > UEWillBeScheduled)
+            UEWillBeScheduled = ueId;
+         UENeedToBeScheduled++;
+         schSpcUeCb->isDlMsgPending = true;
+         schSpcUeCb->isDlMsgScheduled = false;
+         /*JOJO: Check if it can find K0, K1.*/
+         if(findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
+            &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, TRUE, *hqP) == true )
+         {
+            SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
+            *ueIdToAdd = ueId;
+            addNodeToLList(&ueDlRetransmission, ueIdToAdd, NULLP);
+         }
       }
+      else
+      {
+         if((cell->boIndBitMap) & (1<<ueId))
+         {
+            UENeedToBeScheduled++;
+            schSpcUeCb->isDlMsgPending = true;
+            schSpcUeCb->isDlMsgScheduled = false;
+            /*JOJO: Check if it can find K0, K1 and free HARQ process.*/
+            if(schDlGetAvlHqProcess(cell, ueCb, hqP) == ROK &&\
+            findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
+               &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, FALSE, *hqP) == true)
+            {
+               UEWillBeScheduled = ueId;
+               ueNewHarqList[ueId-1] = *hqP; /*JOJO: Keep HARQ list for new transmission.*/
+               SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
+               *ueIdToAdd = ueId;
+               addNodeToLList(&ueDlNewTransmission, ueIdToAdd, NULLP);
+            }
+         }
+      }
+      ueNode = ueNode->next;
    }
 
-   if(findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
-            &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, isRetx, ueNewHarqList[ueId-1]) != true )
+   /*JOJO: Check if list of new transmission and retransmission is NULL or not.*/
+   if(ueDlNewTransmission.first == NULLP && ueDlRetransmission.first == NULLP)
    {
-      /* If a valid combination of slots to scheduled PDCCH, PDSCH and PUCCH is
-       * not found, do not perform resource allocation. Return from here. */
       return false;
+   }
+   else
+   {
+      DU_LOG("\nJOJO --> %d UEs need to be scheduled for DL.", UENeedToBeScheduled);
    }
 
    schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
    sliceCbNode = schSpcCell->sliceCbList.first;
 
-   maxFreePRB = searchLargestFreeBlock(ueNewHarqList[ueId-1]->hqEnt->cell, pdschTime, &startPrb, DIR_DL);
+   maxFreePRB = searchLargestFreeBlock((ueNewHarqList[UEWillBeScheduled-1])->hqEnt->cell, pdschTime, &startPrb, DIR_DL); /*JOJO: Choose one of UE for searching the largest PRB free block.*/
    totalRemainingPrb = maxFreePRB;
 
    
@@ -1968,8 +1995,68 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       return false;
    }
 
-   /* Free the hard-coded UE DL New Transmission LL for 1 UE per TTI */
-   SCH_FREE(ueDlNewTransmission.first, sizeof(CmLList));
+   /* JOJO: Traverse DL scheduling list, release new transmission list.*/
+   int UEScheduled = 0;
+   ueNode = ueDlNewTransmission.first;
+   while(ueNode)
+   {
+      uint8_t ueId = *(uint8_t *)(ueNode->node);
+      SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+
+      ueNodeNext = ueNode->next;
+      /*JOJO: If UE is not scheduled, then release the new allocated HARQ.*/
+      if(!schSpcUeCb->isDlMsgScheduled)
+      {
+         DU_LOG("\nJOJO --> UE id: %d, releasing HARQ.", ueId);
+         schDlReleaseHqProcess(ueNewHarqList[ueId-1]);
+      }
+      else
+      {
+         DU_LOG("\nJOJO --> UE id: %d, is scheduled.", ueId);
+         UEScheduled++;
+#ifdef NR_DRX
+         schHdlDrxInActvStrtTmr(cell, &cell->ueCb[ueId-1], PHY_DELTA_DL + SCHED_DELTA);
+#endif
+      }
+
+      SCH_FREE(ueNode->node, sizeof(uint8_t));
+      cmLListDelFrm(&ueDlNewTransmission, ueNode);
+      SCH_FREE(ueNode, sizeof(CmLList));
+
+      ueNode = ueNodeNext;
+   }
+
+   /* JOJO: Traverse DL scheduling list, release retransmission list.*/
+   ueNode = ueDlRetransmission.first;
+   while(ueNode)
+   {
+      uint8_t ueId = *(uint8_t *)(ueNode->node);
+      SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+
+      ueNodeNext = ueNode->next;
+      /*JOJO: If UE is scheduled, then remove UE from retransmission list.*/
+      if(schSpcUeCb->isDlMsgScheduled)
+      {
+         UEScheduled++;
+#ifdef NR_DRX 
+         schDrxStopDlHqRetxTmr(cell, &cell->ueCb[ueId-1], ((SchDlHqProcCb**) &(node->node)));
+#endif
+         schSliceBasedRemoveFrmDlHqRetxList(&cell->ueCb[ueId-1], node);
+      }
+      
+      schSpcUeCb->isDlMsgPending = false;
+      schSpcUeCb->isDlMsgScheduled = false;
+
+      SCH_FREE(ueNode->node, sizeof(uint8_t));
+      cmLListDelFrm(&ueDlRetransmission, ueNode);
+      SCH_FREE(ueNode, sizeof(CmLList));
+
+      ueNode = ueNodeNext;
+   }
+   
+   DU_LOG("\nJOJO --> %d UEs are scheduled in this slot.", UEScheduled);
+   cmLListDeleteLList(&ueDlNewTransmission);
+   cmLListDeleteLList(&ueDlRetransmission);
 
    return true;
 }
@@ -2524,18 +2611,19 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
             SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
             cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = NULL;
          }
-         if (isRetx != TRUE)
-         {
-            accumalatedSize += TX_PAYLOAD_HDR_LEN;
-         }
-         numPRB = schCalcNumPrb(accumalatedSize, ueCb->ueCfg.dlModInfo.mcsIndex, pdschNumSymbols);
-         //DU_LOG("\nJOJO  -->  UE id: %d, is allocated %d PRBs (add header).", ueId, numPRB);
-         startPrb += numPRB; /*JOJO: accumulate start PRB.*/
 
          /*JOJO: If failed, traverse next UE.*/
          ueNode = ueNode->next;
          continue;
       }
+
+      if (isRetx != TRUE)
+      {
+         accumalatedSize += TX_PAYLOAD_HDR_LEN;
+      }
+      numPRB = schCalcNumPrb(accumalatedSize, ueCb->ueCfg.dlModInfo.mcsIndex, pdschNumSymbols);
+      //DU_LOG("\nJOJO  -->  UE id: %d, is allocated %d PRBs (add header).", ueId, numPRB);
+      startPrb += numPRB; /*JOJO: accumulate start PRB.*/
 
       /* Check if both DCI and DL_MSG are sent in the same slot.
       * If not, allocate memory for DL_MSG PDSCH slot to store PDSCH info */
@@ -2600,11 +2688,14 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
          }
       }
 
-      schAllocPucchResource(cellCb, pucchTime, crnti, ueCb, isRetx, *hqP);
+      // schAllocPucchResource(cellCb, pucchTime, crnti, ueCb, isRetx, *hqP);
+      /*JOJO: Allocate PUCCH based on PDCCH allocation.*/
+      schAllocPucchResourceMu(cellCb, pdcchTime, pucchTime, crnti, ueCb, isRetx, *hqP);
 
-      cellCb->schDlSlotInfo[pdcchTime.slot]->pdcchUe = ueId;
-      cellCb->schDlSlotInfo[pdschTime.slot]->pdschUe = ueId;
-      cellCb->schUlSlotInfo[pucchTime.slot]->pucchUe = ueId;
+      /* JOJO: Store UE id into specific element in UE list.*/
+      cellCb->schDlSlotInfo[pdcchTime.slot]->pdcchUe[ueId-1] = ueId;
+      cellCb->schDlSlotInfo[pdschTime.slot]->pdschUe[ueId-1] = ueId;
+      cellCb->schUlSlotInfo[pucchTime.slot]->pucchUe[ueId-1] = ueId;
 
       ueSliceBasedCb->isTxPayloadLenAdded = FALSE;
       cmLListDeleteLList(&defLcList);

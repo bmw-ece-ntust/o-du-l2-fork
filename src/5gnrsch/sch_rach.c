@@ -574,9 +574,9 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
    if(schGetSlotSymbFrmt(dciSlot, cell->slotFrmtBitMap) == DL_SLOT)
 #endif
    {
-      /* If PDCCH is already scheduled on this slot, cannot schedule PDSCH for another UE here. */
-      if(cell->schDlSlotInfo[dciSlot]->pdcchUe != 0)
-         return false;
+      /* JOJO: Scheduler should be able to schedule PDSCH for multiple UEs here. */
+      // if(cell->schDlSlotInfo[dciSlot]->pdcchUe != 0)
+      //    return false;
 
       /* Check if this slot is within RA response window */
       windowStatus = isInRaRspWindow(cell->raReq[ueId-1], dciTime, cell->numSlots);
@@ -596,8 +596,9 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
             rarSlot = rarTime.slot;
             
             /* If PDSCH is already scheduled on this slot, cannot schedule PDSCH for another UE here. */
-            if(cell->schDlSlotInfo[rarSlot]->pdschUe != 0)
-               continue;
+            /* JOJO: Scheduler should be able to schedule PDSCH for multiple UEs here. */
+            // if(cell->schDlSlotInfo[rarSlot]->pdschUe != 0)
+            //    continue;
 
             /* If Contention-FREE RA is in progress, allocate resources for
              * PUCCH for next UL message */
@@ -622,8 +623,9 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
                   if(schGetSlotSymbFrmt(pucchTime.slot, cell->slotFrmtBitMap) == DL_SLOT)
                      continue;
 #endif
-                  if(cell->schUlSlotInfo[pucchTime.slot]->pucchUe != 0)
-                     continue;
+                  /* JOJO: Scheduler should be able to schedule PDSCH for multiple UEs here. */
+                  // if(cell->schUlSlotInfo[pucchTime.slot]->pucchUe != 0)
+                  //    continue;
                   k1Found = true;
                   break;
                }
@@ -647,8 +649,9 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
 #endif
                      /* If PUSCH is already scheduled on this slot, another PUSCH
                       * pdu cannot be scheduled here */
-                     if(cell->schUlSlotInfo[msg3Time.slot]->puschUe != 0)
-                        continue;
+                     /* JOJO: Scheduler should be able to schedule PUSCH for multiple UEs here. */
+                     // if(cell->schUlSlotInfo[msg3Time.slot]->puschUe != 0)
+                     //    continue;
 
                      k2Found = true;
                      break;
@@ -782,10 +785,11 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
          }
       }
 
-      cell->schDlSlotInfo[dciSlot]->pdcchUe = ueId;
-      cell->schDlSlotInfo[rarSlot]->pdschUe = ueId;
+      /* JOJO: Store UE id into specific element in UE list.*/
+      cell->schDlSlotInfo[dciSlot]->pdcchUe[ueId-1] = ueId;
+      cell->schDlSlotInfo[rarSlot]->pdschUe[ueId-1] = ueId;
       if(cell->raReq[ueId-1]->isCFRA)
-         cell->schUlSlotInfo[pucchTime.slot]->pucchUe = ueId;
+         cell->schUlSlotInfo[pucchTime.slot]->pucchUe[ueId-1] = ueId;
       else
          cell->schUlSlotInfo[msg3Time.slot]->puschUe = ueId;
 

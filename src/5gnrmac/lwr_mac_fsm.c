@@ -4190,29 +4190,33 @@ uint8_t getnPdus(fapi_ul_tti_req_t *ulTtiReq, MacUlSlot *currUlSlot)
 
    if(ulTtiReq && currUlSlot)
    {
-      if(currUlSlot->ulInfo.dataType & SCH_DATATYPE_PRACH)
+       /* JOJO: Loop over each UL scheduling info. to accumulate PUCCH from multiple UEs.*/
+      for(int ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
       {
-	 pduCount++;
-	 ulTtiReq->rachPresent++;
-      }
-      if(currUlSlot->ulInfo.dataType & SCH_DATATYPE_PUSCH)
-      {
-	 pduCount++;
-	 ulTtiReq->nUlsch++;
-      }
-      if(currUlSlot->ulInfo.dataType & SCH_DATATYPE_PUSCH_UCI)
-      {
-	 pduCount++;
-	 ulTtiReq->nUlsch++;
-      }
-      if(currUlSlot->ulInfo.dataType & SCH_DATATYPE_UCI)
-      {
-	 pduCount++;
-	 ulTtiReq->nUlcch++;
-      }
-      if(currUlSlot->ulInfo.dataType & SCH_DATATYPE_SRS)
-      {
-	 pduCount++;
+         if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_PRACH)
+         {
+            pduCount++;
+            ulTtiReq->rachPresent++;
+         }
+         if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_PUSCH)
+         {
+            pduCount++;
+            ulTtiReq->nUlsch++;
+         }
+         if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_PUSCH_UCI)
+         {
+            pduCount++;
+            ulTtiReq->nUlsch++;
+         }
+         if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_UCI)
+         {
+            pduCount++;
+            ulTtiReq->nUlcch++;
+         }
+         if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_SRS)
+         {
+            pduCount++;
+         }
       }
    }
    return pduCount;
@@ -4264,19 +4268,20 @@ void setNumCs(uint16_t *numCs, MacCellCfg *macCellCfg)
  * ********************************************************************/
 
 #ifdef INTEL_FAPI
-void fillPrachPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, MacCellCfg *macCellCfg, MacUlSlot *currUlSlot)
+/* JOJO: Modify the argument of function, and fill PRACH info. for specific UE into PRACH FAPI PDU.*/
+void fillPrachPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, MacCellCfg *macCellCfg, MacUlSlot *currUlSlot, uint8_t ueIdx)
 {
    if(ulTtiReqPdu != NULLP)
    {
       ulTtiReqPdu->pduType = PRACH_PDU_TYPE; 
       ulTtiReqPdu->pdu.prach_pdu.physCellId = macCellCfg->cellCfg.phyCellId;
       ulTtiReqPdu->pdu.prach_pdu.numPrachOcas = \
-         currUlSlot->ulInfo.prachSchInfo.numPrachOcas;
+         currUlSlot->ulInfo[ueIdx].prachSchInfo.numPrachOcas;
       ulTtiReqPdu->pdu.prach_pdu.prachFormat = \
-	 currUlSlot->ulInfo.prachSchInfo.prachFormat;
-      ulTtiReqPdu->pdu.prach_pdu.numRa = currUlSlot->ulInfo.prachSchInfo.numRa;
+	 currUlSlot->ulInfo[ueIdx].prachSchInfo.prachFormat;
+      ulTtiReqPdu->pdu.prach_pdu.numRa = currUlSlot->ulInfo[ueIdx].prachSchInfo.numRa;
       ulTtiReqPdu->pdu.prach_pdu.prachStartSymbol = \
-	 currUlSlot->ulInfo.prachSchInfo.prachStartSymb;
+	 currUlSlot->ulInfo[ueIdx].prachSchInfo.prachStartSymb;
       setNumCs(&ulTtiReqPdu->pdu.prach_pdu.numCs, macCellCfg);
       ulTtiReqPdu->pdu.prach_pdu.beamforming.numPrgs = 0;
       ulTtiReqPdu->pdu.prach_pdu.beamforming.prgSize = 0;
@@ -4301,14 +4306,15 @@ void fillPrachPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, MacCellCfg *macCellCfg, Ma
  *         RFAILED - failure
  *
  * ****************************************************************/
-void fillPuschPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, fapi_vendor_ul_tti_req_pdu_t *ulTtiVendorPdu, MacCellCfg *macCellCfg, MacUlSlot *currUlSlot)
+/* JOJO: Modify the argument of function, and fill PUSCH info. for specific UE into PUSCH FAPI PDU.*/
+void fillPuschPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, fapi_vendor_ul_tti_req_pdu_t *ulTtiVendorPdu, MacCellCfg *macCellCfg, MacUlSlot *currUlSlot, uint8_t ueIdx)
 {
    if(ulTtiReqPdu != NULLP)
    {
       ulTtiReqPdu->pduType = PUSCH_PDU_TYPE;
       memset(&ulTtiReqPdu->pdu.pusch_pdu, 0, sizeof(fapi_ul_pusch_pdu_t));
       ulTtiReqPdu->pdu.pusch_pdu.pduBitMap = 1;
-      ulTtiReqPdu->pdu.pusch_pdu.rnti = currUlSlot->ulInfo.crnti;
+      ulTtiReqPdu->pdu.pusch_pdu.rnti = currUlSlot->ulInfo[ueIdx].crnti;
       /* TODO : Fill handle in raCb when scheduling pusch and access here */
       ulTtiReqPdu->pdu.pusch_pdu.handle = 100;
       ulTtiReqPdu->pdu.pusch_pdu.bwpSize = macCellCfg->initialUlBwp.bwp.numPrb;
@@ -4318,48 +4324,48 @@ void fillPuschPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, fapi_vendor_ul_tti_req_pdu
       ulTtiReqPdu->pdu.pusch_pdu.cyclicPrefix = \
          macCellCfg->initialUlBwp.bwp.cyclicPrefix;
       ulTtiReqPdu->pdu.pusch_pdu.targetCodeRate = 308;
-      ulTtiReqPdu->pdu.pusch_pdu.qamModOrder = currUlSlot->ulInfo.schPuschInfo.tbInfo.qamOrder;
-      ulTtiReqPdu->pdu.pusch_pdu.mcsIndex = currUlSlot->ulInfo.schPuschInfo.tbInfo.mcs;
-      ulTtiReqPdu->pdu.pusch_pdu.mcsTable = currUlSlot->ulInfo.schPuschInfo.tbInfo.mcsTable;
+      ulTtiReqPdu->pdu.pusch_pdu.qamModOrder = currUlSlot->ulInfo[ueIdx].schPuschInfo.tbInfo.qamOrder;
+      ulTtiReqPdu->pdu.pusch_pdu.mcsIndex = currUlSlot->ulInfo[ueIdx].schPuschInfo.tbInfo.mcs;
+      ulTtiReqPdu->pdu.pusch_pdu.mcsTable = currUlSlot->ulInfo[ueIdx].schPuschInfo.tbInfo.mcsTable;
       ulTtiReqPdu->pdu.pusch_pdu.transformPrecoding = 1;
-      ulTtiReqPdu->pdu.pusch_pdu.dataScramblingId = currUlSlot->ulInfo.cellId;
+      ulTtiReqPdu->pdu.pusch_pdu.dataScramblingId = currUlSlot->ulInfo[ueIdx].cellId;
       ulTtiReqPdu->pdu.pusch_pdu.nrOfLayers = 1;
       ulTtiReqPdu->pdu.pusch_pdu.ulDmrsSymbPos = 4;
       ulTtiReqPdu->pdu.pusch_pdu.dmrsConfigType = 0;
-      ulTtiReqPdu->pdu.pusch_pdu.ulDmrsScramblingId = currUlSlot->ulInfo.cellId;
+      ulTtiReqPdu->pdu.pusch_pdu.ulDmrsScramblingId = currUlSlot->ulInfo[ueIdx].cellId;
       ulTtiReqPdu->pdu.pusch_pdu.scid = 0;
       ulTtiReqPdu->pdu.pusch_pdu.numDmrsCdmGrpsNoData = 1;
       ulTtiReqPdu->pdu.pusch_pdu.dmrsPorts = 0;
       ulTtiReqPdu->pdu.pusch_pdu.resourceAlloc = \
-	 currUlSlot->ulInfo.schPuschInfo.fdAlloc.resAllocType;
+	 currUlSlot->ulInfo[ueIdx].schPuschInfo.fdAlloc.resAllocType;
       ulTtiReqPdu->pdu.pusch_pdu.rbStart = \
-         currUlSlot->ulInfo.schPuschInfo.fdAlloc.resAlloc.type1.startPrb;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.fdAlloc.resAlloc.type1.startPrb;
       ulTtiReqPdu->pdu.pusch_pdu.rbSize = \
-	 currUlSlot->ulInfo.schPuschInfo.fdAlloc.resAlloc.type1.numPrb;
+	 currUlSlot->ulInfo[ueIdx].schPuschInfo.fdAlloc.resAlloc.type1.numPrb;
       ulTtiReqPdu->pdu.pusch_pdu.vrbToPrbMapping = 0;
       ulTtiReqPdu->pdu.pusch_pdu.frequencyHopping = 0;
       ulTtiReqPdu->pdu.pusch_pdu.txDirectCurrentLocation = 0;
       ulTtiReqPdu->pdu.pusch_pdu.uplinkFrequencyShift7p5khz = 0;
       ulTtiReqPdu->pdu.pusch_pdu.startSymbIndex = \
-         currUlSlot->ulInfo.schPuschInfo.tdAlloc.startSymb;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.tdAlloc.startSymb;
       ulTtiReqPdu->pdu.pusch_pdu.nrOfSymbols = \
-         currUlSlot->ulInfo.schPuschInfo.tdAlloc.numSymb;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.tdAlloc.numSymb;
 #ifdef INTEL_FAPI
       ulTtiReqPdu->pdu.pusch_pdu.mappingType = \
-         currUlSlot->ulInfo.schPuschInfo.dmrsMappingType;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.dmrsMappingType;
       ulTtiReqPdu->pdu.pusch_pdu.nrOfDmrsSymbols = \
-         currUlSlot->ulInfo.schPuschInfo.nrOfDmrsSymbols;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.nrOfDmrsSymbols;
       ulTtiReqPdu->pdu.pusch_pdu.dmrsAddPos = \
-         currUlSlot->ulInfo.schPuschInfo.dmrsAddPos;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.dmrsAddPos;
 #endif
       ulTtiReqPdu->pdu.pusch_pdu.puschData.rvIndex = \
-         currUlSlot->ulInfo.schPuschInfo.tbInfo.rv;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.tbInfo.rv;
       ulTtiReqPdu->pdu.pusch_pdu.puschData.harqProcessId = \
-         currUlSlot->ulInfo.schPuschInfo.harqProcId;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.harqProcId;
       ulTtiReqPdu->pdu.pusch_pdu.puschData.newDataIndicator = \
-         currUlSlot->ulInfo.schPuschInfo.tbInfo.ndi;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.tbInfo.ndi;
       ulTtiReqPdu->pdu.pusch_pdu.puschData.tbSize = \
-         currUlSlot->ulInfo.schPuschInfo.tbInfo.tbSize;
+         currUlSlot->ulInfo[ueIdx].schPuschInfo.tbInfo.tbSize;
       /* numCb is 0 for new transmission */
       ulTtiReqPdu->pdu.pusch_pdu.puschData.numCb = 0;
 
@@ -4391,51 +4397,52 @@ void fillPuschPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, fapi_vendor_ul_tti_req_pdu
  *         RFAILED - failure
  *
  * ****************************************************************/
+/* JOJO: Modify the argument of function, and fill PUCCH info. for specific UE into PUCCH FAPI PDU.*/
 void fillPucchPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, fapi_vendor_ul_tti_req_pdu_t *ulTtiVendorPdu, MacCellCfg *macCellCfg,\
-      MacUlSlot *currUlSlot)
+      MacUlSlot *currUlSlot, uint8_t ueIdx)
 {
    if(ulTtiReqPdu != NULLP)
    {
       ulTtiReqPdu->pduType                  = PUCCH_PDU_TYPE;
       memset(&ulTtiReqPdu->pdu.pucch_pdu, 0, sizeof(fapi_ul_pucch_pdu_t));
-      ulTtiReqPdu->pdu.pucch_pdu.rnti         = currUlSlot->ulInfo.crnti;
+      ulTtiReqPdu->pdu.pucch_pdu.rnti         = currUlSlot->ulInfo[ueIdx].crnti;
       /* TODO : Fill handle in raCb when scheduling pucch and access here */
       ulTtiReqPdu->pdu.pucch_pdu.handle       = 100;
       ulTtiReqPdu->pdu.pucch_pdu.bwpSize      = macCellCfg->initialUlBwp.bwp.numPrb;
       ulTtiReqPdu->pdu.pucch_pdu.bwpStart     = macCellCfg->initialUlBwp.bwp.firstPrb;
       ulTtiReqPdu->pdu.pucch_pdu.subCarrierSpacing = macCellCfg->initialUlBwp.bwp.scs;
       ulTtiReqPdu->pdu.pucch_pdu.cyclicPrefix = macCellCfg->initialUlBwp.bwp.cyclicPrefix;
-      ulTtiReqPdu->pdu.pucch_pdu.formatType   = currUlSlot->ulInfo.schPucchInfo.pucchFormat; /* Supporting PUCCH Format 0 */
+      ulTtiReqPdu->pdu.pucch_pdu.formatType   = currUlSlot->ulInfo[ueIdx].schPucchInfo.pucchFormat; /* Supporting PUCCH Format 0 */
       ulTtiReqPdu->pdu.pucch_pdu.multiSlotTxIndicator = 0; /* No Multi Slot transmission */
       
-      ulTtiReqPdu->pdu.pucch_pdu.prbStart     = currUlSlot->ulInfo.schPucchInfo.fdAlloc.startPrb;
-      ulTtiReqPdu->pdu.pucch_pdu.prbSize      = currUlSlot->ulInfo.schPucchInfo.fdAlloc.numPrb;
-      ulTtiReqPdu->pdu.pucch_pdu.startSymbolIndex = currUlSlot->ulInfo.schPucchInfo.tdAlloc.startSymb;
-      ulTtiReqPdu->pdu.pucch_pdu.nrOfSymbols  = currUlSlot->ulInfo.schPucchInfo.tdAlloc.numSymb;
-      ulTtiReqPdu->pdu.pucch_pdu.freqHopFlag  = currUlSlot->ulInfo.schPucchInfo.intraFreqHop;
-      ulTtiReqPdu->pdu.pucch_pdu.secondHopPrb = currUlSlot->ulInfo.schPucchInfo.secondPrbHop;
+      ulTtiReqPdu->pdu.pucch_pdu.prbStart     = currUlSlot->ulInfo[ueIdx].schPucchInfo.fdAlloc.startPrb;
+      ulTtiReqPdu->pdu.pucch_pdu.prbSize      = currUlSlot->ulInfo[ueIdx].schPucchInfo.fdAlloc.numPrb;
+      ulTtiReqPdu->pdu.pucch_pdu.startSymbolIndex = currUlSlot->ulInfo[ueIdx].schPucchInfo.tdAlloc.startSymb;
+      ulTtiReqPdu->pdu.pucch_pdu.nrOfSymbols  = currUlSlot->ulInfo[ueIdx].schPucchInfo.tdAlloc.numSymb;
+      ulTtiReqPdu->pdu.pucch_pdu.freqHopFlag  = currUlSlot->ulInfo[ueIdx].schPucchInfo.intraFreqHop;
+      ulTtiReqPdu->pdu.pucch_pdu.secondHopPrb = currUlSlot->ulInfo[ueIdx].schPucchInfo.secondPrbHop;
       ulTtiReqPdu->pdu.pucch_pdu.groupHopFlag = 0;     
       ulTtiReqPdu->pdu.pucch_pdu.sequenceHopFlag = 0;
       ulTtiReqPdu->pdu.pucch_pdu.hoppingId    = 0;
 
-      ulTtiReqPdu->pdu.pucch_pdu.initialCyclicShift = currUlSlot->ulInfo.schPucchInfo.initialCyclicShift;
+      ulTtiReqPdu->pdu.pucch_pdu.initialCyclicShift = currUlSlot->ulInfo[ueIdx].schPucchInfo.initialCyclicShift;
 
       ulTtiReqPdu->pdu.pucch_pdu.dataScramblingId = 0; /* Valid for Format 2, 3, 4 */
-      ulTtiReqPdu->pdu.pucch_pdu.timeDomainOccIdx = currUlSlot->ulInfo.schPucchInfo.timeDomOCC; 
-      ulTtiReqPdu->pdu.pucch_pdu.preDftOccIdx = currUlSlot->ulInfo.schPucchInfo.occIdx; /* Valid for Format 4 only */
-      ulTtiReqPdu->pdu.pucch_pdu.preDftOccLen = currUlSlot->ulInfo.schPucchInfo.occLen; /* Valid for Format 4 only */
-      ulTtiReqPdu->pdu.pucch_pdu.pi2Bpsk = currUlSlot->ulInfo.schPucchInfo.pi2BPSK;
-      ulTtiReqPdu->pdu.pucch_pdu.addDmrsFlag = currUlSlot->ulInfo.schPucchInfo.addDmrs;/* Valid for Format 3, 4 only */
+      ulTtiReqPdu->pdu.pucch_pdu.timeDomainOccIdx = currUlSlot->ulInfo[ueIdx].schPucchInfo.timeDomOCC; 
+      ulTtiReqPdu->pdu.pucch_pdu.preDftOccIdx = currUlSlot->ulInfo[ueIdx].schPucchInfo.occIdx; /* Valid for Format 4 only */
+      ulTtiReqPdu->pdu.pucch_pdu.preDftOccLen = currUlSlot->ulInfo[ueIdx].schPucchInfo.occLen; /* Valid for Format 4 only */
+      ulTtiReqPdu->pdu.pucch_pdu.pi2Bpsk = currUlSlot->ulInfo[ueIdx].schPucchInfo.pi2BPSK;
+      ulTtiReqPdu->pdu.pucch_pdu.addDmrsFlag = currUlSlot->ulInfo[ueIdx].schPucchInfo.addDmrs;/* Valid for Format 3, 4 only */
       ulTtiReqPdu->pdu.pucch_pdu.dmrsScramblingId = 0; /* Valid for Format 2 */
       ulTtiReqPdu->pdu.pucch_pdu.dmrsCyclicShift  = 0; /* Valid for Format 4 */
-      ulTtiReqPdu->pdu.pucch_pdu.srFlag           = currUlSlot->ulInfo.schPucchInfo.srFlag;
-      ulTtiReqPdu->pdu.pucch_pdu.bitLenHarq       = currUlSlot->ulInfo.schPucchInfo.harqInfo.harqBitLength;
+      ulTtiReqPdu->pdu.pucch_pdu.srFlag           = currUlSlot->ulInfo[ueIdx].schPucchInfo.srFlag;
+      ulTtiReqPdu->pdu.pucch_pdu.bitLenHarq       = currUlSlot->ulInfo[ueIdx].schPucchInfo.harqInfo.harqBitLength;
       ulTtiReqPdu->pdu.pucch_pdu.bitLenCsiPart1   = 0; /* Valid for Format 2, 3, 4 */
       ulTtiReqPdu->pdu.pucch_pdu.bitLenCsiPart2   = 0; /* Valid for Format 2, 3, 4 */
-      ulTtiReqPdu->pdu.pucch_pdu.beamforming.numPrgs = currUlSlot->ulInfo.schPucchInfo.beamPucchInfo.numPrgs; 
-      ulTtiReqPdu->pdu.pucch_pdu.beamforming.prgSize = currUlSlot->ulInfo.schPucchInfo.beamPucchInfo.prgSize;
-      ulTtiReqPdu->pdu.pucch_pdu.beamforming.digBfInterface = currUlSlot->ulInfo.schPucchInfo.beamPucchInfo.digBfInterfaces;
-      ulTtiReqPdu->pdu.pucch_pdu.beamforming.rx_bfi[0].beamIdx[0].beamidx = currUlSlot->ulInfo.schPucchInfo.beamPucchInfo.prg[0].beamIdx[0];
+      ulTtiReqPdu->pdu.pucch_pdu.beamforming.numPrgs = currUlSlot->ulInfo[ueIdx].schPucchInfo.beamPucchInfo.numPrgs; 
+      ulTtiReqPdu->pdu.pucch_pdu.beamforming.prgSize = currUlSlot->ulInfo[ueIdx].schPucchInfo.beamPucchInfo.prgSize;
+      ulTtiReqPdu->pdu.pucch_pdu.beamforming.digBfInterface = currUlSlot->ulInfo[ueIdx].schPucchInfo.beamPucchInfo.digBfInterfaces;
+      ulTtiReqPdu->pdu.pucch_pdu.beamforming.rx_bfi[0].beamIdx[0].beamidx = currUlSlot->ulInfo[ueIdx].schPucchInfo.beamPucchInfo.prg[0].beamIdx[0];
 
       ulTtiReqPdu->pduSize = sizeof(fapi_ul_pucch_pdu_t);
 
@@ -4507,30 +4514,38 @@ uint16_t fillUlTtiReq(SlotTimingInfo currTimingInfo, p_fapi_api_queue_elem_t pre
 	      vendorUlTti->sym = 0;
 	      ulTtiReq->nGroup = 0;
 	      if(ulTtiReq->nPdus > 0)
-	      {
-		      /* Fill Prach Pdu */
-		      if(currUlSlot->ulInfo.dataType & SCH_DATATYPE_PRACH)
-		      {
-			      pduIdx++;
-			      fillPrachPdu(&ulTtiReq->pdus[pduIdx], &macCellCfg, currUlSlot);
-			      ulTtiReq->rachPresent++;
-		      }
+         {
+            /*JOJO: Loop over each UE to collect UL FAPI PDU.*/
+            for(int ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+            {
+               if(&currUlSlot->ulInfo[ueIdx] != NULLP)
+               {
+                  /* Fill Prach Pdu */
+                  if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_PRACH)
+                  {
+                     pduIdx++;
+                     fillPrachPdu(&ulTtiReq->pdus[pduIdx], &macCellCfg, currUlSlot, ueIdx);
+                     ulTtiReq->rachPresent++;
+                  }
 
-		      /* Fill PUSCH PDU */
-		      if(currUlSlot->ulInfo.dataType & SCH_DATATYPE_PUSCH)
-		      {
-			      pduIdx++;
-			      fillPuschPdu(&ulTtiReq->pdus[pduIdx], &vendorUlTti->ul_pdus[pduIdx], &macCellCfg, currUlSlot);
-			      ulTtiReq->nUlsch++;
-		      }
-		      /* Fill PUCCH PDU */
-		      if(currUlSlot->ulInfo.dataType & SCH_DATATYPE_UCI)
-		      {
-			      pduIdx++;
-			      fillPucchPdu(&ulTtiReq->pdus[pduIdx], &vendorUlTti->ul_pdus[pduIdx], &macCellCfg, currUlSlot);
-			      ulTtiReq->nUlcch++;
-		      }
-	      } 
+                  /* Fill PUSCH PDU */
+                  if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_PUSCH)
+                  {
+                     pduIdx++;
+                     fillPuschPdu(&ulTtiReq->pdus[pduIdx], &vendorUlTti->ul_pdus[pduIdx], &macCellCfg, currUlSlot, ueIdx);
+                     ulTtiReq->nUlsch++;
+                  }
+
+                  /* Fill PUCCH PDU */
+                  if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_UCI)
+                  {
+                     pduIdx++;
+                     fillPucchPdu(&ulTtiReq->pdus[pduIdx], &vendorUlTti->ul_pdus[pduIdx], &macCellCfg, currUlSlot, ueIdx);
+                     ulTtiReq->nUlcch++;
+                  }
+               }
+            }
+         }
 
 #ifdef ODU_SLOT_IND_DEBUG_LOG
 	      DU_LOG("\nDEBUG  -->  LWR_MAC: Sending UL TTI Request");

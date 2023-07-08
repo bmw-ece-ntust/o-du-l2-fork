@@ -88,6 +88,9 @@ int8_t coresetIdxTable[MAX_CORESET_INDEX][4] = {
 };
 #endif
 
+/* JOJO: Cyclic shift set for PUCCH based on Table 9.2.1-1 spec 38.213 */ 
+uint8_t defaultPucchCsset[MAX_PUCCH_RES_SET_IDX] = {2, 3, 3, 2, 4, 4, 4, 2, 4, 4, 4, 2, 4, 4, 4, 4};
+
 /* spec-38.213 Table 13-11 */
 /* m value is scaled to 2, when using it in formula, divide by 2 */
 /* firstSymbol will vary depends on i, hence not filled */

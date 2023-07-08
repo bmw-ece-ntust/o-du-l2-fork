@@ -438,7 +438,8 @@ uint16_t l1BuildAndSendRxDataInd(uint16_t slot, uint16_t sfn, fapi_ul_pusch_pdu_
          phyDb.ueDb.ueCb[ueId-1].crnti = puschPdu.rnti;
          phyDb.ueDb.ueCb[ueId-1].msg3Sent = true;
          type = MSG_TYPE_MSG3;
-         sleep(2);
+         // sleep(2);
+         usleep(3500000);
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msg5ShortBsrSent)
       {
@@ -449,6 +450,7 @@ uint16_t l1BuildAndSendRxDataInd(uint16_t slot, uint16_t sfn, fapi_ul_pusch_pdu_
       {
          phyDb.ueDb.ueCb[ueId-1].msg5Sent = true;
          type = MSG_TYPE_MSG5;
+         DU_LOG("\nJOJO  -->  Msg5 sent.");
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msgNasAuthenticationComp)
       {
@@ -474,6 +476,7 @@ uint16_t l1BuildAndSendRxDataInd(uint16_t slot, uint16_t sfn, fapi_ul_pusch_pdu_
       {
          phyDb.ueDb.ueCb[ueId-1].msgRrcReconfigComp = true;
          type = MSG_TYPE_RRC_RECONFIG_COMPLETE;
+         DU_LOG("\nJOJO  -->  RRC reconfiguration completed.");
       }
       else
          return ROK;
@@ -1238,7 +1241,7 @@ S16 l1HdlUlTtiReq(uint16_t msgLen, void *msg)
             l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
             phyDb.ueDb.numActvUe++;
          }
-#if 0
+#if 1
          /* Send RACH Ind to L2 for second UE */
          if(phyDb.ueDb.ueCb[UE_IDX_1].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_0].msgRrcReconfigComp == true)
          {
