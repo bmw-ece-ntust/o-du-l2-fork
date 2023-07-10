@@ -541,7 +541,7 @@ uint8_t startDlDataForExperiment11()
 {
    uint32_t teId = 0;
    uint32_t duId;
-   uint8_t numOfSlice = 2;
+   uint8_t numOfSlice = 1;
    uint8_t numOfPacket;
    uint8_t ret = ROK;
    uint8_t cnt = 0;
@@ -551,41 +551,16 @@ uint8_t startDlDataForExperiment11()
    int32_t totalNumOfTestFlow; 
    EgtpTeIdCb *teidCb = NULLP;
    
-   while(timerCnt < 1200)
+   while(timerCnt < 50)
    {
       totalNumOfTestFlow = 1;
       while(totalNumOfTestFlow)
       {
          for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
          {
-            for(teId = 1; teId <= 4; teId++)
+            for(teId = 1; teId <= 3; teId++)
             {
-               if(tnlStage == 1)
-               {
-                  numOfPacket = 5;
-               }
-               else if(tnlStage == 2)
-               {
-                  if(teId == 1 || teId == 3)
-                  {
-                     numOfPacket = 7;
-                  }
-                  else
-                  {
-                     numOfPacket = 3;
-                  }
-               }
-               else
-               {
-                  if(teId == 2 || teId == 4)
-                  {
-                     numOfPacket = 7;
-                  }
-                  else
-                  {
-                     numOfPacket = 3;
-                  }
-               }
+               numOfPacket = 1;
                teidCb = NULLP;
                cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
                if(teidCb)
@@ -614,15 +589,10 @@ uint8_t startDlDataForExperiment11()
          }
          totalNumOfTestFlow--;
       }
-      usleep(200000);
+      usleep(100000); /*JOJO: Smaller value, more traffic.*/
       timerCnt++;
-      DU_LOG("\nDEBUG  -->  Timer Count: %d\n", timerCnt);
-      if(timerCnt % 400 == 0)
-      {
-         DU_LOG("\nDEBUG  -->  tnlStage: %d\n", tnlStage);
-         tnlStage++;
-      }
    }
+   DU_LOG("\nJOJO  -->  Stop traffic.\n");
    return ROK;
 }
 
