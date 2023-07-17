@@ -551,45 +551,40 @@ uint8_t startDlDataForExperiment11()
    int32_t totalNumOfTestFlow; 
    EgtpTeIdCb *teidCb = NULLP;
    
-   while(timerCnt < 50)
+   while(timerCnt < 1)
    {
-      totalNumOfTestFlow = 1;
-      while(totalNumOfTestFlow)
+      for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {
-         for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
+         for(teId = 1; teId <= 3; teId++)
          {
-            for(teId = 1; teId <= 3; teId++)
+            numOfPacket = 5;
+            teidCb = NULLP;
+            cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
+            if(teidCb)
             {
-               numOfPacket = 1;
-               teidCb = NULLP;
-               cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
-               if(teidCb)
+               cnt =0;
+               //DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
+               while(cnt < numOfPacket)
                {
-                  cnt =0;
-                  //DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
-                  while(cnt < numOfPacket)
+                  ret =  cuEgtpDatReq(duId, teId);      
+                  if(ret != ROK)
                   {
-                     ret =  cuEgtpDatReq(duId, teId);      
-                     if(ret != ROK)
-                     {
-                        DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
-                        break;
-                     }
-                     /* TODO : sleep(1) will be removed later once we will be able to
-                     * support the continuous data pack transfer */
-                     //sleep(1);
-                     cnt++;
+                     DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
+                     break;
                   }
+                  /* TODO : sleep(1) will be removed later once we will be able to
+                  * support the continuous data pack transfer */
+                  //sleep(1);
+                  cnt++;
                }
-               else
-               {
-                  DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
-               }            
             }
+            else
+            {
+               DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
+            }            
          }
-         totalNumOfTestFlow--;
       }
-      usleep(100000); /*JOJO: Smaller value, more traffic.*/
+      usleep(50000); /*JOJO: Smaller value, more traffic.*/
       timerCnt++;
    }
    DU_LOG("\nJOJO  -->  Stop traffic.\n");

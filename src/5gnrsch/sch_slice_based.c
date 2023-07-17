@@ -1834,6 +1834,58 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       DU_LOG("\nJOJO --> BO Indication Bitmap: %d", cell->boIndBitMap);
    /*JOJO: Loop over each UE in UE to be scheduled list for DL transmission.*/
    ueNode = schSpcCell->ueToBeScheduled.first;
+
+   /*JOJO: SU scheduling per TTI*/
+   // if(ueNode)
+   // {
+   //    uint8_t ueId = *(uint8_t *)(ueNode->node);
+   //    uint8_t *ueIdToAdd;
+   //    SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+
+   //    ueCb = &cell->ueCb[ueId-1];
+   //    node = NULLP;
+
+   //    if(schSpcUeCb)
+   //       node = schSpcUeCb->hqRetxCb.dlRetxHqList.first;
+   //    if(node != NULLP)
+   //    {
+   //       if(ueId > UEWillBeScheduled)
+   //          UEWillBeScheduled = ueId;
+   //       UENeedToBeScheduled++;
+   //       schSpcUeCb->isDlMsgPending = true;
+   //       schSpcUeCb->isDlMsgScheduled = false;
+   //       /*JOJO: Check if it can find K0, K1.*/
+   //       if(findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
+   //          &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, TRUE, *hqP) == true )
+   //       {
+   //          SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
+   //          *ueIdToAdd = ueId;
+   //          addNodeToLList(&ueDlRetransmission, ueIdToAdd, NULLP);
+   //       }
+   //    }
+   //    else
+   //    {
+   //       if((cell->boIndBitMap) & (1<<ueId))
+   //       {
+   //          UENeedToBeScheduled++;
+   //          schSpcUeCb->isDlMsgPending = true;
+   //          schSpcUeCb->isDlMsgScheduled = false;
+   //          /*JOJO: Check if it can find K0, K1 and free HARQ process.*/
+   //          if(schDlGetAvlHqProcess(cell, ueCb, hqP) == ROK &&\
+   //          findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
+   //             &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, FALSE, *hqP) == true)
+   //          {
+   //             UEWillBeScheduled = ueId;
+   //             ueNewHarqList[ueId-1] = *hqP; /*JOJO: Keep HARQ list for new transmission.*/
+   //             SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
+   //             *ueIdToAdd = ueId;
+   //             addNodeToLList(&ueDlNewTransmission, ueIdToAdd, NULLP);
+   //          }
+   //       }
+   //    }
+   // }
+
+   /*JOJO: MU scheduling per TTI*/
    while(ueNode)
    {
       uint8_t ueId = *(uint8_t *)(ueNode->node);
@@ -2523,6 +2575,8 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
    }
 
    /* TODO: Although it has the loop, but HARQ List part should be checked */
+   int dataSizeEachUE[MAX_NUM_UE] = {};
+   int totalDataSizePerTTI = 0;
    ueNode = ueDlNewTransmission->first;
    while(ueNode)
    {
@@ -2621,6 +2675,8 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       {
          accumalatedSize += TX_PAYLOAD_HDR_LEN;
       }
+      dataSizeEachUE[ueId-1] = accumalatedSize;
+      totalDataSizePerTTI += accumalatedSize;
       numPRB = schCalcNumPrb(accumalatedSize, ueCb->ueCfg.dlModInfo.mcsIndex, pdschNumSymbols);
       //DU_LOG("\nJOJO  -->  UE id: %d, is allocated %d PRBs (add header).", ueId, numPRB);
       startPrb += numPRB; /*JOJO: accumulate start PRB.*/
@@ -2712,6 +2768,12 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       
       ueNode = ueNode->next;
    }
+
+   for(int i=0; i<MAX_NUM_UE; i++)
+   {
+      DU_LOG("\nJOJO  -->  Data size %d for UE id %d is scheduled in this slot %d", dataSizeEachUE[i], i+1, pdschTime.sfn*10 + pdschTime.slot);
+   }
+   DU_LOG("\nJOJO  -->  Total data size %d is scheduled in slot %d", totalDataSizePerTTI, pdschTime.sfn*10 + pdschTime.slot);
 
    return ROK;
 }

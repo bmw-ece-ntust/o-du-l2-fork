@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # set the output file path
-OUTPUT_FILE=/home/jojo/slice_enable_scheduler/overall.csv
+OUTPUT_FILE=/home/ubuntu/slice_enable_scheduler/overall.csv
 touch $OUTPUT_FILE
 
 # ODU PATH
-ODU_PATH=/home/jojo/slice_enable_scheduler
+ODU_PATH=/home/ubuntu/slice_enable_scheduler
 
 # Define the regular expression patterns for UE Id and DL Tpt
 ue_id_pattern="UE Id : ([0-9]+)"

@@ -1001,7 +1001,9 @@ void fillDefaultMacCellGrpInfo(DuMacUeCfg *macUeCfg)
 void fillDefaultModulation(DuMacUeCfg *ueCfg)
 {
    ueCfg->dlModInfo.modOrder = MOD_ORDER_QPSK;
-   ueCfg->dlModInfo.mcsIndex = DEFAULT_MCS;
+   // ueCfg->dlModInfo.mcsIndex = 8;
+   // ueCfg->dlModInfo.mcsIndex = DEFAULT_MCS;
+   ueCfg->dlModInfo.mcsIndex = DEFAULT_MCS + (ueCfg->ueId - 1) * 4;
    ueCfg->dlModInfo.mcsTable = MCS_TABLE_QAM64; /* Spec 38.214-Table 5.1.3.1-1 */
 
    ueCfg->ulModInfo.modOrder = MOD_ORDER_QPSK;

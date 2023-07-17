@@ -439,7 +439,7 @@ uint16_t l1BuildAndSendRxDataInd(uint16_t slot, uint16_t sfn, fapi_ul_pusch_pdu_
          phyDb.ueDb.ueCb[ueId-1].msg3Sent = true;
          type = MSG_TYPE_MSG3;
          // sleep(2);
-         usleep(3500000);
+         sleep(3);
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msg5ShortBsrSent)
       {
