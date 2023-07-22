@@ -521,9 +521,9 @@ uint8_t fapiMacSlotInd(Pst *pst, SlotTimingInfo *slotInd)
    uint16_t              cellIdx;
    volatile uint32_t     startTime=0;
 
-//#ifdef ODU_SLOT_IND_DEBUG_LOG
+#ifdef ODU_SLOT_IND_DEBUG_LOG
    DU_LOG("\nDEBUG  -->  MAC : Slot Indication received. [%d : %d]", slotInd->sfn, slotInd->slot);
-//#endif
+#endif
    /*starting Task*/
    ODU_START_TASK(&startTime, PID_MAC_TTI_IND);
    gSlotCount++;

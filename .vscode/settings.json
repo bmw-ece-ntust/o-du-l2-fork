@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "*.x": "c"
+        "*.x": "c",
+        "mac_sch_interface.h": "c",
+        "sch_drx.h": "c"
     }
 }

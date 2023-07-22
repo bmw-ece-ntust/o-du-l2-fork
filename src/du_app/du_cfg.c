@@ -332,7 +332,7 @@ uint8_t readMacCfg()
    rrmPolicy[0].rRMPolicyMemberList[0].sd[1] = 3;
    rrmPolicy[0].rRMPolicyMemberList[0].sd[2] = 4;
    rrmPolicy[0].rRMPolicyMaxRatio = 100;
-   rrmPolicy[0].rRMPolicyMinRatio = 50;
+   rrmPolicy[0].rRMPolicyMinRatio = 100;
    rrmPolicy[0].rRMPolicyDedicatedRatio = 10;
 
    // rrmPolicy[1].id[0] = 2;
@@ -345,7 +345,7 @@ uint8_t readMacCfg()
    // rrmPolicy[1].rRMPolicyMemberList[0].sd[1] = 3;
    // rrmPolicy[1].rRMPolicyMemberList[0].sd[2] = 4;
    // rrmPolicy[1].rRMPolicyMaxRatio = 100;
-   // rrmPolicy[1].rRMPolicyMinRatio = 50;
+   // rrmPolicy[1].rRMPolicyMinRatio = 33;
    // rrmPolicy[1].rRMPolicyDedicatedRatio = 10;
 
    // rrmPolicy[2].id[0] = 3;

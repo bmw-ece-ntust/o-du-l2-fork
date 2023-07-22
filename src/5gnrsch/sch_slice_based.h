@@ -16,9 +16,9 @@
 ################################################################################
 *******************************************************************************/
 
-// #define SCH_MULTI_THREAD /* Enable the multi-thread intra-slice scheduling feature */
+//#define SCH_MULTI_THREAD /* Enable the multi-thread intra-slice scheduling feature */
 #define SLICE_BASED_DEBUG_LOG /* Enable the debug log */
- 
+#define BILLION_NUM  1000000000.0
 
 typedef enum
 {
@@ -115,7 +115,7 @@ typedef struct schSliceBasedDlThreadArg
    uint16_t *totalRemainingPrb;
    uint16_t maxFreePRB;
    SchSliceBasedSliceCb *sliceCb;
-   uint8_t ueId;
+   CmLListCp *ueDlNewTransmission;
 }SchSliceBasedDlThreadArg;
 
 typedef struct schSliceBasedUlThreadArg

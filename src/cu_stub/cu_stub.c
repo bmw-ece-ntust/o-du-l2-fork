@@ -551,7 +551,7 @@ uint8_t startDlDataForExperiment11()
    int32_t totalNumOfTestFlow; 
    EgtpTeIdCb *teidCb = NULLP;
    
-   while(timerCnt < 1)
+   while(timerCnt < 20)
    {
       for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {

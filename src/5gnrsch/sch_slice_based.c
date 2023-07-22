@@ -31,6 +31,8 @@ File:     sch_slice_based.c
 /** @file sch_slot_ind.c
   @brief This module processes slot indications
  */
+#include "time.h"
+#include "pthread.h"
 #include "common_def.h"
 #include "tfu.h"
 #include "lrg.h"
@@ -42,7 +44,7 @@ File:     sch_slice_based.c
 #include "sch.h"
 #include "sch_utils.h"
 #include "sch_slice_based.h"
-#include "pthread.h"
+
 #ifdef NR_DRX 
 #include "sch_drx.h"
 #endif
@@ -1327,7 +1329,7 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
    //    setRrmPolicyWithTimer(cell);
    // }
 
-   DU_LOG("\nDennis  --> SCH Slice Based Scheduler: Slot Indication received. [%d : %d]", slotInd->sfn, slotInd->slot);
+   // DU_LOG("\nDennis  --> SCH Slice Based Scheduler: Slot Indication received. [%d : %d]", slotInd->sfn, slotInd->slot);
    /* Select first UE in the linked list to be scheduled next */
    pendingUeNode = schSpcCell->ueToBeScheduled.first;
    if(pendingUeNode)
@@ -1862,6 +1864,17 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    //          *ueIdToAdd = ueId;
    //          addNodeToLList(&ueDlRetransmission, ueIdToAdd, NULLP);
    //       }
+            // if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
+            // {
+            //    SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
+            //    if(!dciSlotAlloc)
+            //    {
+            //       DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+            //       return false;
+            //    }
+            //    cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
+            //    memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
+            // }
    //    }
    //    else
    //    {
@@ -1881,6 +1894,18 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    //             *ueIdToAdd = ueId;
    //             addNodeToLList(&ueDlNewTransmission, ueIdToAdd, NULLP);
    //          }
+            /* Allocate PDCCH and PDSCH resources for the ue */
+               // if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
+               // {
+               //    SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
+               //    if(!dciSlotAlloc)
+               //    {
+               //       DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+               //       return false;
+               //    }
+               //    cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
+               //    memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
+               // }
    //       }
    //    }
    // }
@@ -1930,6 +1955,19 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
                SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
                *ueIdToAdd = ueId;
                addNodeToLList(&ueDlNewTransmission, ueIdToAdd, NULLP);
+            }
+
+            /* Allocate PDCCH and PDSCH resources for the ue */
+            if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
+            {
+               SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
+               if(!dciSlotAlloc)
+               {
+                  DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+                  return false;
+               }
+               cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
+               memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
             }
          }
       }
@@ -1982,12 +2020,15 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          threadArg[currSliceCnt]->totalRemainingPrb = &totalRemainingPrb;
          threadArg[currSliceCnt]->maxFreePRB = maxFreePRB;
          threadArg[currSliceCnt]->sliceCb = sliceCb;
-         threadArg[currSliceCnt]->ueId = ueId;
+         threadArg[currSliceCnt]->ueDlNewTransmission= &ueDlNewTransmission;
 
          /* Run the intra-slice scheduling with multi-thread feature */
+         // clock_gettime(1, &start2);
          threadRes = pthread_create(&intraSliceThread[currSliceCnt], NULL, schSliceBasedDlIntraSliceThreadScheduling, \
                                     (void *)threadArg[currSliceCnt]);
-
+         // clock_gettime(1, &end);
+         // processTime = (end.tv_sec - start2.tv_sec) + (end.tv_nsec - start2.tv_nsec) / BILLION_NUM;
+         // DU_LOG("\nDennis  -->  Measurement : Processing Time of pthread_create(): %f sec", processTime);
          if(threadRes != 0)
          {
             DU_LOG("\nERROR  -->  SCH : Thread Creation failed for intra-slice scheduling");
@@ -1998,6 +2039,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          sliceCbNode = sliceCbNode->next;
       }
 
+      // clock_gettime(1, &start2);
       for(int sliceCnt=0; sliceCnt < schSpcCell->sliceCbList.count; sliceCnt++)
       {
          if (pthread_join(intraSliceThread[sliceCnt], NULL)) 
@@ -2009,7 +2051,9 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          /* Garbage collection */
          SCH_FREE(threadArg[sliceCnt], sizeof(SchSliceBasedDlThreadArg));
       }
-
+      // clock_gettime(1, &end);
+      // processTime = (end.tv_sec - start2.tv_sec) + (end.tv_nsec - start2.tv_nsec) / BILLION_NUM;
+      // DU_LOG("\nDennis  -->  Measurement : Processing Time of all pthread_join(): %f sec", processTime);
 #else
 
          if(schSliceBasedDlIntraSliceScheduling(cell, pdcchTime, pdschNumSymbols, &totalRemainingPrb, maxFreePRB, sliceCb, &ueDlNewTransmission) != ROK)
@@ -2171,19 +2215,6 @@ uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pd
 
       /* Sum the weight of each UE */
       totalUeWeight += ueSliceBasedCb->weight;
-
-      /* Allocate PDCCH and PDSCH resources for the ue */
-      if(cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
-      {
-         SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
-         if(!dciSlotAlloc)
-         {
-            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
-            return false;
-         }
-         cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
-         memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
-      }
    
       /* Update the requested BO of each LC in current slice */
       schSliceBasedUpdateLcListReqBo(&sliceCb->lcInfoList[ueId-1], ueCb, DIR_DL);
@@ -2266,7 +2297,10 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
    uint16_t crnti = 0;
    uint16_t minimumPrb = 0, remainingPrb = 0;
    SchUeCb *ueCb = NULLP;
+   uint8_t  ueId;
+   CmLList *ueNode;
    DlMsgSchInfo *dciSlotAlloc;
+   float_t totalUeWeight = 0;
    SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
 
    SchSliceBasedDlThreadArg *dlThreadArg;
@@ -2276,7 +2310,12 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
    uint16_t *totalRemainingPrb;
    uint16_t maxFreePRB;
    SchSliceBasedSliceCb *sliceCb;
-   uint8_t ueId;
+   CmLListCp *ueDlNewTransmission;
+
+
+   // struct timespec start, end;
+   // double processTime;
+   // clock_gettime(1, &start);
 
    dlThreadArg = (SchSliceBasedDlThreadArg *)threadArg;
    cellCb = dlThreadArg->cell;
@@ -2285,7 +2324,7 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
    totalRemainingPrb = dlThreadArg->totalRemainingPrb;
    maxFreePRB = dlThreadArg->maxFreePRB;
    sliceCb = dlThreadArg->sliceCb;
-   ueId = dlThreadArg->ueId;
+   ueDlNewTransmission = dlThreadArg->ueDlNewTransmission;
 
    /* Calculate the slice PRB quota according to RRMPolicyRatio and MaxFreePRB */
    sliceCb->dedicatedPrb = (uint16_t)(((sliceCb->rrmPolicyRatioInfo.dedicatedRatio)*(maxFreePRB))/100);
@@ -2300,89 +2339,66 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
    sliceCb->snssai.sst, minimumPrb);
 #endif
 
-   /* If this slice is hierarchy scheduling method */
-   if(sliceCb->algoMethod == HIERARCHY)
+   ueNode = ueDlNewTransmission->first;
+
+   while(ueNode)
    {
-      /* TODO: It should support multi-UEs per TTI scheduling */
-      //for(ueId=0; ueId<MAX_NUM_UE; ueId++)
-      GET_CRNTI(crnti,ueId);
+      ueId = *(uint8_t *)(ueNode->node);
       ueCb = &cellCb->ueCb[ueId-1];
       ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
 
-      /* Allocate PDCCH and PDSCH resources for the ue */
-      if(cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
-      {
-         SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
-         if(!dciSlotAlloc)
-         {
-            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
-            return false;
-         }
-         cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
-         memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
-      }
-            
-      /* Update the requested BO of each LC in current slice */
-      schSliceBasedUpdateLcListReqBo(&sliceCb->lcInfoList[ueId-1], ueCb, DIR_DL);
-
-      if(minimumPrb != 0)
-      {
-         remainingPrb = minimumPrb;
-         sliceCb->schedulingAlgorithmforLc(&sliceCb->lcInfoList[ueId-1], pdschNumSymbols, &remainingPrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
-      }
-
-      sliceCb->allocatedPrb = minimumPrb - remainingPrb;
-
-#ifdef SLICE_BASED_DEBUG_LOG
-      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d]", sliceCb->snssai.sst, \
-               sliceCb->allocatedPrb, remainingPrb);
-#endif
-
-   }
-   /* If this slice is flat scheduling method */
-   else 
-   {
-      /* TODO: It should support multi-UEs per TTI scheduling */
-      /* TODO: For flat scheduling method, it should cascade the LC of each UEs, then sort it again 
-         After that, you could put it into RR algorithm or WFQ algorithm directly*/
-      //for(ueId=0; ueId<MAX_NUM_UE; ueId++)
-      GET_CRNTI(crnti,ueId);
-      ueCb = &cellCb->ueCb[ueId-1];
-      ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
-
-      /* Allocate PDCCH and PDSCH resources for the ue */
-      if(cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
-      {
-         SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
-         if(!dciSlotAlloc)
-         {
-            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
-            return false;
-         }
-         cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
-         memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
-      }
-            
-      /* Update the requested BO of each LC in current slice */
-      schSliceBasedUpdateLcListReqBo(&sliceCb->lcInfoList[ueId-1], ueCb, DIR_DL);
-
-      if(minimumPrb != 0)
-      {
-         remainingPrb = minimumPrb;
-         sliceCb->schedulingAlgorithmforLc(&sliceCb->lcInfoList[ueId-1], pdschNumSymbols, &remainingPrb, &ueSliceBasedCb->isTxPayloadLenAdded, NULLP);
-      }
-
-      sliceCb->allocatedPrb = minimumPrb - remainingPrb;
-
-#ifdef SLICE_BASED_DEBUG_LOG
-      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d]", sliceCb->snssai.sst, \
-               sliceCb->allocatedPrb, remainingPrb);
-#endif
-
-   }
-
+      /* Sum the weight of each UE */
+      totalUeWeight += ueSliceBasedCb->weight;
    
-   /* Deal with the problem which slice PRB quotas may be not integer */
+      /* Update the requested BO of each LC in current slice */
+      schSliceBasedUpdateLcListReqBo(&sliceCb->lcInfoList[ueId-1], ueCb, DIR_DL);
+      ueNode = ueNode->next;
+   }
+
+   if(sliceCb->algorithm == RR)
+   {
+      if(minimumPrb != 0)
+      {
+         remainingPrb = minimumPrb;            
+         schSliceBasedRoundRobinAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+      }
+
+      sliceCb->allocatedPrb = minimumPrb - remainingPrb;
+
+#ifdef SLICE_BASED_DEBUG_LOG
+      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d, Algo: RR]", sliceCb->snssai.sst, \
+               sliceCb->allocatedPrb, remainingPrb);
+#endif
+   }
+   else if(sliceCb->algorithm == WFQ)
+   {
+      /* Sort the UE list in terms of the weight */
+      /* This function should be moved to schSliceBasedDlScheduling() when go through the UE list (for Jojo)*/
+      schSliceBasedSortUeByWeight(cellCb, ueDlNewTransmission, totalUeWeight);
+
+      if(minimumPrb != 0)
+      {
+         remainingPrb = minimumPrb;            
+         schSliceBasedWeightedFairQueueAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+      }
+
+      sliceCb->allocatedPrb = minimumPrb - remainingPrb;
+
+#ifdef SLICE_BASED_DEBUG_LOG
+      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d, Algo: WFQ]", sliceCb->snssai.sst, \
+               sliceCb->allocatedPrb, remainingPrb);      
+#endif
+   }
+   else
+   {
+      DU_LOG("\nDennis  -->  In schSliceBasedDlIntraSliceScheduling() : Invalid Scheduling Algorithm");
+      return;
+   }
+   
+   
+   /* Follow the rules of prioritized resource and dedicated resource */
    if(sliceCb->allocatedPrb > sliceCb->dedicatedPrb)
    {
       *totalRemainingPrb = *totalRemainingPrb - sliceCb->allocatedPrb;
@@ -2392,7 +2408,10 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
       *totalRemainingPrb = *totalRemainingPrb - sliceCb->dedicatedPrb;
    }
 
-   pthread_exit(NULL);  
+   // clock_gettime(1, &end);
+   // processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
+   // DU_LOG("\nDennis  -->  Measurement : Processing Time of per intra-slice scheduling: %f sec", processTime);
+
    return ROK;
 }
 
@@ -2769,11 +2788,12 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       ueNode = ueNode->next;
    }
 
-   for(int i=0; i<MAX_NUM_UE; i++)
-   {
-      DU_LOG("\nJOJO  -->  Data size %d for UE id %d is scheduled in this slot %d", dataSizeEachUE[i], i+1, pdschTime.sfn*10 + pdschTime.slot);
-   }
-   DU_LOG("\nJOJO  -->  Total data size %d is scheduled in slot %d", totalDataSizePerTTI, pdschTime.sfn*10 + pdschTime.slot);
+   DU_LOG("\nJOJO  -->  The amount of wasted PRBs is %d in slot %d", remainingPrb, pdschTime.sfn*10 + pdschTime.slot);
+   // for(int i=0; i<MAX_NUM_UE; i++)
+   // {
+   //    DU_LOG("\nJOJO  -->  Data size %d for UE id %d is scheduled in this slot %d", dataSizeEachUE[i], i+1, pdschTime.sfn*10 + pdschTime.slot);
+   // }
+   // DU_LOG("\nJOJO  -->  Total data size %d is scheduled in slot %d", totalDataSizePerTTI, pdschTime.sfn*10 + pdschTime.slot);
 
    return ROK;
 }
