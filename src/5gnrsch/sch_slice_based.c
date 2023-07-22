@@ -1838,80 +1838,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    ueNode = schSpcCell->ueToBeScheduled.first;
 
    /*JOJO: SU scheduling per TTI*/
-   // if(ueNode)
-   // {
-   //    uint8_t ueId = *(uint8_t *)(ueNode->node);
-   //    uint8_t *ueIdToAdd;
-   //    SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
-
-   //    ueCb = &cell->ueCb[ueId-1];
-   //    node = NULLP;
-
-   //    if(schSpcUeCb)
-   //       node = schSpcUeCb->hqRetxCb.dlRetxHqList.first;
-   //    if(node != NULLP)
-   //    {
-   //       if(ueId > UEWillBeScheduled)
-   //          UEWillBeScheduled = ueId;
-   //       UENeedToBeScheduled++;
-   //       schSpcUeCb->isDlMsgPending = true;
-   //       schSpcUeCb->isDlMsgScheduled = false;
-   //       /*JOJO: Check if it can find K0, K1.*/
-   //       if(findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
-   //          &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, TRUE, *hqP) == true )
-   //       {
-   //          SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
-   //          *ueIdToAdd = ueId;
-   //          addNodeToLList(&ueDlRetransmission, ueIdToAdd, NULLP);
-   //       }
-            // if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
-            // {
-            //    SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
-            //    if(!dciSlotAlloc)
-            //    {
-            //       DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
-            //       return false;
-            //    }
-            //    cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
-            //    memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
-            // }
-   //    }
-   //    else
-   //    {
-   //       if((cell->boIndBitMap) & (1<<ueId))
-   //       {
-   //          UENeedToBeScheduled++;
-   //          schSpcUeCb->isDlMsgPending = true;
-   //          schSpcUeCb->isDlMsgScheduled = false;
-   //          /*JOJO: Check if it can find K0, K1 and free HARQ process.*/
-   //          if(schDlGetAvlHqProcess(cell, ueCb, hqP) == ROK &&\
-   //          findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
-   //             &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, FALSE, *hqP) == true)
-   //          {
-   //             UEWillBeScheduled = ueId;
-   //             ueNewHarqList[ueId-1] = *hqP; /*JOJO: Keep HARQ list for new transmission.*/
-   //             SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
-   //             *ueIdToAdd = ueId;
-   //             addNodeToLList(&ueDlNewTransmission, ueIdToAdd, NULLP);
-   //          }
-            /* Allocate PDCCH and PDSCH resources for the ue */
-               // if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
-               // {
-               //    SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
-               //    if(!dciSlotAlloc)
-               //    {
-               //       DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
-               //       return false;
-               //    }
-               //    cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
-               //    memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
-               // }
-   //       }
-   //    }
-   // }
-
-   /*JOJO: MU scheduling per TTI*/
-   while(ueNode)
+   if(ueNode)
    {
       uint8_t ueId = *(uint8_t *)(ueNode->node);
       uint8_t *ueIdToAdd;
@@ -1937,6 +1864,17 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
             *ueIdToAdd = ueId;
             addNodeToLList(&ueDlRetransmission, ueIdToAdd, NULLP);
          }
+            if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
+            {
+               SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
+               if(!dciSlotAlloc)
+               {
+                  DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+                  return false;
+               }
+               cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
+               memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
+            }
       }
       else
       {
@@ -1956,7 +1894,6 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
                *ueIdToAdd = ueId;
                addNodeToLList(&ueDlNewTransmission, ueIdToAdd, NULLP);
             }
-
             /* Allocate PDCCH and PDSCH resources for the ue */
             if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
             {
@@ -1971,8 +1908,71 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
             }
          }
       }
-      ueNode = ueNode->next;
    }
+
+   /*JOJO: MU scheduling per TTI*/
+   // while(ueNode)
+   // {
+   //    uint8_t ueId = *(uint8_t *)(ueNode->node);
+   //    uint8_t *ueIdToAdd;
+   //    SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+
+   //    ueCb = &cell->ueCb[ueId-1];
+   //    node = NULLP;
+
+   //    if(schSpcUeCb)
+   //       node = schSpcUeCb->hqRetxCb.dlRetxHqList.first;
+   //    if(node != NULLP)
+   //    {
+   //       if(ueId > UEWillBeScheduled)
+   //          UEWillBeScheduled = ueId;
+   //       UENeedToBeScheduled++;
+   //       schSpcUeCb->isDlMsgPending = true;
+   //       schSpcUeCb->isDlMsgScheduled = false;
+   //       /*JOJO: Check if it can find K0, K1.*/
+   //       if(findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
+   //          &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, TRUE, *hqP) == true )
+   //       {
+   //          SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
+   //          *ueIdToAdd = ueId;
+   //          addNodeToLList(&ueDlRetransmission, ueIdToAdd, NULLP);
+   //       }
+   //    }
+   //    else
+   //    {
+   //       if((cell->boIndBitMap) & (1<<ueId))
+   //       {
+   //          UENeedToBeScheduled++;
+   //          schSpcUeCb->isDlMsgPending = true;
+   //          schSpcUeCb->isDlMsgScheduled = false;
+   //          /*JOJO: Check if it can find K0, K1 and free HARQ process.*/
+   //          if(schDlGetAvlHqProcess(cell, ueCb, hqP) == ROK &&\
+   //          findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
+   //             &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, FALSE, *hqP) == true)
+   //          {
+   //             UEWillBeScheduled = ueId;
+   //             ueNewHarqList[ueId-1] = *hqP; /*JOJO: Keep HARQ list for new transmission.*/
+   //             SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
+   //             *ueIdToAdd = ueId;
+   //             addNodeToLList(&ueDlNewTransmission, ueIdToAdd, NULLP);
+   //          }
+
+   //          /* Allocate PDCCH and PDSCH resources for the ue */
+   //          if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
+   //          {
+   //             SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
+   //             if(!dciSlotAlloc)
+   //             {
+   //                DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+   //                return false;
+   //             }
+   //             cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
+   //             memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
+   //          }
+   //       }
+   //    }
+   //    ueNode = ueNode->next;
+   // }
 
    /*JOJO: Check if list of new transmission and retransmission is NULL or not.*/
    if(ueDlNewTransmission.first == NULLP && ueDlRetransmission.first == NULLP)
