@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # set the output file path
-OUTPUT_FILE=/home/ubuntu/slice_enable_scheduler/waste.csv
+OUTPUT_FILE=/home/ubuntu/Multiple-UE-Per-TTI-SCH/waste.csv
 touch $OUTPUT_FILE
 
 # ODU PATH
-ODU_PATH=/home/ubuntu/slice_enable_scheduler
+ODU_PATH=/home/ubuntu/Multiple-UE-Per-TTI-SCH
 
 # Define the regular expression patterns for wasted PRBs
 prb_pattern="The amount of wasted PRBs is ([0-9]+)"

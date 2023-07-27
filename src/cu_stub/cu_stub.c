@@ -387,15 +387,15 @@ uint8_t startDlData()
          {
             if(teId == 1)
             {
-               numOfPackets = 8;
+               numOfPackets = 1;
             }
             else if(teId == 3)
             {
-               numOfPackets = 8;
+               numOfPackets = 1;
             }
             else
             {
-               numOfPackets = 8;
+               numOfPackets = 1;
             }
 
             teidCb = NULLP;
@@ -609,7 +609,7 @@ uint8_t startDlDataForExperiment11()
 void *cuConsoleHandler(void *args)
 {
    char ch;
-   uint8_t cnt = 0;
+   uint16_t cnt = 0;
    while(true) 
    {
       ch = getchar();
@@ -651,18 +651,18 @@ void *cuConsoleHandler(void *args)
           * totalDataPacket = totalNumOfTestFlow * NUM_TUNNEL_TO_PUMP_DATA * NUM_DL_PACKETS 
           * totalDataPacket = [500*9*1] */
          
-         // while(true)
-         // {
-         //    if(cnt >= 500)
-         //    {
-         //       cnt = 0;
-         //       break;
-         //    }
-         //    startDlData();
-         //    usleep(80000);
-         //    cnt++;
-         // }
-         startDlDataForExperiment11();
+         while(true)
+         {
+            if(cnt >= 500)
+            {
+               cnt = 0;
+               break;
+            }
+            startDlData();
+            usleep(80000);
+            cnt++;
+         }
+         //startDlDataForExperiment11();
 #endif
          continue;
       } 

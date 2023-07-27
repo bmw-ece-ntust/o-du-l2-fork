@@ -668,8 +668,6 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
       return RFAILED;
    }
 
-   // DU_LOG("\nDEBUG  --> SCH : Slot Indication received. [%d : %d]", slotInd->sfn, slotInd->slot);
-
    memset(&dlSchedInfo, 0, sizeof(DlSchedInfo));
    schCalcSlotValues(*slotInd, &dlSchedInfo.schSlotValue, cell->numSlots);
    dlBrdcstAlloc = &dlSchedInfo.brdcstAlloc;
@@ -770,7 +768,7 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
 
    clock_gettime(1, &end);
    processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
-   // DU_LOG("\nDennis  -->  Measurement : Processing Time of whole scheduling: %f sec", processTime);
+   DU_LOG("\nDennis  -->  Measurement : Processing Time of whole scheduling: %f sec", processTime);
 
    return ret;
 }

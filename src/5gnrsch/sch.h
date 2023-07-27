@@ -308,8 +308,13 @@ typedef struct schPrbAlloc
 
 /**
  * @brief
- * scheduler allocationsfor DL per cell.
+ * scheduler allocations for DL per cell.
  */
+
+/*******************************************************************
+ * NTUST@JOJO
+ * enable support for multiple UEs per TTI
+ * ****************************************************************/
 typedef struct schDlSlotInfo
 {
    SchPrbAlloc  prbAlloc;                 /*!< PRB allocated/available in this slot */
@@ -317,8 +322,10 @@ typedef struct schDlSlotInfo
    uint8_t      ssbIdxSupported;          /*!< Max SSB index */
    SsbInfo      ssbInfo[MAX_SSB_IDX];     /*!< SSB info */
    bool         sib1Pres;                 /*!< Flag to determine if SIB1 is present in this slot */
-   uint8_t      pdcchUe[MAX_NUM_UE];      /* JOJO: Extend list of UEs will be scheduled for PDCCH to multiple UEs.*/
-   uint8_t      pdschUe[MAX_NUM_UE];      /* JOJO: Extend list of UEs will be scheduled for PDSCH to multiple UEs.*/
+   /* JOJO: Extend list of UEs will be scheduled for PDCCH to multiple UEs.*/
+   uint8_t      pdcchUe[MAX_NUM_UE];     
+   /* JOJO: Extend list of UEs will be scheduled for PDSCH to multiple UEs.*/ 
+   uint8_t      pdschUe[MAX_NUM_UE];      
    RarAlloc     *rarAlloc[MAX_NUM_UE];    /*!< RAR allocation per UE*/
    DciInfo      *ulGrant;
    DlMsgSchInfo *dlMsgAlloc[MAX_NUM_UE];  /*!< Dl msg allocation per UE*/
@@ -341,6 +348,11 @@ typedef struct schRaCb
  * @brief
  * scheduler allocationsfor UL per cell.
  */
+
+/*******************************************************************
+ * NTUST@JOJO
+ * enable support for multiple UEs per TTI
+ * ****************************************************************/
 typedef struct schUlSlotInfo
 {
    SchPrbAlloc  prbAlloc;         /*!< PRB allocated/available per symbol */
@@ -348,8 +360,10 @@ typedef struct schUlSlotInfo
    bool         puschPres;        /*!< PUSCH presence field */
    SchPuschInfo *schPuschInfo;    /*!< PUSCH info */
    bool         pucchPres;        /*!< PUCCH presence field */
-   SchPucchInfo schPucchInfo[MAX_NUM_UE];     /* JOJO: Store PUCCH scheduling info. of multiple UEs.*/
-   uint8_t      pucchUe[MAX_NUM_UE];          /* JOJO: Extend list of UEs will be scheduled for PDSCH to multiple UEs.*/
+   /* JOJO: Store PUCCH scheduling info. of multiple UEs.*/
+   SchPucchInfo schPucchInfo[MAX_NUM_UE];  
+   /* JOJO: Extend list of UEs will be scheduled for PDSCH to multiple UEs.*/   
+   uint8_t      pucchUe[MAX_NUM_UE];          
    uint8_t      puschUe;          /*!< Store UE id for which PUSCH is scheduled */
 }SchUlSlotInfo;
 

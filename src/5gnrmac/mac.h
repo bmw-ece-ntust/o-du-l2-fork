@@ -111,9 +111,14 @@ typedef struct macDlSlot
    DlPageAlloc *pageAllocInfo;
 }MacDlSlot;
 
+/*******************************************************************
+ * NTUST@JOJO
+ * enable support for multiple UEs per TTI
+ * ****************************************************************/
 typedef struct macUlSlot
 {
-   UlSchedInfo  ulInfo[MAX_NUM_UE]; /*JOJO: Store scheduling info. in UL slot of multiple UEs.*/
+   /* NTUST@JOJO: Store scheduling info. in UL slot of multiple UEs.*/
+   UlSchedInfo  ulInfo[MAX_NUM_UE];
 }MacUlSlot;
 
 typedef struct macCbInfo

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 d=`date +"%m%d_%H%M_odu"`
-ODU_PATH=/home/oran/slice_sch/l2
+ODU_PATH=/home/oran/Multiple-UE-Per-TTI-SCH
 #ODU_PATH=/home/oran/Dennis/l2
 
 # Build odu
@@ -23,8 +23,8 @@ fi
 cd $ODU_PATH/bin
 xterm -hold -e "cd cu_stub; ./cu_stub" &
 sleep 3
-xterm -hold -e "cd ric_stub; ./ric_stub" &
-sleep 3
+# xterm -hold -e "cd ric_stub; ./ric_stub" &
+# sleep 3
 cd odu
 
 if [ "$1" == "-gdb" ] || [ "$2" == "-gdb" ];
@@ -33,7 +33,7 @@ then
 	gdb ./odu
 else
 	echo "Start record '$d.log' log"
-	./odu > $ODU_PATH/../log/$d.log
+	./odu > $ODU_PATH/log/$d.log
 fi
 
 

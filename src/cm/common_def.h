@@ -56,8 +56,8 @@
 #define RADIO_FRAME_DURATION 10 /* Time duration of a radio frame in ms */
 /* MAX values */
 #define MAX_NUM_CELL 2 /* Changed to 2 to support cell Id 2 even if there is only one cell in DU */
-#define MAX_NUM_MU   4
-#define MAX_NUM_UE   3
+#define MAX_NUM_MU   5
+#define MAX_NUM_UE   5
 #define MAX_NUM_UE_PER_TTI 1
 #define MAX_NUM_LC   MAX_DRB_LCID + 1   /*Spec 38.331: Sec 6.4: maxLC-ID Keyword*/
 #define MAX_NUM_SRB  3    /* Max. no of Srbs */
@@ -105,6 +105,7 @@
 
 /* PRB allocation as per 38.101, Section 5.3.2 */
 #define TOTAL_PRB_20MHZ_MU0 106
+#define TOTAL_PRB_50MHZ_MU0 270
 #define TOTAL_PRB_100MHZ_MU1 273
 #ifdef NR_TDD
 #define MAX_NUM_RB TOTAL_PRB_100MHZ_MU1  /* value for numerology 1, 100 MHz */
