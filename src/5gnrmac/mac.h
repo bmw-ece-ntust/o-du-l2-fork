@@ -111,7 +111,7 @@ typedef struct macDlSlot
    DlPageAlloc *pageAllocInfo;
 }MacDlSlot;
 
-/*******************************************************************
+/********************************************************
  * NTUST@JOJO
  * enable support for multiple UEs per TTI
  * ****************************************************************/
