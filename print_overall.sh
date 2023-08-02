@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # set the output file path
-OUTPUT_FILE=/home/ubuntu/Multiple-UE-Per-TTI-SCH/overall.csv
+OUTPUT_FILE=/home/ubuntu/Multi-UE-per-TTI-SCH/overall.csv
 touch $OUTPUT_FILE
 
 # ODU PATH
-ODU_PATH=/home/ubuntu/Multiple-UE-Per-TTI-SCH
+ODU_PATH=/home/ubuntu/Multi-UE-per-TTI-SCH
 
 # Define the regular expression patterns for UE Id and DL Tpt
 ue_id_pattern="UE Id : ([0-9]+)"

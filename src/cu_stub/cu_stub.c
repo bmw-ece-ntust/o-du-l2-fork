@@ -551,11 +551,11 @@ uint8_t startDlDataForExperiment11()
    int32_t totalNumOfTestFlow; 
    EgtpTeIdCb *teidCb = NULLP;
    
-   while(timerCnt < 20)
+   while(timerCnt < 600)
    {
       for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {
-         for(teId = 1; teId <= 3; teId++)
+         for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
          {
             numOfPacket = 5;
             teidCb = NULLP;

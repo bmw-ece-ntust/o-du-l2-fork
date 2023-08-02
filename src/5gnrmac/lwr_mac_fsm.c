@@ -4552,12 +4552,14 @@ uint16_t fillUlTtiReq(SlotTimingInfo currTimingInfo, p_fapi_api_queue_elem_t pre
 #endif
 	      prevElem->p_next = ulTtiElem;
 
+         /* JOJO: since `MacUlSlot` struct contains an array of `UlSchedInfo` struct, we need to set all the bytes in the `currUlSlot` struct to zero. */
 	      memset(currUlSlot, 0, sizeof(MacUlSlot));
 	      return ROK;
       }
       else
       {
 	      DU_LOG("\nERROR  -->  LWR_MAC: Failed to allocate memory for UL TTI Request");
+         /* JOJO: since `MacUlSlot` struct contains an array of `UlSchedInfo` struct, we need to set all the bytes in the `currUlSlot` struct to zero. */
 	      memset(currUlSlot, 0, sizeof(MacUlSlot));
 	      return RFAILED;
       }

@@ -2615,8 +2615,8 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
    ueNode = ueDlNewTransmission->first;
    while(ueNode)
    {
-      SchDlHqProcCb **hqP = &ueNewHarqList[ueId-1];
       ueId = *(uint8_t *)(ueNode->node);
+      SchDlHqProcCb **hqP = &ueNewHarqList[ueId-1];
       ueCb = &cellCb->ueCb[ueId-1];
       ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
       GET_CRNTI(crnti,ueId);

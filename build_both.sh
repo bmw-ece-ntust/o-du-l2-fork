@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ODU_PATH=/home/ubuntu/slice_enable_scheduler
+ODU_PATH=/home/ubuntu/Multi-UE-per-TTI-SCH
 
 sudo ifconfig lo:ODU "192.168.130.81"
 sudo ifconfig lo:CU_STUB "192.168.130.82"
