@@ -1243,41 +1243,53 @@ S16 l1HdlUlTtiReq(uint16_t msgLen, void *msg)
             phyDb.ueDb.numActvUe++;
          }
 #if 1
+         /* JOJO: Send RACH indication based on the total number of UEs. */
+         for(int ueId = 1; ueId < MAX_NUM_UE; ueId++)
+         {
+            if(phyDb.ueDb.ueCb[ueId].rachIndSent == false && phyDb.ueDb.ueCb[ueId - 1].msgRrcReconfigComp == true)
+            {
+               phyDb.ueDb.ueCb[ueId].isCFRA = false;
+               phyDb.ueDb.ueCb[ueId].rachIndSent = true;
+               l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
+               phyDb.ueDb.numActvUe++;
+            }
+         }
+
          /* Send RACH Ind to L2 for second UE */
-         if(phyDb.ueDb.ueCb[UE_IDX_1].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_0].msgRrcReconfigComp == true)
-         {
-            phyDb.ueDb.ueCb[UE_IDX_1].isCFRA = false;
-            phyDb.ueDb.ueCb[UE_IDX_1].rachIndSent = true;
-            l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
-            phyDb.ueDb.numActvUe++;
-         }
+         // if(phyDb.ueDb.ueCb[UE_IDX_1].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_0].msgRrcReconfigComp == true)
+         // {
+         //    phyDb.ueDb.ueCb[UE_IDX_1].isCFRA = false;
+         //    phyDb.ueDb.ueCb[UE_IDX_1].rachIndSent = true;
+         //    l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
+         //    phyDb.ueDb.numActvUe++;
+         // }
 
-         /* Send RACH Ind to L2 for third UE */
-         if(phyDb.ueDb.ueCb[UE_IDX_2].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_1].msgRrcReconfigComp == true)
-         {
-            phyDb.ueDb.ueCb[UE_IDX_2].isCFRA = false;
-            phyDb.ueDb.ueCb[UE_IDX_2].rachIndSent = true;
-            l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
-            phyDb.ueDb.numActvUe++;
-         }
+         // /* Send RACH Ind to L2 for third UE */
+         // if(phyDb.ueDb.ueCb[UE_IDX_2].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_1].msgRrcReconfigComp == true)
+         // {
+         //    phyDb.ueDb.ueCb[UE_IDX_2].isCFRA = false;
+         //    phyDb.ueDb.ueCb[UE_IDX_2].rachIndSent = true;
+         //    l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
+         //    phyDb.ueDb.numActvUe++;
+         // }
          
-         /* Send RACH Ind to L2 for fourth UE */
-         if(phyDb.ueDb.ueCb[UE_IDX_3].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_2].msgRrcReconfigComp == true)
-         {
-            phyDb.ueDb.ueCb[UE_IDX_3].isCFRA = false;
-            phyDb.ueDb.ueCb[UE_IDX_3].rachIndSent = true;
-            l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
-            phyDb.ueDb.numActvUe++;
-         }
+         // /* Send RACH Ind to L2 for fourth UE */
+         // if(phyDb.ueDb.ueCb[UE_IDX_3].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_2].msgRrcReconfigComp == true)
+         // {
+         //    phyDb.ueDb.ueCb[UE_IDX_3].isCFRA = false;
+         //    phyDb.ueDb.ueCb[UE_IDX_3].rachIndSent = true;
+         //    l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
+         //    phyDb.ueDb.numActvUe++;
+         // }
 
-         /* Send RACH Ind to L2 for fourth UE */
-         if(phyDb.ueDb.ueCb[UE_IDX_4].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_3].msgRrcReconfigComp == true)
-         {
-            phyDb.ueDb.ueCb[UE_IDX_4].isCFRA = false;
-            phyDb.ueDb.ueCb[UE_IDX_4].rachIndSent = true;
-            l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
-            phyDb.ueDb.numActvUe++;
-         }
+         // /* Send RACH Ind to L2 for fifth UE */
+         // if(phyDb.ueDb.ueCb[UE_IDX_4].rachIndSent == false && phyDb.ueDb.ueCb[UE_IDX_3].msgRrcReconfigComp == true)
+         // {
+         //    phyDb.ueDb.ueCb[UE_IDX_4].isCFRA = false;
+         //    phyDb.ueDb.ueCb[UE_IDX_4].rachIndSent = true;
+         //    l1BuildAndSendRachInd(ulTtiReq->slot, ulTtiReq->sfn, CB_RA_PREAMBLE_IDX);
+         //    phyDb.ueDb.numActvUe++;
+         // }
 #endif       
       }
       if(ulTtiReq->pdus[numPdus-1].pduType == 1)
