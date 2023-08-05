@@ -551,13 +551,13 @@ uint8_t startDlDataForExperiment11()
    int32_t totalNumOfTestFlow; 
    EgtpTeIdCb *teidCb = NULLP;
    
-   while(timerCnt < 600)
+   while(timerCnt < 125)
    {
       for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {
          for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
          {
-            numOfPacket = 5;
+            numOfPacket = 1;
             teidCb = NULLP;
             cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
             if(teidCb)
@@ -584,7 +584,7 @@ uint8_t startDlDataForExperiment11()
             }            
          }
       }
-      usleep(50000); /*JOJO: Smaller value, more traffic.*/
+      usleep(40000); /*JOJO: Smaller value, more traffic.*/
       timerCnt++;
    }
    DU_LOG("\nJOJO  -->  Stop traffic.\n");
@@ -651,18 +651,18 @@ void *cuConsoleHandler(void *args)
           * totalDataPacket = totalNumOfTestFlow * NUM_TUNNEL_TO_PUMP_DATA * NUM_DL_PACKETS 
           * totalDataPacket = [500*9*1] */
          
-         while(true)
-         {
-            if(cnt >= 500)
-            {
-               cnt = 0;
-               break;
-            }
-            startDlData();
-            usleep(80000);
-            cnt++;
-         }
-         //startDlDataForExperiment11();
+         // while(true)
+         // {
+         //    if(cnt >= 500)
+         //    {
+         //       cnt = 0;
+         //       break;
+         //    }
+         //    startDlData();
+         //    usleep(80000);
+         //    cnt++;
+         // }
+         startDlDataForExperiment11();
 #endif
          continue;
       } 

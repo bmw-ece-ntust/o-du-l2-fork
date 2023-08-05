@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# set the output file path
-OUTPUT_FILE=/home/ubuntu/Multi-UE-per-TTI-SCH/waste.csv
-touch $OUTPUT_FILE
-
 # ODU PATH
-ODU_PATH=/home/ubuntu/Multi-UE-per-TTI-SCH
+ODU_PATH=$(pwd)
+
+# set the output file path
+OUTPUT_FILE=$ODU_PATH/waste.csv
+touch $OUTPUT_FILE
 
 # Define the regular expression patterns for wasted PRBs
 prb_pattern="The amount of wasted PRBs is ([0-9]+)"
