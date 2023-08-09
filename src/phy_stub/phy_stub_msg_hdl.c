@@ -438,14 +438,16 @@ uint16_t l1BuildAndSendRxDataInd(uint16_t slot, uint16_t sfn, fapi_ul_pusch_pdu_
          phyDb.ueDb.ueCb[ueId-1].crnti = puschPdu.rnti;
          phyDb.ueDb.ueCb[ueId-1].msg3Sent = true;
          type = MSG_TYPE_MSG3;
+         DU_LOG("\nJOJO  -->  Msg3 sent.");
          sleep(2);
-         // sleep(3);
+         // sleep(4);
          // usleep(500000);
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msg5ShortBsrSent)
       {
          phyDb.ueDb.ueCb[ueId-1].msg5ShortBsrSent = true;
          type = MSG_TYPE_SHORT_BSR;
+         DU_LOG("\nJOJO  -->  Msg5 short BSR sent.");
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msg5Sent)
       {
@@ -457,21 +459,25 @@ uint16_t l1BuildAndSendRxDataInd(uint16_t slot, uint16_t sfn, fapi_ul_pusch_pdu_
       {
         phyDb.ueDb.ueCb[ueId-1].msgNasAuthenticationComp = true;
         type = MSG_TYPE_NAS_AUTHENTICATION_COMPLETE;
+        DU_LOG("\nJOJO  -->  NAS authentication complete.");
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msgNasSecurityModeComp)
       {
          phyDb.ueDb.ueCb[ueId-1].msgNasSecurityModeComp = true;
          type = MSG_TYPE_NAS_SECURITY_MODE_COMPLETE;
+         DU_LOG("\nJOJO  -->  NAS security mode complete.");
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msgRrcSecurityModeComp)
       {
          phyDb.ueDb.ueCb[ueId-1].msgRrcSecurityModeComp = true;
          type = MSG_TYPE_RRC_SECURITY_MODE_COMPLETE;
+         DU_LOG("\nJOJO  -->  RRC security mode complete.");
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msgRegistrationComp)
       {
          phyDb.ueDb.ueCb[ueId-1].msgRegistrationComp = true;
          type = MSG_TYPE_REGISTRATION_COMPLETE; 
+         DU_LOG("\nJOJO  -->  Registration complete.");
       }
       else if(!phyDb.ueDb.ueCb[ueId-1].msgRrcReconfigComp)
       {

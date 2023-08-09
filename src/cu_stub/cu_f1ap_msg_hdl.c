@@ -2799,6 +2799,7 @@ uint8_t BuildFlowsMap(DrbInfo *drbInfo, Flows_Mapped_To_DRB_List_t *flowMap , ui
 
       ret = BuildQOSInfo(&qosFlow->qos, &flowMap->list.array[idx]->qoSFlowLevelQoSParameters,\
             actionType, INVALID_PDU_SESSION_ID, hoInProgress);
+
       if(ret != ROK)
       {
          DU_LOG("\nERROR  -->  F1AP : Failed to Build QOS Info in BuildFlowsMap()");
@@ -3003,6 +3004,41 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       else
          BuildQOSInforet =  BuildQOSInfo(&ueCb->drbList[idx].qos, &drbSetItem->qoSInformation.choice.\
                choice_extension->value.choice.DRB_Information.dRB_QoS, ProtocolIE_ID_id_DRBs_ToBeSetup_Item, PDU_SESSION_ID_1, TRUE);
+
+      /*JOJO: Assign pre-determined 5QI to specific DRB.*/
+      uint8_t ueId = 0;
+      GET_UE_ID(ueCb->crnti, ueId);
+
+      if(ueId == 1 && drbSetItem->dRBID == 1)
+      {
+         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 1;
+      }
+      else if(ueId == 2 && drbSetItem->dRBID == 1)
+      {
+         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 2;
+      }
+      else if(ueId == 3 && drbSetItem->dRBID == 1)
+      {
+         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 6;
+      }
+      else if(ueId == 4 && drbSetItem->dRBID == 1)
+      {
+         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 7;
+      }
+      else
+      {
+         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 7;
+      }
+
+      DU_LOG("\nJOJO  -->  F1AP : DRB ID: %d is assigned 5QI = %d", drbSetItem->dRBID,\
+         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI);
+      
       if(BuildQOSInforet != ROK)
       {
          DU_LOG("\nERROR  -->  F1AP : Failed to build QOS Info in BuildDRBSetup");
@@ -10378,7 +10414,9 @@ uint8_t FillDrbItemToSetupMod(uint32_t duId, CuUeCb *ueCb, uint8_t arrIdx, DRBs_
 	 drbItem->qoSInformation.choice.choice_extension->value.present = QoSInformation_ExtIEs__value_PR_DRB_Information;
 	 ret =  BuildQOSInfo(&ueCb->drbList[ueCb->numDrb].qos, &drbItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS,\
            ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item, PDU_SESSION_ID_2, FALSE);
-	 if(ret != ROK)
+	 
+    DU_LOG("\nJOJO  -->  F1AP : call BuildQOS. 3");
+    if(ret != ROK)
 	 {
 	    DU_LOG("\nERROR  -->  F1AP : BuildQOSInfo failed");
 	    return RFAILED;
@@ -10628,6 +10666,8 @@ uint8_t FillDrbToBeModItem(uint32_t duId, CuUeCb *ueCb, uint8_t arrIdx, DRBs_ToB
                drbItem->qoSInformation->choice.choice_extension->value.present = QoSInformation_ExtIEs__value_PR_DRB_Information;
                ret =  BuildQOSInfo(&drbToBeMod->qos, &drbItem->qoSInformation->choice.choice_extension->value.choice.DRB_Information.dRB_QoS,\
                      ProtocolIE_ID_id_DRBs_ToBeModified_Item, INVALID_PDU_SESSION_ID, FALSE);
+               
+               DU_LOG("\nJOJO  -->  F1AP : call BuildQOS. 4");
                if(ret != ROK)
                {
                   DU_LOG("\nERROR  -->  F1AP : BuildQOSInfo failed");

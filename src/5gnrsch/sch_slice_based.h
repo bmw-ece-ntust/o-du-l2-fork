@@ -40,6 +40,9 @@ typedef struct schSliceBasedLcInfo
    uint8_t  lcId;     /*LCID for which BO are getting recorded*/
    SchUeCb *ueCb;    /* To store which UE this LC belongs to */
    uint16_t priorLevel; /* Priority Level which is associated with this LC */
+   uint8_t fiveQI; /* JOJO: 5QI which is associated with this LC */
+   float_t throughput; /* JOJO: average throughput which is associated with this LC */
+   float_t delay; /* JOJO: average delay which is associated with this LC */
    float_t weight; /*  Weight (0 ~ 1) which is used for WFQ algorithm */
    uint32_t reqBO;    /*Size of the BO requested/to be allocated for this LC*/
    uint32_t allocBO;  /*TBS/BO Size which is actually allocated*/
