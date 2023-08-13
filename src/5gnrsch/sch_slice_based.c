@@ -234,13 +234,15 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
          if(tempAlgoSelection < 1)
          {
             // sliceCbToStore->algorithm = RR;
-            sliceCbToStore->algorithm = WFQ;
-            sliceCbToStore->algoMethod = FLAT;
+            // sliceCbToStore->algorithm = WFQ;
+            sliceCbToStore->algorithm = fiveQI;
+            sliceCbToStore->algoMethod = FLAT;   
          }
          else
          {
-            sliceCbToStore->algorithm = WFQ;
             // sliceCbToStore->algorithm = RR;
+            // sliceCbToStore->algorithm = WFQ;
+            sliceCbToStore->algorithm = fiveQI;
             sliceCbToStore->algoMethod = FLAT;
          }
          addNodeToLList(&schSpcCell->sliceCbList, sliceCbToStore, NULL);
@@ -2277,6 +2279,10 @@ uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pd
                sliceCb->allocatedPrb, remainingPrb);      
 #endif
    }
+   else if(sliceCb->algorithm == fiveQI)
+   {
+      DU_LOG("\nJOJO  -->  5QI based scheduling starts.");
+   }
    else
    {
       DU_LOG("\nDennis  -->  In schSliceBasedDlIntraSliceScheduling() : Invalid Scheduling Algorithm");
@@ -2418,6 +2424,10 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
             DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d, Algo: WFQ]", sliceCb->snssai.sst, \
                      sliceCb->allocatedPrb, remainingPrb);      
    #endif
+         }
+         else if(sliceCb->algorithm == fiveQI)
+         {
+            DU_LOG("\nJOJO  -->  5QI based scheduling starts.");
          }
          else
          {
@@ -2610,6 +2620,10 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
                remainingPrb = remainingPrb - (sliceCb->sharedPrb - availablePrb);
             }
          }
+      }
+      else if(sliceCb->algorithm == fiveQI)
+      {
+         DU_LOG("\nJOJO  -->  5QI based scheduling starts.");
       }
       else
       {

@@ -30,7 +30,8 @@ typedef enum
 typedef enum
 {
    RR, /* Round Robin */
-   WFQ /* Weight Fair Queue */
+   WFQ, /* Weight Fair Queue */
+   fiveQI /* JOJO: 5QI based scheduling algorithm*/
 }SchAlgorithm;
 
 /*Following structures to keep record and estimations of PRB allocated for each
@@ -176,6 +177,9 @@ uint8_t schSliceBasedUlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo puschTi
 uint8_t schSliceBasedRoundRobinAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
 uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
+                                 uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
+/*JOJO: 5QI based scheduling algorithm*/
+uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
 
 /* Scheduling Algorithm for Logical Channel Level */
