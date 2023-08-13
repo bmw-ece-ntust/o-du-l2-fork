@@ -233,12 +233,14 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
 
          if(tempAlgoSelection < 1)
          {
-            sliceCbToStore->algorithm = RR;
+            // sliceCbToStore->algorithm = RR;
+            sliceCbToStore->algorithm = WFQ;
             sliceCbToStore->algoMethod = FLAT;
          }
          else
          {
-            sliceCbToStore->algorithm = RR;
+            sliceCbToStore->algorithm = WFQ;
+            // sliceCbToStore->algorithm = RR;
             sliceCbToStore->algoMethod = FLAT;
          }
          addNodeToLList(&schSpcCell->sliceCbList, sliceCbToStore, NULL);
@@ -2258,9 +2260,14 @@ uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pd
 
       if(minimumPrb != 0)
       {
+         DU_LOG("\nJOJO  -->  intra slice scheduling is enabled.");
          remainingPrb = minimumPrb;            
          schSliceBasedWeightedFairQueueAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
                                     pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+      }
+      else
+      {
+         DU_LOG("\nJOJO  -->  intra slice scheduling is disabled.");
       }
 
       sliceCb->allocatedPrb = minimumPrb - remainingPrb;
@@ -2396,11 +2403,15 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
 
             if(minimumPrb != 0)
             {
+               DU_LOG("\nJOJO  -->  intra slice scheduling is enabled.");
                remainingPrb = minimumPrb;            
                schSliceBasedWeightedFairQueueAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
                                           pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
             }
-
+            else
+            {
+               DU_LOG("\nJOJO  -->  intra slice scheduling is disabled.");
+            }
             sliceCb->allocatedPrb = minimumPrb - remainingPrb;
 
    #ifdef SLICE_BASED_DEBUG_LOG
@@ -2581,6 +2592,7 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
 
          if(remainingPrb != 0)
          {
+            DU_LOG("\nJOJO  -->  final slice scheduling is enabled.");
             if(sliceCb->sharedPrb >= remainingPrb)
             {
                availablePrb = remainingPrb; 
@@ -4264,6 +4276,10 @@ uint8_t schSliceBasedRoundRobinAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLLis
 uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd)
 {
+   CmLListCp GBRLcList; /*JOJO: Logical channel list for GBR traffic.*/
+   CmLListCp nonGBRLcList; /*JOJO: Logical channel list for non-GBR traffic.*/
+   CmLListCp realTimeLcList; /*JOJO: Logical channel list for real time traffic.*/
+   CmLListCp nonRealTimeLcList; /*JOJO: Logical channel list for non real time traffic.*/
    SchUeCb *ueCb = NULLP;
    uint8_t  ueId;
    CmLList *ueNode;
@@ -4316,6 +4332,8 @@ uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList,
 
    else if(algoMethod == FLAT)
    {
+      cmLListInit(&GBRLcList);
+      cmLListInit(&nonGBRLcList);
       cmLListInit(&casLcInfoList);
 
       /* Cascade the LC Info List of each UEs */
@@ -4350,6 +4368,23 @@ uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList,
 
       /* Free the cascade LC Info list */
       lcNode = casLcInfoList.first;
+      while(lcNode)
+      {
+         next = lcNode->next;
+         SCH_FREE(lcNode, sizeof(CmLList));
+         lcNode = next;
+      }
+
+      /* Free the GBR LC list */
+      lcNode = GBRLcList.first;
+      while(lcNode)
+      {
+         next = lcNode->next;
+         SCH_FREE(lcNode, sizeof(CmLList));
+         lcNode = next;
+      }
+      /* Free the non-GBR LC list */
+      lcNode = nonGBRLcList.first;
       while(lcNode)
       {
          next = lcNode->next;

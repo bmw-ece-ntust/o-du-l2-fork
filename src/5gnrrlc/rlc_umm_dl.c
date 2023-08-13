@@ -467,6 +467,7 @@ void rlcUmmProcessSdus(RlcCb *gCb, RlcDlRbCb *rbCb, RlcDatReq *datReq)
    datReq->boRep.staPduPrsnt = FALSE;
    if (rbCb->m.umDl.sduQ.count > 0)
    {
+      DU_LOG("\n In schSliceBasedRoundRobinAlgo(), invalid algoMethod");
       datReq->boRep.oldestSduArrTime = 
         ((RlcSdu *)(rbCb->m.umDl.sduQ.first->node))->arrTime;
    }

@@ -551,7 +551,7 @@ uint8_t startDlDataForExperiment11()
    int32_t totalNumOfTestFlow; 
    EgtpTeIdCb *teidCb = NULLP;
    
-   while(timerCnt < 50)
+   while(timerCnt < 96)
    {
       for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {
@@ -584,7 +584,7 @@ uint8_t startDlDataForExperiment11()
             }            
          }
       }
-      usleep(100000); /*JOJO: Smaller value, more traffic.*/
+      usleep(39000); /*JOJO: Smaller value, more traffic.*/
       timerCnt++;
    }
    DU_LOG("\nJOJO  -->  Stop traffic.\n");

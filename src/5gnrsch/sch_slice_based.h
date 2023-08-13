@@ -16,8 +16,8 @@
 ################################################################################
 *******************************************************************************/
 
-#define SCH_MULTI_THREAD /* Enable the multi-thread intra-slice scheduling feature */
-#define NUM_SLICE 3
+// #define SCH_MULTI_THREAD /* Enable the multi-thread intra-slice scheduling feature */
+#define NUM_SLICE 1
 // #define SLICE_BASED_DEBUG_LOG /* Enable the debug log */
 #define BILLION_NUM  1000000000.0
 
