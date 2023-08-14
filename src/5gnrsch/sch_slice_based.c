@@ -4290,6 +4290,129 @@ uint8_t schSliceBasedRoundRobinAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLLis
 uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd)
 {
+   SchUeCb *ueCb = NULLP;
+   uint8_t  ueId;
+   CmLList *ueNode;
+   CmLList *lcNode;
+   CmLList *next;
+   CmLListCp casLcInfoList; /* Cascade LC Info LL */
+   SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
+   SchSliceBasedLcInfo *lcInfoNode = NULLP;
+   uint16_t ueQuantum, remainingPrb, totalAvaiPrb;
+   float_t totalPriorityLevel = 0;
+
+   totalAvaiPrb = *availablePrb;
+   
+   ueNode = ueList->first;
+
+   if(algoMethod == HIERARCHY)
+   {    
+      
+      while(ueNode)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+         ueQuantum = *availablePrb * ueSliceBasedCb->prbWeight;
+         remainingPrb = ueQuantum;
+
+         /* Although this is WFQ algorithm, but it is for UE level (HIERARCHY) */
+         /* In LC level, we are still using RR */
+         schSliceBasedRoundRobinAlgoforLc(&lcInfoList[ueId-1], numSymbols, &remainingPrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+                 
+         *availablePrb -= ueQuantum - remainingPrb;
+         ueNode = ueNode->next;
+      }
+
+      /* If there are remaining PRBs, do the scheduling again */
+      ueNode = ueList->first;
+      while(ueNode && *availablePrb > 0)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+
+         schSliceBasedRoundRobinAlgoforLc(&lcInfoList[ueId-1], numSymbols, availablePrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+               
+         ueNode = ueNode->next;
+      }     
+   }
+
+   else if(algoMethod == FLAT)
+   {
+      cmLListInit(&casLcInfoList);
+
+      /* Cascade the LC Info List of each UEs */
+      while(ueNode)
+      {
+         ueId = *(uint8_t *)(ueNode->node);
+         ueCb = &cellCb->ueCb[ueId-1];
+         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+
+         lcNode = lcInfoList[ueId-1].first;
+
+         while(lcNode)
+         {
+            lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
+            totalPriorityLevel += lcInfoNode->priorLevel;
+
+            if(addNodeToLList(&casLcInfoList, lcNode->node, NULLP) != ROK)
+            {
+               DU_LOG("\nERROR  --> Dennis : Failed to add the LC Info in FLAT algorithm method");
+            }
+            lcNode = lcNode->next;
+         }
+         ueNode = ueNode->next;
+      }
+
+      /* Sort the cascade LC Info List in terms of priority level */
+      schSliceBasedSortLcByPriorLevel(&casLcInfoList, totalPriorityLevel);
+
+      /* Allocate the resouce for cascade LC Info list */
+      schSliceBasedWeightedFairQueueAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+
+      /* Free the cascade LC Info list */
+      lcNode = casLcInfoList.first;
+      while(lcNode)
+      {
+         next = lcNode->next;
+         SCH_FREE(lcNode, sizeof(CmLList));
+         lcNode = next;
+      }
+   }
+   else
+   {
+      DU_LOG("\n In schSliceBasedRoundRobinAlgo(), invalid algoMethod");
+   }
+}
+
+/*******************************************************************
+ *
+ * @brief Allocate resource for each UE and LC with WFQ(Weight Fair Queue) algorithm
+ *
+ * @details
+ *
+ *    Function : schSliceBasedWeightedFairQueueAlgo
+ *
+ *    Functionality: Allocate resource for each UE and LC with WFQ(Weight Fair Queue) algorithm
+ * 
+ * @params[in] Pointer to Cell Control Block
+ *             Pointer to UE List
+ *             Pointer to LC Info Control Block List
+ *             Number of PDSCH symbols
+ *             Number of available PRBs
+ *             Scheduling Method (0:Flat, 1:Hierarchy)
+ *             srRcvd Flag[For UL] : Decision flag to add UL_GRANT_SIZE     
+ * @return ROK
+ *         RFAILED
+ *
+ * ****************************************************************/
+uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
+                                 uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd)
+{
    CmLListCp GBRLcList; /*JOJO: Logical channel list for GBR traffic.*/
    CmLListCp nonGBRLcList; /*JOJO: Logical channel list for non-GBR traffic.*/
    CmLListCp realTimeLcList; /*JOJO: Logical channel list for real time traffic.*/
