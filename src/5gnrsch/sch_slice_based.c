@@ -233,16 +233,16 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
 
          if(tempAlgoSelection < 1)
          {
-            // sliceCbToStore->algorithm = RR;
+            sliceCbToStore->algorithm = RR;
             // sliceCbToStore->algorithm = WFQ;
-            sliceCbToStore->algorithm = fiveQI;
+            // sliceCbToStore->algorithm = fiveQI;
             sliceCbToStore->algoMethod = FLAT;   
          }
          else
          {
-            // sliceCbToStore->algorithm = RR;
+            sliceCbToStore->algorithm = RR;
             // sliceCbToStore->algorithm = WFQ;
-            sliceCbToStore->algorithm = fiveQI;
+            // sliceCbToStore->algorithm = fiveQI;
             sliceCbToStore->algoMethod = FLAT;
          }
          addNodeToLList(&schSpcCell->sliceCbList, sliceCbToStore, NULL);
@@ -4391,13 +4391,13 @@ uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList,
 
 /*******************************************************************
  *
- * @brief Allocate resource for each UE and LC with WFQ(Weight Fair Queue) algorithm
+ * @brief Allocate resource for each UE and LC based on 5QI-based algorithm
  *
  * @details
  *
- *    Function : schSliceBasedWeightedFairQueueAlgo
+ *    Function : schFiveQIBasedAlgo
  *
- *    Functionality: Allocate resource for each UE and LC with WFQ(Weight Fair Queue) algorithm
+ *    Functionality: Allocate resource for each UE and LC based on 5QI-based algorithm
  * 
  * @params[in] Pointer to Cell Control Block
  *             Pointer to UE List
@@ -4432,106 +4432,65 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
    
    ueNode = ueList->first;
 
-   if(algoMethod == HIERARCHY)
-   {    
-      
-      while(ueNode)
-      {
-         ueId = *(uint8_t *)(ueNode->node);
-         ueCb = &cellCb->ueCb[ueId-1];
-         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
-         ueQuantum = *availablePrb * ueSliceBasedCb->prbWeight;
-         remainingPrb = ueQuantum;
+   cmLListInit(&GBRLcList);
+   cmLListInit(&nonGBRLcList);
+   cmLListInit(&casLcInfoList);
 
-         /* Although this is WFQ algorithm, but it is for UE level (HIERARCHY) */
-         /* In LC level, we are still using RR */
-         schSliceBasedRoundRobinAlgoforLc(&lcInfoList[ueId-1], numSymbols, &remainingPrb, \
-                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
-                 
-         *availablePrb -= ueQuantum - remainingPrb;
-         ueNode = ueNode->next;
-      }
-
-      /* If there are remaining PRBs, do the scheduling again */
-      ueNode = ueList->first;
-      while(ueNode && *availablePrb > 0)
-      {
-         ueId = *(uint8_t *)(ueNode->node);
-         ueCb = &cellCb->ueCb[ueId-1];
-         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
-
-         schSliceBasedRoundRobinAlgoforLc(&lcInfoList[ueId-1], numSymbols, availablePrb, \
-                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
-               
-         ueNode = ueNode->next;
-      }     
-   }
-
-   else if(algoMethod == FLAT)
+   /* Cascade the LC Info List for GBR traffic and non GBR traffic */
+   while(ueNode)
    {
-      cmLListInit(&GBRLcList);
-      cmLListInit(&nonGBRLcList);
-      cmLListInit(&casLcInfoList);
+      ueId = *(uint8_t *)(ueNode->node);
+      ueCb = &cellCb->ueCb[ueId-1];
+      ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
 
-      /* Cascade the LC Info List of each UEs */
-      while(ueNode)
+      lcNode = lcInfoList[ueId-1].first;
+
+      while(lcNode)
       {
-         ueId = *(uint8_t *)(ueNode->node);
-         ueCb = &cellCb->ueCb[ueId-1];
-         ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+         lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
+         totalPriorityLevel += lcInfoNode->priorLevel;
 
-         lcNode = lcInfoList[ueId-1].first;
-
-         while(lcNode)
+         if(addNodeToLList(&casLcInfoList, lcNode->node, NULLP) != ROK)
          {
-            lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
-            totalPriorityLevel += lcInfoNode->priorLevel;
-
-            if(addNodeToLList(&casLcInfoList, lcNode->node, NULLP) != ROK)
-            {
-               DU_LOG("\nERROR  --> Dennis : Failed to add the LC Info in FLAT algorithm method");
-            }
-            lcNode = lcNode->next;
+            DU_LOG("\nERROR  --> Dennis : Failed to add the LC Info in FLAT algorithm method");
          }
-         ueNode = ueNode->next;
+         lcNode = lcNode->next;
       }
-
-      /* Sort the cascade LC Info List in terms of priority level */
-      schSliceBasedSortLcByPriorLevel(&casLcInfoList, totalPriorityLevel);
-
-      /* Allocate the resouce for cascade LC Info list */
-      schSliceBasedWeightedFairQueueAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
-                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
-
-      /* Free the cascade LC Info list */
-      lcNode = casLcInfoList.first;
-      while(lcNode)
-      {
-         next = lcNode->next;
-         SCH_FREE(lcNode, sizeof(CmLList));
-         lcNode = next;
-      }
-
-      /* Free the GBR LC list */
-      lcNode = GBRLcList.first;
-      while(lcNode)
-      {
-         next = lcNode->next;
-         SCH_FREE(lcNode, sizeof(CmLList));
-         lcNode = next;
-      }
-      /* Free the non-GBR LC list */
-      lcNode = nonGBRLcList.first;
-      while(lcNode)
-      {
-         next = lcNode->next;
-         SCH_FREE(lcNode, sizeof(CmLList));
-         lcNode = next;
-      }
+      ueNode = ueNode->next;
    }
-   else
+
+   /* JOJO: Max Rate algorithm for GBR LC list. */
+   
+
+   /* JOJO: Proportional Fair algorithm for non GBR LC list. */
+   schSliceBasedSortLcByPriorLevel(&casLcInfoList, totalPriorityLevel);
+   schSliceBasedWeightedFairQueueAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
+                                       &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+
+   /* Free the cascade LC Info list */
+   // lcNode = casLcInfoList.first;
+   // while(lcNode)
+   // {
+   //    next = lcNode->next;
+   //    SCH_FREE(lcNode, sizeof(CmLList));
+   //    lcNode = next;
+   // }
+
+   /* Free the GBR LC list */
+   lcNode = GBRLcList.first;
+   while(lcNode)
    {
-      DU_LOG("\n In schSliceBasedRoundRobinAlgo(), invalid algoMethod");
+      next = lcNode->next;
+      SCH_FREE(lcNode, sizeof(CmLList));
+      lcNode = next;
+   }
+   /* Free the non-GBR LC list */
+   lcNode = nonGBRLcList.first;
+   while(lcNode)
+   {
+      next = lcNode->next;
+      SCH_FREE(lcNode, sizeof(CmLList));
+      lcNode = next;
    }
 }
 
