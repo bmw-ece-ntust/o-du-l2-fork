@@ -233,16 +233,16 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
 
          if(tempAlgoSelection < 1)
          {
-            sliceCbToStore->algorithm = RR;
+            // sliceCbToStore->algorithm = RR;
             // sliceCbToStore->algorithm = WFQ;
-            // sliceCbToStore->algorithm = fiveQI;
+            sliceCbToStore->algorithm = fiveQI;
             sliceCbToStore->algoMethod = FLAT;   
          }
          else
          {
-            sliceCbToStore->algorithm = RR;
+            // sliceCbToStore->algorithm = RR;
             // sliceCbToStore->algorithm = WFQ;
-            // sliceCbToStore->algorithm = fiveQI;
+            sliceCbToStore->algorithm = fiveQI;
             sliceCbToStore->algoMethod = FLAT;
          }
          addNodeToLList(&schSpcCell->sliceCbList, sliceCbToStore, NULL);
@@ -1624,6 +1624,33 @@ uint16_t schSliceBasedCalculatePriorLevel(uint16_t fiveQi)
    }
 
    return fiveQiTable[fiveQiIdx][1];
+}
+
+/*******************************************************************
+ *
+ * @brief Get the resource type according to the 5QI mapping table
+ *
+ * @details
+ *
+ *    Function : schGetResourceTypeFromFiveQI
+ *
+ *    Functionality: Get the resource type according to the 5QI mapping table
+ *
+ * @params[in] 5QI value
+ * @return Resource Type
+ *
+ * ****************************************************************/
+uint16_t schGetResourceTypeFromFiveQI(uint16_t fiveQi)
+{
+   uint8_t fiveQiIdx;
+   for(fiveQiIdx = 0; fiveQiIdx < MAX_5QI_TABLE_IDX; fiveQiIdx++)
+   {
+      /* Get the corresponding 5QI Index */
+      if(fiveQiIdxTable[fiveQiIdx] == fiveQi)
+         break;
+   }
+
+   return fiveQiTable[fiveQiIdx][0];
 }
 
 /*******************************************************************
@@ -4422,7 +4449,6 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
    CmLList *ueNode;
    CmLList *lcNode;
    CmLList *next;
-   CmLListCp casLcInfoList; /* Cascade LC Info LL */
    SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
    SchSliceBasedLcInfo *lcInfoNode = NULLP;
    uint16_t ueQuantum, remainingPrb, totalAvaiPrb;
@@ -4434,7 +4460,6 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
 
    cmLListInit(&GBRLcList);
    cmLListInit(&nonGBRLcList);
-   cmLListInit(&casLcInfoList);
 
    /* Cascade the LC Info List for GBR traffic and non GBR traffic */
    while(ueNode)
@@ -4450,9 +4475,23 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
          lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
          totalPriorityLevel += lcInfoNode->priorLevel;
 
-         if(addNodeToLList(&casLcInfoList, lcNode->node, NULLP) != ROK)
+         if(schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI) == 0)
          {
-            DU_LOG("\nERROR  --> Dennis : Failed to add the LC Info in FLAT algorithm method");
+            if(addNodeToLList(&GBRLcList, lcNode->node, NULLP) != ROK)
+            {
+               DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into GBR LC list.");
+            }
+         }
+         else if(schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI) == 0)
+         {
+            if(addNodeToLList(&nonGBRLcList, lcNode->node, NULLP) != ROK)
+            {
+               DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into non GBR LC list.");
+            }
+         }
+         else
+         {
+            DU_LOG("\nERROR  --> JOJO : Invalid resource type.");
          }
          lcNode = lcNode->next;
       }
@@ -4460,21 +4499,12 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
    }
 
    /* JOJO: Max Rate algorithm for GBR LC list. */
-   
+   schSliceBasedSortLcByPriorLevel(&GBRLcList, totalPriorityLevel);
 
    /* JOJO: Proportional Fair algorithm for non GBR LC list. */
-   schSliceBasedSortLcByPriorLevel(&casLcInfoList, totalPriorityLevel);
-   schSliceBasedWeightedFairQueueAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
-                                       &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
-
-   /* Free the cascade LC Info list */
-   // lcNode = casLcInfoList.first;
-   // while(lcNode)
-   // {
-   //    next = lcNode->next;
-   //    SCH_FREE(lcNode, sizeof(CmLList));
-   //    lcNode = next;
-   // }
+   schSliceBasedSortLcByPriorLevel(&nonGBRLcList, totalPriorityLevel);
+   // schSliceBasedWeightedFairQueueAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
+   //                                     &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
 
    /* Free the GBR LC list */
    lcNode = GBRLcList.first;
@@ -4484,6 +4514,7 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
       SCH_FREE(lcNode, sizeof(CmLList));
       lcNode = next;
    }
+
    /* Free the non-GBR LC list */
    lcNode = nonGBRLcList.first;
    while(lcNode)

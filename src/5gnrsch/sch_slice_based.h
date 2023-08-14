@@ -144,6 +144,8 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb);
 void SchSliceBasedSliceRecfgReq(SchCellCb *cellCb);
 uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb);
 uint16_t schSliceBasedCalculatePriorLevel(uint16_t fiveQi);
+/*JOJO: get resource type from 5QI table*/
+uint16_t schGetResourceTypeFromFiveQI(uint16_t fiveQi);
 void schSliceBasedSortLcByPriorLevel(CmLListCp *lcInfoList, float_t totalPriorLevel);
 void schSliceBasedSortUeByWeight(SchCellCb *cellCb, CmLListCp *ueList, float_t totalWeight);
 uint8_t schSliceBasedUpdateLcListReqBo(CmLListCp *lcInfoList, SchUeCb *ueCb, Direction dir);
