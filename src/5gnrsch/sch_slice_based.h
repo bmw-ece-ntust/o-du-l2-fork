@@ -185,6 +185,10 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
 
 /* Scheduling Algorithm for Logical Channel Level */
+void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
+                                       bool *isTxPayloadLenAdded, bool *srRcvd);
+void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
+                                       bool *isTxPayloadLenAdded, bool *srRcvd);
 void schSliceBasedRoundRobinAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
                                        bool *isTxPayloadLenAdded, bool *srRcvd);
 void schSliceBasedWeightedFairQueueAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \

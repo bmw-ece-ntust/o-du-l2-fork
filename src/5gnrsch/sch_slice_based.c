@@ -2309,6 +2309,19 @@ uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pd
    else if(sliceCb->algorithm == fiveQI)
    {
       DU_LOG("\nJOJO  -->  5QI based scheduling starts.");
+      if(minimumPrb != 0)
+      {
+         remainingPrb = minimumPrb;            
+         schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                           pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+      }
+
+      sliceCb->allocatedPrb = minimumPrb - remainingPrb;
+
+#ifdef SLICE_BASED_DEBUG_LOG
+      DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d, Algo: RR]", sliceCb->snssai.sst, \
+               sliceCb->allocatedPrb, remainingPrb);
+#endif
    }
    else
    {
@@ -2455,6 +2468,18 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
          else if(sliceCb->algorithm == fiveQI)
          {
             DU_LOG("\nJOJO  -->  5QI based scheduling starts.");
+            if(minimumPrb != 0)
+            {
+               remainingPrb = minimumPrb;            
+               schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                 pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+            }
+
+            sliceCb->allocatedPrb = minimumPrb - remainingPrb;
+#ifdef SLICE_BASED_DEBUG_LOG
+            DU_LOG("\nDennis  -->  SCH Intra-Slice Result : [SST: %d, Allocated PRB: %d, Unallocated PRB: %d, Algo: RR]", sliceCb->snssai.sst, \
+                     sliceCb->allocatedPrb, remainingPrb);
+#endif
          }
          else
          {
@@ -2651,6 +2676,30 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       else if(sliceCb->algorithm == fiveQI)
       {
          DU_LOG("\nJOJO  -->  5QI based scheduling starts.");
+#ifdef SLICE_BASED_DEBUG_LOG
+         DU_LOG("\n\n===============Dennis  -->  SCH Final : Start to run FinalScheduling [SST:%d, Shared PRB Quota:%d, Remaining PRB:%d, Algo: WFQ]===============", \
+         sliceCb->snssai.sst, sliceCb->sharedPrb, remainingPrb);
+#endif
+         if(remainingPrb != 0)
+         {
+            DU_LOG("\nJOJO  -->  final slice scheduling is enabled.");
+            if(sliceCb->sharedPrb >= remainingPrb)
+            {
+               availablePrb = remainingPrb; 
+               schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
+               sliceCb->allocatedPrb += remainingPrb - availablePrb;
+               remainingPrb = availablePrb;
+            }
+            else
+            {
+               availablePrb = sliceCb->sharedPrb;
+               schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                                    pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
+               sliceCb->allocatedPrb += sliceCb->sharedPrb - availablePrb;
+               remainingPrb = remainingPrb - (sliceCb->sharedPrb - availablePrb);
+            }
+         }
       }
       else
       {
@@ -3764,6 +3813,349 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
 
 /*******************************************************************
  *
+ * @brief Allocate and estimate Prb for each LC within current slice with Proportional Fair alogrithm
+ *
+ * @details
+ *
+ *    Function : schPFAlgoforLc
+ *
+ *    Functionality: Allocate the LCs with proportional fairness within a UE
+ * 
+ * @params[in] Pointer to LC Info Control Block List
+ *             Number of PDSCH symbols
+ *             Number of minimum PRB which is calculated according to RRMPolicyRatio
+ *             srRcvd Flag[For UL] : Decision flag to add UL_GRANT_SIZE
+ *             isTxPayloadLenAdded Flag: Check whether the TxPayload should be added to the first node in current slice
+ * @return void
+ *
+ * ****************************************************************/
+void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
+                                       bool *isTxPayloadLenAdded, bool *srRcvd)
+{
+   CmLList *node = NULLP;
+   SchSliceBasedLcInfo *lcInfoNode = NULLP;
+
+   uint16_t estPrb = 0;
+   uint32_t allocBO = 0;
+   uint16_t quantum = 0;
+   uint32_t quantumSize = 0;
+   uint8_t remainingLc = 0;
+   uint16_t mcsIdx;
+   uint16_t totalAvaiPrb = *availablePrb;
+
+   if(lcInfoList == NULLP)
+   {
+      DU_LOG("\nERROR --> SCH: LcList not present");
+      return;
+   }
+
+   if(lcInfoList->count == 0)
+   {
+#ifdef SLICE_BASED_DEBUG_LOG
+      DU_LOG("\nDennis --> SCH: There is no LC in lcInfoList");
+#endif
+      return;
+   }
+
+   remainingLc = lcInfoList->count;
+
+   //DU_LOG("\nDennis --> SCH: WFQ Algorithm [availablePRB: %d]", *availablePrb);
+
+   node = lcInfoList->first;
+   /*[Step1] Allocate the PRB equally among each LCs */
+   while(node)
+   {
+#if 0
+      /*For Debugging purpose*/
+      printLcLL(lcLL);
+#endif
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+
+      /*[Exit 1]: If available PRBs are exhausted*/
+      /*Loop Exit: All resources exhausted*/
+      if(*availablePrb == 0)
+      {
+#ifdef SLICE_BASED_DEBUG_LOG
+         DU_LOG("\nDennis  -->  SCH: Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
+#endif
+         return;
+      }
+
+      mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+
+      if(lcInfoNode->reqBO != 0)
+      {
+         quantum = totalAvaiPrb * lcInfoNode->weight;
+
+         /* Special case when totalAvaiPrb * lcInfoNode->weight < 1 */
+         if(quantum == 0)
+         {
+            break;
+         }
+
+         if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
+         {
+            *isTxPayloadLenAdded = TRUE;
+            DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
+                  lcInfoNode->lcId);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
+            allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
+            lcInfoNode->allocBO += allocBO;
+         }
+         else if((srRcvd != NULLP) && (*srRcvd == TRUE))
+         {
+            DU_LOG("\nDEBUG  --> SCH: LC:%d is the First node to be allocated which includes UL_GRANT_SIZE",\
+                  lcInfoNode->lcId);
+            *srRcvd = FALSE;
+            lcInfoNode->reqBO += UL_GRANT_SIZE;
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            lcInfoNode->allocBO += allocBO;
+         }
+         else
+         {
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            lcInfoNode->allocBO += allocBO;
+         }
+
+         /*[Step6]:Re-adjust the availablePrb Count based on
+         * estimated PRB allocated*/
+         *availablePrb = *availablePrb - estPrb;
+         
+         lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
+         lcInfoNode->allocPRB += estPrb;
+#ifdef SLICE_BASED_DEBUG_LOG
+         DU_LOG("\nDennis  -->  SCH: Allocate LC [Algorithm: WFQ, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, estPRB: %d]",\
+               lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, allocBO, estPrb);
+#endif
+
+         if(lcInfoNode->reqBO == 0)
+         {
+            remainingLc--;
+         }
+      }
+      else
+      {
+         remainingLc--;
+      }
+      /*[Step8]:Next loop: Next LC to be picked from the list*/
+      node = node->next; 
+   }
+
+    /* If is there any LC which reqBO is not zero and there are remaining PRB,  allocate the remaing PRB to LC which has reqBO */
+   if(remainingLc > 0 && *availablePrb)
+   {
+      node = lcInfoList->first;
+
+      while(node)
+      {
+         lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+
+         if(*availablePrb == 0)
+         {
+#ifdef SLICE_BASED_DEBUG_LOG
+            DU_LOG("\nDennis  -->  SCH: (Final) Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
+#endif
+            return;
+         }
+
+         mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+         if(lcInfoNode->reqBO != 0)
+         {
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+            lcInfoNode->allocBO += allocBO;
+
+            /*[Step6]:Re-adjust the availablePrb Count based on
+            * estimated PRB allocated*/
+            *availablePrb = *availablePrb - estPrb;
+            
+            /*[Step7]*/
+            lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
+            lcInfoNode->allocPRB += estPrb;
+         }
+
+#ifdef SLICE_BASED_DEBUG_LOG
+         DU_LOG("\nDennis  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
+#endif
+
+         /*[Step8]:Next loop: Next LC to be picked from the list*/
+         node = node->next; 
+      }
+   }
+   /*[Exit2]: All LCs are allocated in current slice*/
+   return;
+}
+
+/*******************************************************************
+ *
+ * @brief Allocate and estimate Prb for each LC within current slice with Max Rate alogrithm
+ *
+ * @details
+ *
+ *    Function : schMaxRateAlgoforLc
+ *
+ *    Functionality: Allocate the LCs with maximized throughput within a UE
+ * 
+ * @params[in] Pointer to LC Info Control Block List
+ *             Number of PDSCH symbols
+ *             Number of minimum PRB which is calculated according to RRMPolicyRatio
+ *             srRcvd Flag[For UL] : Decision flag to add UL_GRANT_SIZE
+ *             isTxPayloadLenAdded Flag: Check whether the TxPayload should be added to the first node in current slice
+ * @return void
+ *
+ * ****************************************************************/
+void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
+                                       bool *isTxPayloadLenAdded, bool *srRcvd)
+{
+   CmLList *node = NULLP;
+   SchSliceBasedLcInfo *lcInfoNode = NULLP;
+
+   uint16_t estPrb = 0;
+   uint32_t allocBO = 0;
+   uint16_t quantum = 0;
+   uint32_t quantumSize = 0;
+   uint8_t remainingLc = 0;
+   uint16_t mcsIdx;
+   uint16_t totalAvaiPrb = *availablePrb;
+
+   if(lcInfoList == NULLP)
+   {
+      DU_LOG("\nERROR --> SCH: LcList not present");
+      return;
+   }
+
+   if(lcInfoList->count == 0)
+   {
+#ifdef SLICE_BASED_DEBUG_LOG
+      DU_LOG("\nDennis --> SCH: There is no LC in lcInfoList");
+#endif
+      return;
+   }
+
+   schSliceBasedSortLcByPriorLevel(&lcInfoList, 1);
+
+   remainingLc = lcInfoList->count;
+   node = lcInfoList->first;
+   /*[Step1] Allocate the PRB equally among each LCs */
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+
+      /*[Exit 1]: If available PRBs are exhausted*/
+      /*Loop Exit: All resources exhausted*/
+      if(*availablePrb == 0)
+      {
+#ifdef SLICE_BASED_DEBUG_LOG
+         DU_LOG("\nDennis  -->  SCH: Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
+#endif
+         return;
+      }
+
+      mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+
+      if(lcInfoNode->reqBO != 0)
+      {
+         quantum = totalAvaiPrb * lcInfoNode->weight;
+
+         /* Special case when totalAvaiPrb * lcInfoNode->weight < 1 */
+         if(quantum == 0)
+         {
+            break;
+         }
+
+         if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
+         {
+            *isTxPayloadLenAdded = TRUE;
+            DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
+                  lcInfoNode->lcId);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
+            allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
+            lcInfoNode->allocBO += allocBO;
+         }
+         else if((srRcvd != NULLP) && (*srRcvd == TRUE))
+         {
+            DU_LOG("\nDEBUG  --> SCH: LC:%d is the First node to be allocated which includes UL_GRANT_SIZE",\
+                  lcInfoNode->lcId);
+            *srRcvd = FALSE;
+            lcInfoNode->reqBO += UL_GRANT_SIZE;
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            lcInfoNode->allocBO += allocBO;
+         }
+         else
+         {
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            lcInfoNode->allocBO += allocBO;
+         }
+
+         /*[Step6]:Re-adjust the availablePrb Count based on
+         * estimated PRB allocated*/
+         *availablePrb = *availablePrb - estPrb;
+         
+         lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
+         lcInfoNode->allocPRB += estPrb;
+#ifdef SLICE_BASED_DEBUG_LOG
+         DU_LOG("\nDennis  -->  SCH: Allocate LC [Algorithm: WFQ, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, estPRB: %d]",\
+               lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, allocBO, estPrb);
+#endif
+
+         if(lcInfoNode->reqBO == 0)
+         {
+            remainingLc--;
+         }
+      }
+      else
+      {
+         remainingLc--;
+      }
+      /*[Step8]:Next loop: Next LC to be picked from the list*/
+      node = node->next; 
+   }
+
+    /* If is there any LC which reqBO is not zero and there are remaining PRB,  allocate the remaing PRB to LC which has reqBO */
+   if(remainingLc > 0 && *availablePrb)
+   {
+      node = lcInfoList->first;
+
+      while(node)
+      {
+         lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+
+         if(*availablePrb == 0)
+         {
+#ifdef SLICE_BASED_DEBUG_LOG
+            DU_LOG("\nDennis  -->  SCH: (Final) Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
+#endif
+            return;
+         }
+
+         mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+         if(lcInfoNode->reqBO != 0)
+         {
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+            lcInfoNode->allocBO += allocBO;
+
+            /*[Step6]:Re-adjust the availablePrb Count based on
+            * estimated PRB allocated*/
+            *availablePrb = *availablePrb - estPrb;
+            
+            /*[Step7]*/
+            lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
+            lcInfoNode->allocPRB += estPrb;
+         }
+
+#ifdef SLICE_BASED_DEBUG_LOG
+         DU_LOG("\nDennis  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
+#endif
+
+         /*[Step8]:Next loop: Next LC to be picked from the list*/
+         node = node->next; 
+      }
+   }
+   /*[Exit2]: All LCs are allocated in current slice*/
+   return;
+}
+
+/*******************************************************************
+ *
  * @brief Allocate and estimate Prb for each LC within current slice with Round Robin(RR) alogrithm
  *
  * @details
@@ -4482,7 +4874,7 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
                DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into GBR LC list.");
             }
          }
-         else if(schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI) == 0)
+         else if(schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI) == 1)
          {
             if(addNodeToLList(&nonGBRLcList, lcNode->node, NULLP) != ROK)
             {
@@ -4492,6 +4884,10 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
          else
          {
             DU_LOG("\nERROR  --> JOJO : Invalid resource type.");
+            if(addNodeToLList(&nonGBRLcList, lcNode->node, NULLP) != ROK)
+            {
+               DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into non GBR LC list.");
+            }
          }
          lcNode = lcNode->next;
       }
@@ -4499,12 +4895,12 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
    }
 
    /* JOJO: Max Rate algorithm for GBR LC list. */
-   schSliceBasedSortLcByPriorLevel(&GBRLcList, totalPriorityLevel);
-
+   schMaxRateAlgoforLc(&GBRLcList, numSymbols, availablePrb, \
+                                       &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+   
    /* JOJO: Proportional Fair algorithm for non GBR LC list. */
-   schSliceBasedSortLcByPriorLevel(&nonGBRLcList, totalPriorityLevel);
-   // schSliceBasedWeightedFairQueueAlgoforLc(&casLcInfoList, numSymbols, availablePrb, \
-   //                                     &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+   schPFAlgoforLc(&nonGBRLcList, numSymbols, availablePrb, \
+                                       &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
 
    /* Free the GBR LC list */
    lcNode = GBRLcList.first;
