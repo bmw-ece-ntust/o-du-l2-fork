@@ -1655,6 +1655,184 @@ uint16_t schGetResourceTypeFromFiveQI(uint16_t fiveQi)
 
 /*******************************************************************
  *
+ * @brief Sort the logical channel according to MCS index within each slice
+ *
+ * @details
+ *
+ *    Function : schSortLcByMCS
+ *
+ *    Functionality: Sort the logical channel according to MCS index within each slice
+ *
+ * @params[in] Pointer to LC Info Control Block List
+ * @return void
+ *
+ * ****************************************************************/
+void schSortLcByMCS(CmLListCp *lcInfoList)
+{
+   CmLList *outerNode = NULLP, *interNode, *minPriorNode = NULLP, *tempNode; 
+   SchSliceBasedLcInfo *outerLcInfo = NULLP, *interLcInfo = NULLP, *minPriorLcInfo = NULLP;
+
+   outerNode = lcInfoList->first;
+
+   if(!outerNode)
+   {
+      DU_LOG("\nDennis  -->  schSliceBasedSortLcByPriorLevel(): LL is empty");
+      return RFAILED;
+   }
+   else
+   {
+      while(outerNode)
+      {
+         outerLcInfo = (SchSliceBasedLcInfo *)outerNode->node;
+         interNode = outerNode;
+
+         minPriorNode = interNode;
+         minPriorLcInfo = (SchSliceBasedLcInfo *)minPriorNode->node;
+
+         /* Find the lowest priority level LC (highest priority) */
+         while(interNode)
+         {
+            interLcInfo = (SchSliceBasedLcInfo *)interNode->node;
+
+            if(interLcInfo->priorLevel <= minPriorLcInfo->priorLevel)
+            {
+               minPriorNode = interNode;
+               minPriorLcInfo = interLcInfo;
+            }
+            
+            interNode = interNode->next;
+         }
+
+         if(outerNode != minPriorNode)
+         {
+            /* Swapping minPriorNode and outerNode */
+            tempNode = minPriorNode->next;
+            minPriorNode->next = outerNode->next;
+            outerNode->next = tempNode;
+         
+            if (minPriorNode->next != NULLP)
+               minPriorNode->next->prev = minPriorNode; /* minPriorNode build the dual connection with next node*/
+            else
+               lcInfoList->last = minPriorNode; /* ->next = NULLP means that this node is the last node */
+ 
+            if (outerNode->next != NULLP)
+               outerNode->next->prev = outerNode; /* outerNode build the dual connection with next node*/
+            else
+               lcInfoList->last = outerNode;  /* ->next = NULLP means that this node is the last node */
+         
+            tempNode = minPriorNode->prev;
+            minPriorNode->prev = outerNode->prev;
+            outerNode->prev = tempNode;
+         
+            if (minPriorNode->prev != NULLP)
+               minPriorNode->prev->next = minPriorNode; /* minPriorNode build the dual connection with prev node*/
+            else
+               lcInfoList->first = minPriorNode;  /* ->prev = NULLP means that this node is the first node */
+
+            if (outerNode->prev != NULLP)
+               outerNode->prev->next = outerNode; /* outerNode build the dual connection with prev node*/
+            else
+               lcInfoList->first = outerNode;  /* ->prev = NULLP means that this node is the first node */
+
+            outerNode = minPriorNode;
+            outerLcInfo = minPriorLcInfo;
+         }
+         outerNode = outerNode->next;
+      }
+   }
+}
+
+/*******************************************************************
+ *
+ * @brief Sort the logical channel according to the coefficient we specify
+ *
+ * @details
+ *
+ *    Function : schSortLcByCoefficient
+ *
+ *    Functionality: Sort the logical channel according to the coefficient we specify
+ *
+ * @params[in] Pointer to LC Info Control Block List
+ * @return void
+ *
+ * ****************************************************************/
+void schSortLcByCoefficient(CmLListCp *lcInfoList)
+{
+   CmLList *outerNode = NULLP, *interNode, *minPriorNode = NULLP, *tempNode; 
+   SchSliceBasedLcInfo *outerLcInfo = NULLP, *interLcInfo = NULLP, *minPriorLcInfo = NULLP;
+
+   outerNode = lcInfoList->first;
+
+   if(!outerNode)
+   {
+      DU_LOG("\nDennis  -->  schSliceBasedSortLcByPriorLevel(): LL is empty");
+      return RFAILED;
+   }
+   else
+   {
+      while(outerNode)
+      {
+         outerLcInfo = (SchSliceBasedLcInfo *)outerNode->node;
+         interNode = outerNode;
+
+         minPriorNode = interNode;
+         minPriorLcInfo = (SchSliceBasedLcInfo *)minPriorNode->node;
+
+         /* Find the lowest priority level LC (highest priority) */
+         while(interNode)
+         {
+            interLcInfo = (SchSliceBasedLcInfo *)interNode->node;
+
+            if(interLcInfo->priorLevel <= minPriorLcInfo->priorLevel)
+            {
+               minPriorNode = interNode;
+               minPriorLcInfo = interLcInfo;
+            }
+            
+            interNode = interNode->next;
+         }
+
+         if(outerNode != minPriorNode)
+         {
+            /* Swapping minPriorNode and outerNode */
+            tempNode = minPriorNode->next;
+            minPriorNode->next = outerNode->next;
+            outerNode->next = tempNode;
+         
+            if (minPriorNode->next != NULLP)
+               minPriorNode->next->prev = minPriorNode; /* minPriorNode build the dual connection with next node*/
+            else
+               lcInfoList->last = minPriorNode; /* ->next = NULLP means that this node is the last node */
+ 
+            if (outerNode->next != NULLP)
+               outerNode->next->prev = outerNode; /* outerNode build the dual connection with next node*/
+            else
+               lcInfoList->last = outerNode;  /* ->next = NULLP means that this node is the last node */
+         
+            tempNode = minPriorNode->prev;
+            minPriorNode->prev = outerNode->prev;
+            outerNode->prev = tempNode;
+         
+            if (minPriorNode->prev != NULLP)
+               minPriorNode->prev->next = minPriorNode; /* minPriorNode build the dual connection with prev node*/
+            else
+               lcInfoList->first = minPriorNode;  /* ->prev = NULLP means that this node is the first node */
+
+            if (outerNode->prev != NULLP)
+               outerNode->prev->next = outerNode; /* outerNode build the dual connection with prev node*/
+            else
+               lcInfoList->first = outerNode;  /* ->prev = NULLP means that this node is the first node */
+
+            outerNode = minPriorNode;
+            outerLcInfo = minPriorLcInfo;
+         }
+         outerNode = outerNode->next;
+      }
+   }
+}
+
+/*******************************************************************
+ *
  * @brief Sort the logical channel according to priority level within a slice
  *
  * @details
@@ -1712,12 +1890,12 @@ void schSliceBasedSortLcByPriorLevel(CmLListCp *lcInfoList, float_t totalPriorLe
             outerNode->next = tempNode;
          
             if (minPriorNode->next != NULLP)
-               minPriorNode->next->prev = minPriorNode;
+               minPriorNode->next->prev = minPriorNode; /* minPriorNode build the dual connection with next node*/
             else
                lcInfoList->last = minPriorNode; /* ->next = NULLP means that this node is the last node */
  
             if (outerNode->next != NULLP)
-               outerNode->next->prev = outerNode;
+               outerNode->next->prev = outerNode; /* outerNode build the dual connection with next node*/
             else
                lcInfoList->last = outerNode;  /* ->next = NULLP means that this node is the last node */
          
@@ -1726,12 +1904,12 @@ void schSliceBasedSortLcByPriorLevel(CmLListCp *lcInfoList, float_t totalPriorLe
             outerNode->prev = tempNode;
          
             if (minPriorNode->prev != NULLP)
-               minPriorNode->prev->next = minPriorNode;
+               minPriorNode->prev->next = minPriorNode; /* minPriorNode build the dual connection with prev node*/
             else
                lcInfoList->first = minPriorNode;  /* ->prev = NULLP means that this node is the first node */
 
             if (outerNode->prev != NULLP)
-               outerNode->prev->next = outerNode;
+               outerNode->prev->next = outerNode; /* outerNode build the dual connection with prev node*/
             else
                lcInfoList->first = outerNode;  /* ->prev = NULLP means that this node is the first node */
 
@@ -3857,27 +4035,20 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
       return;
    }
 
+   /* sort logical channel based on specified coefficient */
+   schSortLcByCoefficient(&lcInfoList);
+
    remainingLc = lcInfoList->count;
-
-   //DU_LOG("\nDennis --> SCH: WFQ Algorithm [availablePRB: %d]", *availablePrb);
-
    node = lcInfoList->first;
-   /*[Step1] Allocate the PRB equally among each LCs */
    while(node)
    {
-#if 0
-      /*For Debugging purpose*/
-      printLcLL(lcLL);
-#endif
       lcInfoNode = (SchSliceBasedLcInfo *)node->node;
 
-      /*[Exit 1]: If available PRBs are exhausted*/
+      /*JOJO: If available PRBs are exhausted*/
       /*Loop Exit: All resources exhausted*/
       if(*availablePrb == 0)
       {
-#ifdef SLICE_BASED_DEBUG_LOG
-         DU_LOG("\nDennis  -->  SCH: Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
-#endif
+         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for LC:%d", lcInfoNode->lcId);
          return;
       }
 
@@ -3885,20 +4056,20 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
 
       if(lcInfoNode->reqBO != 0)
       {
-         quantum = totalAvaiPrb * lcInfoNode->weight;
+         /* JOJO: not consider quantum at this moment. */
+         // quantum = totalAvaiPrb * lcInfoNode->weight;
+         // if(quantum == 0)
+         // {
+         //    break;
+         // }
 
-         /* Special case when totalAvaiPrb * lcInfoNode->weight < 1 */
-         if(quantum == 0)
-         {
-            break;
-         }
-
+         /*JOJO: check the amount of BO we can allocate for each LC*/
          if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
          {
             *isTxPayloadLenAdded = TRUE;
             DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
                   lcInfoNode->lcId);
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, *availablePrb, &estPrb);
             allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
             lcInfoNode->allocBO += allocBO;
          }
@@ -3908,25 +4079,24 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
                   lcInfoNode->lcId);
             *srRcvd = FALSE;
             lcInfoNode->reqBO += UL_GRANT_SIZE;
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
             lcInfoNode->allocBO += allocBO;
          }
          else
          {
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
             lcInfoNode->allocBO += allocBO;
          }
 
-         /*[Step6]:Re-adjust the availablePrb Count based on
-         * estimated PRB allocated*/
+         /*JOJO: calculate the availablePrb Count based on estimated PRB allocated*/
          *availablePrb = *availablePrb - estPrb;
          
          lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
          lcInfoNode->allocPRB += estPrb;
-#ifdef SLICE_BASED_DEBUG_LOG
-         DU_LOG("\nDennis  -->  SCH: Allocate LC [Algorithm: WFQ, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, estPRB: %d]",\
+
+         /*JOJO: the scheduling result of each LC*/
+         DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: WFQ, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, estPRB: %d]",\
                lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, allocBO, estPrb);
-#endif
 
          if(lcInfoNode->reqBO == 0)
          {
@@ -3937,7 +4107,7 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
       {
          remainingLc--;
       }
-      /*[Step8]:Next loop: Next LC to be picked from the list*/
+      
       node = node->next; 
    }
 
@@ -3952,9 +4122,7 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
 
          if(*availablePrb == 0)
          {
-#ifdef SLICE_BASED_DEBUG_LOG
-            DU_LOG("\nDennis  -->  SCH: (Final) Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
-#endif
+            DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for LC:%d", lcInfoNode->lcId);
             return;
          }
 
@@ -3964,24 +4132,19 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
             allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
             lcInfoNode->allocBO += allocBO;
 
-            /*[Step6]:Re-adjust the availablePrb Count based on
-            * estimated PRB allocated*/
+            /*JOJO: calculate the availablePrb Count based on estimated PRB allocated*/
             *availablePrb = *availablePrb - estPrb;
             
-            /*[Step7]*/
             lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
             lcInfoNode->allocPRB += estPrb;
          }
 
-#ifdef SLICE_BASED_DEBUG_LOG
-         DU_LOG("\nDennis  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
-#endif
-
-         /*[Step8]:Next loop: Next LC to be picked from the list*/
+         /*JOJO: scheduling result of remaining resources allocation.*/
+         DU_LOG("\nJOJO  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
          node = node->next; 
       }
    }
-   /*[Exit2]: All LCs are allocated in current slice*/
+   /* JOJO: All LCs are allocated in current slice*/
    return;
 }
 
@@ -3993,7 +4156,7 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
  *
  *    Function : schMaxRateAlgoforLc
  *
- *    Functionality: Allocate the LCs with maximized throughput within a UE
+ *    Functionality: Allocate the LCs with maximized throughput within UEs
  * 
  * @params[in] Pointer to LC Info Control Block List
  *             Number of PDSCH symbols
@@ -4031,22 +4194,20 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
       return;
    }
 
-   schSliceBasedSortLcByPriorLevel(&lcInfoList, 1);
+   /* sort logical channel based on MCS */
+   schSortLcByMCS(&lcInfoList);
 
    remainingLc = lcInfoList->count;
    node = lcInfoList->first;
-   /*[Step1] Allocate the PRB equally among each LCs */
    while(node)
    {
       lcInfoNode = (SchSliceBasedLcInfo *)node->node;
 
-      /*[Exit 1]: If available PRBs are exhausted*/
+      /*JOJO: If available PRBs are exhausted*/
       /*Loop Exit: All resources exhausted*/
       if(*availablePrb == 0)
       {
-#ifdef SLICE_BASED_DEBUG_LOG
-         DU_LOG("\nDennis  -->  SCH: Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
-#endif
+         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for LC:%d", lcInfoNode->lcId);
          return;
       }
 
@@ -4054,20 +4215,20 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
 
       if(lcInfoNode->reqBO != 0)
       {
-         quantum = totalAvaiPrb * lcInfoNode->weight;
+         /* JOJO: not consider quantum at this moment. */
+         // quantum = totalAvaiPrb * lcInfoNode->weight;
+         // if(quantum == 0)
+         // {
+         //    break;
+         // }
 
-         /* Special case when totalAvaiPrb * lcInfoNode->weight < 1 */
-         if(quantum == 0)
-         {
-            break;
-         }
-
+         /*JOJO: check the amount of BO we can allocate for each LC*/
          if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
          {
             *isTxPayloadLenAdded = TRUE;
             DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
                   lcInfoNode->lcId);
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, *availablePrb, &estPrb);
             allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
             lcInfoNode->allocBO += allocBO;
          }
@@ -4077,25 +4238,24 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
                   lcInfoNode->lcId);
             *srRcvd = FALSE;
             lcInfoNode->reqBO += UL_GRANT_SIZE;
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
             lcInfoNode->allocBO += allocBO;
          }
          else
          {
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
+            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
             lcInfoNode->allocBO += allocBO;
          }
 
-         /*[Step6]:Re-adjust the availablePrb Count based on
-         * estimated PRB allocated*/
+         /*JOJO: calculate the availablePrb Count based on estimated PRB allocated*/
          *availablePrb = *availablePrb - estPrb;
          
          lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
          lcInfoNode->allocPRB += estPrb;
-#ifdef SLICE_BASED_DEBUG_LOG
-         DU_LOG("\nDennis  -->  SCH: Allocate LC [Algorithm: WFQ, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, estPRB: %d]",\
+
+         /*JOJO: the scheduling result of each LC*/
+         DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: WFQ, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, estPRB: %d]",\
                lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, allocBO, estPrb);
-#endif
 
          if(lcInfoNode->reqBO == 0)
          {
@@ -4106,7 +4266,7 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
       {
          remainingLc--;
       }
-      /*[Step8]:Next loop: Next LC to be picked from the list*/
+      
       node = node->next; 
    }
 
@@ -4121,9 +4281,7 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
 
          if(*availablePrb == 0)
          {
-#ifdef SLICE_BASED_DEBUG_LOG
-            DU_LOG("\nDennis  -->  SCH: (Final) Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
-#endif
+            DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for LC:%d", lcInfoNode->lcId);
             return;
          }
 
@@ -4133,24 +4291,19 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
             allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
             lcInfoNode->allocBO += allocBO;
 
-            /*[Step6]:Re-adjust the availablePrb Count based on
-            * estimated PRB allocated*/
+            /*JOJO: calculate the availablePrb Count based on estimated PRB allocated*/
             *availablePrb = *availablePrb - estPrb;
             
-            /*[Step7]*/
             lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
             lcInfoNode->allocPRB += estPrb;
          }
 
-#ifdef SLICE_BASED_DEBUG_LOG
-         DU_LOG("\nDennis  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
-#endif
-
-         /*[Step8]:Next loop: Next LC to be picked from the list*/
+         /*JOJO: scheduling result of remaining resources allocation.*/
+         DU_LOG("\nJOJO  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
          node = node->next; 
       }
    }
-   /*[Exit2]: All LCs are allocated in current slice*/
+   /* JOJO: All LCs are allocated in current slice*/
    return;
 }
 
@@ -4895,6 +5048,7 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
    }
 
    /* JOJO: Max Rate algorithm for GBR LC list. */
+   schSliceBasedSortLcByPriorLevel(&GBRLcList, totalPriorityLevel);
    schMaxRateAlgoforLc(&GBRLcList, numSymbols, availablePrb, \
                                        &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
    
