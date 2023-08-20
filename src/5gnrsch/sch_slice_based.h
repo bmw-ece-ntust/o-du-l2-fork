@@ -42,8 +42,8 @@ typedef struct schSliceBasedLcInfo
    SchUeCb *ueCb;    /* To store which UE this LC belongs to */
    uint16_t priorLevel; /* Priority Level which is associated with this LC */
    uint8_t fiveQI; /* JOJO: 5QI which is associated with this LC */
-   float_t throughput; /* JOJO: average throughput which is associated with this LC */
-   float_t delay; /* JOJO: average delay which is associated with this LC */
+   float_t avgTpt; /* JOJO: average throughput which is associated with this LC */
+   float_t avgDelay; /* JOJO: average delay which is associated with this LC */
    float_t weight; /*  Weight (0 ~ 1) which is used for WFQ algorithm */
    uint32_t reqBO;    /*Size of the BO requested/to be allocated for this LC*/
    uint32_t allocBO;  /*TBS/BO Size which is actually allocated*/
@@ -150,6 +150,8 @@ uint16_t schGetResourceTypeFromFiveQI(uint16_t fiveQi);
 void schSortLcByMCS(CmLListCp *lcInfoList);
 /*JOJO: sorting algorithm based on the specific coefficient*/
 void schSortLcByCoefficient(CmLListCp *lcInfoList);
+/*JOJO: do linear approximation of performance*/
+void schApproxMeasforLc(CmLListCp *lcInfoList);
 void schSliceBasedSortLcByPriorLevel(CmLListCp *lcInfoList, float_t totalPriorLevel);
 void schSliceBasedSortUeByWeight(SchCellCb *cellCb, CmLListCp *ueList, float_t totalWeight);
 uint8_t schSliceBasedUpdateLcListReqBo(CmLListCp *lcInfoList, SchUeCb *ueCb, Direction dir);

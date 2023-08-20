@@ -1582,6 +1582,8 @@ uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb)
                tempLcInfo->allocBO = 0;
                tempLcInfo->allocPRB = 0;
                tempLcInfo->ueCb = ueCb;
+               tempLcInfo->avgTpt = 0; /* JOJO: initialize the measurement of average throughput.*/
+               tempLcInfo->avgDelay = 0; /* JOJO: initialize the measurement of average delay.*/
                tempLcInfo->fiveQI = ueCb->dlInfo.dlLcCtxt[lcIdx].fiveQi; /* JOJO: attach 5QI to logical channel*/
                tempLcInfo->priorLevel = schSliceBasedCalculatePriorLevel(ueCb->dlInfo.dlLcCtxt[lcIdx].fiveQi);
                totalPriorLevel += tempLcInfo->priorLevel;
@@ -1669,76 +1671,68 @@ uint16_t schGetResourceTypeFromFiveQI(uint16_t fiveQi)
  * ****************************************************************/
 void schSortLcByMCS(CmLListCp *lcInfoList)
 {
-   CmLList *outerNode = NULLP, *interNode, *minPriorNode = NULLP, *tempNode; 
-   SchSliceBasedLcInfo *outerLcInfo = NULLP, *interLcInfo = NULLP, *minPriorLcInfo = NULLP;
+   CmLList *outerNode = NULLP, *sortedList = NULLP, *sortedNode, *nextNode, *prevNode;
+   SchSliceBasedLcInfo *outerLcInfo = NULLP, *sortedLcInfo = NULLP;
 
    outerNode = lcInfoList->first;
 
    if(!outerNode)
    {
-      DU_LOG("\nDennis  -->  schSliceBasedSortLcByPriorLevel(): LL is empty");
+      DU_LOG("\nJOJO  -->  schSortLcByMCS(): LL is empty");
       return RFAILED;
    }
    else
    {
-      while(outerNode)
+      /*JOJO: Sort based on MCS Index using Insertion sort (Since it is stable sorting algorithm).*/
+      while (outerNode != NULL) 
       {
-         outerLcInfo = (SchSliceBasedLcInfo *)outerNode->node;
-         interNode = outerNode;
+         nextNode = outerNode->next;
 
-         minPriorNode = interNode;
-         minPriorLcInfo = (SchSliceBasedLcInfo *)minPriorNode->node;
+         /*JOJO: Find the appropriate position to insert the current node in the sorted list.*/
+         sortedNode = sortedList;
+         prevNode = NULL;
 
-         /* Find the lowest priority level LC (highest priority) */
-         while(interNode)
+         while (sortedNode != NULL &&
+               ((SchSliceBasedLcInfo *)outerNode->node)->ueCb->ueCfg.dlModInfo.mcsIndex <=
+               ((SchSliceBasedLcInfo *)sortedNode->node)->ueCb->ueCfg.dlModInfo.mcsIndex) 
          {
-            interLcInfo = (SchSliceBasedLcInfo *)interNode->node;
+            prevNode = sortedNode;
+            sortedNode = sortedNode->next;
+         }
 
-            if(interLcInfo->priorLevel <= minPriorLcInfo->priorLevel)
+         /*JOJO: Insert the current node in the sorted list.*/
+         if (prevNode == NULL)
+         {
+            outerNode->next = sortedList;
+            outerNode->prev = NULL;
+            if(sortedList != NULL)
             {
-               minPriorNode = interNode;
-               minPriorLcInfo = interLcInfo;
+               sortedList->prev = outerNode;
             }
-            
-            interNode = interNode->next;
-         }
-
-         if(outerNode != minPriorNode)
+            sortedList = outerNode;
+         } 
+         else 
          {
-            /* Swapping minPriorNode and outerNode */
-            tempNode = minPriorNode->next;
-            minPriorNode->next = outerNode->next;
-            outerNode->next = tempNode;
-         
-            if (minPriorNode->next != NULLP)
-               minPriorNode->next->prev = minPriorNode; /* minPriorNode build the dual connection with next node*/
-            else
-               lcInfoList->last = minPriorNode; /* ->next = NULLP means that this node is the last node */
- 
-            if (outerNode->next != NULLP)
-               outerNode->next->prev = outerNode; /* outerNode build the dual connection with next node*/
-            else
-               lcInfoList->last = outerNode;  /* ->next = NULLP means that this node is the last node */
-         
-            tempNode = minPriorNode->prev;
-            minPriorNode->prev = outerNode->prev;
-            outerNode->prev = tempNode;
-         
-            if (minPriorNode->prev != NULLP)
-               minPriorNode->prev->next = minPriorNode; /* minPriorNode build the dual connection with prev node*/
-            else
-               lcInfoList->first = minPriorNode;  /* ->prev = NULLP means that this node is the first node */
-
-            if (outerNode->prev != NULLP)
-               outerNode->prev->next = outerNode; /* outerNode build the dual connection with prev node*/
-            else
-               lcInfoList->first = outerNode;  /* ->prev = NULLP means that this node is the first node */
-
-            outerNode = minPriorNode;
-            outerLcInfo = minPriorLcInfo;
+            prevNode->next = outerNode;
+            outerNode->prev = prevNode;
+            outerNode->next = sortedNode;
+            if(sortedNode != NULL)
+            {
+               sortedNode->prev = outerNode;
+            }
          }
-         outerNode = outerNode->next;
+
+         outerNode = nextNode;
       }
+
+      /*JOJO: Update the lcInfoList to point to the sorted list.*/
+      lcInfoList->first = sortedList;
+
+      /*JOJO: Find the last node in the sorted list.*/
+      while (sortedList != NULL && sortedList->next != NULL) {
+         sortedList = sortedList->next;
+      }
+      lcInfoList->last = sortedList;
    }
 }
 
@@ -1758,76 +1752,75 @@ void schSortLcByMCS(CmLListCp *lcInfoList)
  * ****************************************************************/
 void schSortLcByCoefficient(CmLListCp *lcInfoList)
 {
-   CmLList *outerNode = NULLP, *interNode, *minPriorNode = NULLP, *tempNode; 
-   SchSliceBasedLcInfo *outerLcInfo = NULLP, *interLcInfo = NULLP, *minPriorLcInfo = NULLP;
+   CmLList *outerNode = NULLP, *sortedList = NULLP, *sortedNode, *nextNode, *prevNode;
+   SchSliceBasedLcInfo *outerLcInfo = NULLP, *sortedLcInfo = NULLP;
+   double outerCoeff, sortedCoeff;
 
    outerNode = lcInfoList->first;
 
    if(!outerNode)
    {
-      DU_LOG("\nDennis  -->  schSliceBasedSortLcByPriorLevel(): LL is empty");
+      DU_LOG("\nJOJO  -->  schSortLcByCoefficient(): LL is empty");
       return RFAILED;
    }
    else
    {
-      while(outerNode)
+      /*JOJO: Sort based on MCS Index using Insertion sort (Since it is stable sorting algorithm).*/
+      while (outerNode != NULL) 
       {
+         nextNode = outerNode->next;
+
+         /*JOJO: Find the appropriate position to insert the current node in the sorted list.*/
+         sortedNode = sortedList;
+         prevNode = NULL;
+
          outerLcInfo = (SchSliceBasedLcInfo *)outerNode->node;
-         interNode = outerNode;
-
-         minPriorNode = interNode;
-         minPriorLcInfo = (SchSliceBasedLcInfo *)minPriorNode->node;
-
-         /* Find the lowest priority level LC (highest priority) */
-         while(interNode)
+         outerCoeff = (double) outerLcInfo->reqBO / outerLcInfo->avgTpt;
+         if(sortedNode != NULL)
          {
-            interLcInfo = (SchSliceBasedLcInfo *)interNode->node;
+            sortedLcInfo = (SchSliceBasedLcInfo *)sortedNode->node;
+            sortedCoeff = (double) sortedLcInfo->reqBO / sortedLcInfo->avgTpt;
+         }
+         
+         while (sortedNode != NULL && outerCoeff <= sortedCoeff) 
+         {
+            prevNode = sortedNode;
+            sortedNode = sortedNode->next;
+         }
 
-            if(interLcInfo->priorLevel <= minPriorLcInfo->priorLevel)
+         /*JOJO: Insert the current node in the sorted list.*/
+         if (prevNode == NULL)
+         {
+            outerNode->next = sortedList;
+            outerNode->prev = NULL;
+            if(sortedList != NULL)
             {
-               minPriorNode = interNode;
-               minPriorLcInfo = interLcInfo;
+               sortedList->prev = outerNode;
             }
-            
-            interNode = interNode->next;
-         }
-
-         if(outerNode != minPriorNode)
+            sortedList = outerNode;
+         } 
+         else 
          {
-            /* Swapping minPriorNode and outerNode */
-            tempNode = minPriorNode->next;
-            minPriorNode->next = outerNode->next;
-            outerNode->next = tempNode;
-         
-            if (minPriorNode->next != NULLP)
-               minPriorNode->next->prev = minPriorNode; /* minPriorNode build the dual connection with next node*/
-            else
-               lcInfoList->last = minPriorNode; /* ->next = NULLP means that this node is the last node */
- 
-            if (outerNode->next != NULLP)
-               outerNode->next->prev = outerNode; /* outerNode build the dual connection with next node*/
-            else
-               lcInfoList->last = outerNode;  /* ->next = NULLP means that this node is the last node */
-         
-            tempNode = minPriorNode->prev;
-            minPriorNode->prev = outerNode->prev;
-            outerNode->prev = tempNode;
-         
-            if (minPriorNode->prev != NULLP)
-               minPriorNode->prev->next = minPriorNode; /* minPriorNode build the dual connection with prev node*/
-            else
-               lcInfoList->first = minPriorNode;  /* ->prev = NULLP means that this node is the first node */
-
-            if (outerNode->prev != NULLP)
-               outerNode->prev->next = outerNode; /* outerNode build the dual connection with prev node*/
-            else
-               lcInfoList->first = outerNode;  /* ->prev = NULLP means that this node is the first node */
-
-            outerNode = minPriorNode;
-            outerLcInfo = minPriorLcInfo;
+            prevNode->next = outerNode;
+            outerNode->prev = prevNode;
+            outerNode->next = sortedNode;
+            if(sortedNode != NULL)
+            {
+               sortedNode->prev = outerNode;
+            }
          }
-         outerNode = outerNode->next;
+
+         outerNode = nextNode;
       }
+
+      /*JOJO: Update the lcInfoList to point to the sorted list.*/
+      lcInfoList->first = sortedList;
+
+      /*JOJO: Find the last node in the sorted list.*/
+      while (sortedList != NULL && sortedList->next != NULL) {
+         sortedList = sortedList->next;
+      }
+      lcInfoList->last = sortedList;
    }
 }
 
@@ -3991,6 +3984,45 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
 
 /*******************************************************************
  *
+ * @brief Do linear approximation of performance for each logical channel
+ *
+ * @details
+ *
+ *    Function : schApproxMeasforLc
+ *
+ *    Functionality: Do linear approximation of performance for each logical channel
+ * 
+ * @params[in] Pointer to LC Info Control Block List
+ * 
+ * @return void
+ *
+ * ****************************************************************/
+void schApproxMeasforLc(CmLListCp *lcInfoList)
+{
+   CmLList *node = NULLP;
+   SchSliceBasedLcInfo *lcInfoNode = NULLP;
+
+   /*JOJO: Do the statistics for throughput measurement.*/
+   node = lcInfoList->first;
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+
+      if(lcInfoNode->avgTpt == 0)
+         lcInfoNode->avgTpt = lcInfoNode->allocBO;
+      const float_t alpha = 0.1;
+      lcInfoNode->avgTpt = (1 - alpha) * lcInfoNode->avgTpt + alpha * lcInfoNode->allocBO;
+
+      DU_LOG("\nJOJO  -->  SCH: get average throughput UE:%d LC:%d avg tpt:%d allocated BO:%d",\
+       lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->avgTpt, lcInfoNode->allocBO);
+      node = node->next;
+   }
+
+   return;
+}
+
+/*******************************************************************
+ *
  * @brief Allocate and estimate Prb for each LC within current slice with Proportional Fair alogrithm
  *
  * @details
@@ -4035,8 +4067,18 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
       return;
    }
 
-   /* sort logical channel based on specified coefficient */
-   schSortLcByCoefficient(&lcInfoList);
+   /*JOJO: sort logical channel based on specified coefficient */
+   schSortLcByCoefficient(lcInfoList);
+
+   /*JOJO: check the result of sorting*/
+   node = lcInfoList->first;
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+      DU_LOG("\nJOJO  -->  PF: order of LC list, ueId: %d, lcId: %d, Priority Level: %d, avgTpt: %f, MCS: %d",\
+         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->avgTpt, lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex);
+      node = node->next; 
+   }
 
    remainingLc = lcInfoList->count;
    node = lcInfoList->first;
@@ -4048,7 +4090,8 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
       /*Loop Exit: All resources exhausted*/
       if(*availablePrb == 0)
       {
-         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for LC:%d", lcInfoNode->lcId);
+         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
+         schApproxMeasforLc(lcInfoList);
          return;
       }
 
@@ -4095,8 +4138,8 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
          lcInfoNode->allocPRB += estPrb;
 
          /*JOJO: the scheduling result of each LC*/
-         DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: WFQ, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, estPRB: %d]",\
-               lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, allocBO, estPrb);
+         DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: PF, Priority Level: %d, lcId: %d, allocBO: %d, estPRB: %d]",\
+               lcInfoNode->priorLevel, lcInfoNode->lcId, allocBO, estPrb);
 
          if(lcInfoNode->reqBO == 0)
          {
@@ -4122,7 +4165,8 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
 
          if(*availablePrb == 0)
          {
-            DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for LC:%d", lcInfoNode->lcId);
+            DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
+            schApproxMeasforLc(lcInfoList);
             return;
          }
 
@@ -4141,10 +4185,13 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
 
          /*JOJO: scheduling result of remaining resources allocation.*/
          DU_LOG("\nJOJO  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
-         node = node->next; 
+         
+         node = node->next;
       }
    }
+
    /* JOJO: All LCs are allocated in current slice*/
+   schApproxMeasforLc(lcInfoList);
    return;
 }
 
@@ -4195,7 +4242,17 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
    }
 
    /* sort logical channel based on MCS */
-   schSortLcByMCS(&lcInfoList);
+   schSortLcByMCS(lcInfoList);
+
+   /*JOJO: check the result sorting*/
+   node = lcInfoList->first;
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+      DU_LOG("\nJOJO  -->  Max Rate: order of LC list, ueId: %d, lcId: %d, Priority Level: %d, avgTpt: %f, MCS: %d",\
+         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->avgTpt, lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex);
+      node = node->next; 
+   }
 
    remainingLc = lcInfoList->count;
    node = lcInfoList->first;
@@ -4207,7 +4264,7 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
       /*Loop Exit: All resources exhausted*/
       if(*availablePrb == 0)
       {
-         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for LC:%d", lcInfoNode->lcId);
+         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
          return;
       }
 
@@ -4254,8 +4311,8 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
          lcInfoNode->allocPRB += estPrb;
 
          /*JOJO: the scheduling result of each LC*/
-         DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: WFQ, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, estPRB: %d]",\
-               lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, allocBO, estPrb);
+         DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: Max Rate, Priority Level: %d, lcId: %d, allocBO: %d, estPRB: %d]",\
+               lcInfoNode->priorLevel, lcInfoNode->lcId, allocBO, estPrb);
 
          if(lcInfoNode->reqBO == 0)
          {
@@ -4281,7 +4338,7 @@ void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *av
 
          if(*availablePrb == 0)
          {
-            DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for LC:%d", lcInfoNode->lcId);
+            DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
             return;
          }
 
