@@ -446,7 +446,7 @@ uint8_t startDlData()
  *
  * ****************************************************************/
 
-uint8_t startDlDataForExperiment12()
+uint8_t startDlDataForExperiment13()
 {
    uint32_t teId = 0;
    uint32_t tmpTeId = 0;
@@ -593,6 +593,73 @@ uint8_t startDlDataForExperiment11()
 
 /*******************************************************************
  *
+ * @brief Start individual Dl traffics
+ *
+ * @details
+ *
+ *    Function : startDlDataForExperiment12
+ *
+ *    Functionality: Start individual Dl traffics
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t startDlDataForExperiment12()
+{
+   uint32_t teId = 0;
+   uint32_t duId;
+   uint8_t numOfSlice = 1;
+   uint8_t numOfPacket;
+   uint8_t ret = ROK;
+   uint8_t cnt = 0;
+   uint8_t i = 0;
+   uint16_t timerCnt = 0;
+   uint8_t tnlStage = 1;
+   int32_t totalNumOfTestFlow; 
+   EgtpTeIdCb *teidCb = NULLP;
+   
+   while(timerCnt < 10000)
+   {
+      for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
+      {
+         for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
+         {
+            numOfPacket = 1;
+            teidCb = NULLP;
+            cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
+            if(teidCb)
+            {
+               cnt =0;
+               DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data (duId: %d, teId: %d)\n", duId, teId);
+               while(cnt < numOfPacket)
+               {
+                  /*JOJO: Customize the timing of transmission for each traffic based on teId.*/
+                  ret =  cuEgtpDatReq(duId, teId);      
+                  if(ret != ROK)
+                  {
+                     DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
+                     break;
+                  }
+                  cnt++;
+               }
+            }
+            else
+            {
+               DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
+            }            
+         }
+      }
+      usleep(1000); /*JOJO: Minimum of transmission duration.*/
+      timerCnt++;
+   }
+   DU_LOG("\nJOJO  -->  Stop traffic.\n");
+   return ROK;
+}
+
+/*******************************************************************
+ *
  * @brief Handles Console input
  *
  * @details
@@ -662,7 +729,8 @@ void *cuConsoleHandler(void *args)
          //    usleep(80000);
          //    cnt++;
          // }
-         startDlDataForExperiment11();
+         // startDlDataForExperiment11();
+         startDlDataForExperiment12();
 #endif
          continue;
       } 

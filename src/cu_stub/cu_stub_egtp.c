@@ -729,6 +729,8 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
    // " internet service providers for laptops and desktop computers, competing with existing ISPs such as cable"
    // " internet, and also will make possible new applications in internet of things (IoT) and machine to machine areas.";
 
+   uint8_t teId = egtpMsg->msgHdr.teId;
+   /*JOJO: Customize the data size for each channel based on tunnel ID.*/
    char data[100] = "aaaaaaaaaa" // ten elements per line
    "aaaaaaaaaa"
    "aaaaaaaaaa"
