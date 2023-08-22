@@ -557,7 +557,7 @@ uint8_t startDlDataForExperiment11()
       {
          for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
          {
-            numOfPacket = 1;
+            numOfPacket = NUM_DL_PACKETS;
             teidCb = NULLP;
             cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
             if(teidCb)
@@ -610,32 +610,31 @@ uint8_t startDlDataForExperiment12()
 {
    uint32_t teId = 0;
    uint32_t duId;
-   uint8_t numOfSlice = 1;
    uint8_t numOfPacket;
    uint8_t ret = ROK;
    uint8_t cnt = 0;
-   uint8_t i = 0;
    uint16_t timerCnt = 0;
-   uint8_t tnlStage = 1;
-   int32_t totalNumOfTestFlow; 
    EgtpTeIdCb *teidCb = NULLP;
-   
+   /*JOJO: initialize the interval of transmission.*/
+   uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {4, 1, 2, 4};
+
+   /*JOJO: The experiment runs for ten seconds.*/
    while(timerCnt < 10000)
    {
       for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {
          for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
          {
-            numOfPacket = 1;
+            numOfPacket = NUM_DL_PACKETS;
             teidCb = NULLP;
             cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
-            if(teidCb)
+            /*JOJO: Customize the timing of transmission for each traffic based on teId.*/
+            if(teidCb && timerCnt % transmissionInterval[teId-1] == 0)
             {
                cnt =0;
                DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data (duId: %d, teId: %d)\n", duId, teId);
                while(cnt < numOfPacket)
                {
-                  /*JOJO: Customize the timing of transmission for each traffic based on teId.*/
                   ret =  cuEgtpDatReq(duId, teId);      
                   if(ret != ROK)
                   {
@@ -644,11 +643,7 @@ uint8_t startDlDataForExperiment12()
                   }
                   cnt++;
                }
-            }
-            else
-            {
-               DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
-            }            
+            }           
          }
       }
       usleep(1000); /*JOJO: Minimum of transmission duration.*/

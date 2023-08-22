@@ -731,17 +731,94 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
 
    uint8_t teId = egtpMsg->msgHdr.teId;
    /*JOJO: Customize the data size for each channel based on tunnel ID.*/
-   char data[100] = "aaaaaaaaaa" // ten elements per line
-   "aaaaaaaaaa"
-   "aaaaaaaaaa"
-   "aaaaaaaaaa"
-   "aaaaaaaaaa"
-   "aaaaaaaaaa"
-   "aaaaaaaaaa"
-   "aaaaaaaaaa"
-   "aaaaaaaaaa"
-   "aaaaaaaaaa";
-   int datSize = 100;
+   char *data = NULL;
+   int datSize = 0;
+   
+   if (teId == 1) 
+   {
+      data = (char *)malloc(100 * sizeof(char));
+      strncpy(data,
+         "aaaaaaaaaa" // 10 elements per line
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa",
+         100);
+      datSize = 100;
+   } 
+   else if (teId == 2) 
+   {
+      data = (char *)malloc(200 * sizeof(char));
+      strncpy(data,
+         "aaaaaaaaaaaaaaaaaaaa" // 20 elements per line
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa",
+         200);
+      datSize = 200;
+   }
+   else if (teId == 3) 
+   {
+      data = (char *)malloc(200 * sizeof(char));
+      strncpy(data,
+         "aaaaaaaaaaaaaaaaaaaa" // 20 elements per line
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa",
+         200);
+      datSize = 200;
+   }
+   else if (teId == 4) 
+   {
+      data = (char *)malloc(100 * sizeof(char));
+      strncpy(data,
+         "aaaaaaaaaa" // 10 elements per line
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa",
+         100);
+      datSize = 100;
+   }
+   else 
+   {
+      data = (char *)malloc(100 * sizeof(char));
+      strncpy(data,
+         "aaaaaaaaaa" // 10 elements per line
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa",
+         100);
+      datSize = 100;
+   }
  
    Buffer   *mBuf;
  
@@ -759,6 +836,8 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
        DU_LOG("\nERROR  -->  EGTP : Failed to allocate memory");
        return RFAILED;
    }
+
+   free(data); /*JOJO: free data after post the message.*/
  
    /* filling IPv4 header */
    CmIpv4Hdr ipv4Hdr;
@@ -838,6 +917,7 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
      egtpCb.gCntPdu[egtpMsg->msgHdr.teId] = 1;
 
    egtpMsg->msgHdr.nPdu.val = egtpCb.gCntPdu[egtpMsg->msgHdr.teId];
+   DU_LOG("\nJOJO  -->  Debug in EGTP : Value of number of PDUs: %d", egtpMsg->msgHdr.nPdu.val);
    egtpMsg->msgHdr.seqNum.pres = FALSE;
    egtpMsg->msgHdr.extHdr.udpPort.pres = FALSE;
    egtpMsg->msgHdr.extHdr.pdcpNmb.pres = FALSE;
