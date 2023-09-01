@@ -1645,7 +1645,9 @@ uint8_t          tbIdx
          for(sduIndx = 0; sduIndx < numSdus; sduIndx++)
          {
             delay = RLC_TIME_DIFF(ackTime,l2MeasTb->lchInfo[lcIdx].sduInfo[sduIndx].arvlTime);
-            RLC_UPD_PDCP_L2_DLDELAY_STS(gCb,rlcRbCb, delay); 
+            RLC_UPD_PDCP_L2_DLDELAY_STS(gCb,rlcRbCb, delay);
+            /*JOJO: check it is called or not.*/
+            DU_LOG("\nJOJO --> delay time is %d", delay);
          }
          /* Case of sduInfo not updated */
          if (totlSduCnt == 0)

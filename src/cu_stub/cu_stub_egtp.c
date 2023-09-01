@@ -753,37 +753,37 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
    } 
    else if (teId == 2) 
    {
-      data = (char *)malloc(200 * sizeof(char));
+      data = (char *)malloc(100 * sizeof(char));
       strncpy(data,
-         "aaaaaaaaaaaaaaaaaaaa" // 20 elements per line
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa",
-         200);
-      datSize = 200;
+         "aaaaaaaaaa" // 10 elements per line
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa",
+         100);
+      datSize = 100;
    }
    else if (teId == 3) 
    {
-      data = (char *)malloc(200 * sizeof(char));
+      data = (char *)malloc(100 * sizeof(char));
       strncpy(data,
-         "aaaaaaaaaaaaaaaaaaaa" // 20 elements per line
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa"
-         "aaaaaaaaaaaaaaaaaaaa",
-         200);
-      datSize = 200;
+         "aaaaaaaaaa" // 10 elements per line
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa",
+         100);
+      datSize = 100;
    }
    else if (teId == 4) 
    {
@@ -804,20 +804,15 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
    }
    else 
    {
-      data = (char *)malloc(100 * sizeof(char));
+      data = (char *)malloc(50 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaa" // 10 elements per line
          "aaaaaaaaaa"
          "aaaaaaaaaa"
          "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
          "aaaaaaaaaa",
-         100);
-      datSize = 100;
+         50);
+      datSize = 50;
    }
  
    Buffer   *mBuf;
@@ -917,7 +912,7 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
      egtpCb.gCntPdu[egtpMsg->msgHdr.teId] = 1;
 
    egtpMsg->msgHdr.nPdu.val = egtpCb.gCntPdu[egtpMsg->msgHdr.teId];
-   DU_LOG("\nJOJO  -->  Debug in EGTP : Value of number of PDUs: %d", egtpMsg->msgHdr.nPdu.val);
+   // DU_LOG("\nJOJO  -->  Debug in EGTP : Value of number of PDUs: %d", egtpMsg->msgHdr.nPdu.val);
    egtpMsg->msgHdr.seqNum.pres = FALSE;
    egtpMsg->msgHdr.extHdr.udpPort.pres = FALSE;
    egtpMsg->msgHdr.extHdr.pdcpNmb.pres = FALSE;

@@ -616,10 +616,10 @@ uint8_t startDlDataForExperiment12()
    uint16_t timerCnt = 0;
    EgtpTeIdCb *teidCb = NULLP;
    /*JOJO: initialize the interval of transmission.*/
-   uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {4, 1, 2, 4};
+   uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {5, 5, 5, 5};
 
    /*JOJO: The experiment runs for ten seconds.*/
-   while(timerCnt < 10000)
+   while(timerCnt < 5000)
    {
       for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {
@@ -632,7 +632,7 @@ uint8_t startDlDataForExperiment12()
             if(teidCb && timerCnt % transmissionInterval[teId-1] == 0)
             {
                cnt =0;
-               DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data (duId: %d, teId: %d)\n", duId, teId);
+               // DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data (duId: %d, teId: %d)\n", duId, teId);
                while(cnt < numOfPacket)
                {
                   ret =  cuEgtpDatReq(duId, teId);      

@@ -233,16 +233,16 @@ void SchSliceBasedSliceCfgReq(SchCellCb *cellCb)
 
          if(tempAlgoSelection < 1)
          {
-            // sliceCbToStore->algorithm = RR;
+            sliceCbToStore->algorithm = RR;
             // sliceCbToStore->algorithm = WFQ;
-            sliceCbToStore->algorithm = fiveQI;
+            // sliceCbToStore->algorithm = fiveQI;
             sliceCbToStore->algoMethod = FLAT;   
          }
          else
          {
-            // sliceCbToStore->algorithm = RR;
+            sliceCbToStore->algorithm = RR;
             // sliceCbToStore->algorithm = WFQ;
-            sliceCbToStore->algorithm = fiveQI;
+            // sliceCbToStore->algorithm = fiveQI;
             sliceCbToStore->algoMethod = FLAT;
          }
          addNodeToLList(&schSpcCell->sliceCbList, sliceCbToStore, NULL);
@@ -2318,12 +2318,12 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       /*JOJO: If UE is not scheduled, then release the new allocated HARQ.*/
       if(!schSpcUeCb->isDlMsgScheduled)
       {
-         DU_LOG("\nJOJO --> UE id: %d, releasing HARQ.", ueId);
+         DU_LOG("\nSCH --> UE id: %d, releasing HARQ.", ueId);
          schDlReleaseHqProcess(ueNewHarqList[ueId-1]);
       }
       else
       {
-         DU_LOG("\nJOJO --> UE id: %d, is scheduled.", ueId);
+         DU_LOG("\nSCH --> UE id: %d, is scheduled.", ueId);
          UEScheduled++;
 #ifdef NR_DRX
          schHdlDrxInActvStrtTmr(cell, &cell->ueCb[ueId-1], PHY_DELTA_DL + SCHED_DELTA);
@@ -2365,7 +2365,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       ueNode = ueNodeNext;
    }
    
-   DU_LOG("\nJOJO --> %d UEs are scheduled in this slot.", UEScheduled);
+   DU_LOG("\nSCH --> %d UEs are scheduled in this slot.", UEScheduled);
    cmLListDeleteLList(&ueDlNewTransmission);
    cmLListDeleteLList(&ueDlRetransmission);
 

@@ -485,6 +485,7 @@ uint8_t macProcSlotInd(SlotTimingInfo slotInd)
       slotInd.cellId, slotInd.sfn, slotInd.slot);
       return RFAILED;
    }
+   SIncrementTtiCount();
    /* Store current time info */
    macCb.macCell[cellIdx]->currTime.cellId = slotInd.cellId;
    macCb.macCell[cellIdx]->currTime.slot = slotInd.slot;
