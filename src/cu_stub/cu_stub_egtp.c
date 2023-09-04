@@ -729,31 +729,50 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
    // " internet service providers for laptops and desktop computers, competing with existing ISPs such as cable"
    // " internet, and also will make possible new applications in internet of things (IoT) and machine to machine areas.";
 
+   int datSize = 1215;
    uint8_t teId = egtpMsg->msgHdr.teId;
    /*JOJO: Customize the data size for each channel based on tunnel ID.*/
    char *data = NULL;
-   int datSize = 0;
    
    if (teId == 1) 
    {
-      data = (char *)malloc(100 * sizeof(char));
+      // data = (char *)malloc(200 * sizeof(char));
+      // strncpy(data,
+      //    "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa",
+      //    200);
+      // datSize = 200;
+      data = (char *)malloc(10 * sizeof(char));
       strncpy(data,
-         "aaaaaaaaaa" // 10 elements per line
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa"
-         "aaaaaaaaaa",
-         100);
-      datSize = 100;
+         "aaaaaaaaaa", // 10 elements per line
+         10);
+      datSize = 10;
    } 
    else if (teId == 2) 
    {
-      data = (char *)malloc(100 * sizeof(char));
+      // data = (char *)malloc(200 * sizeof(char));
+      // strncpy(data,
+      //    "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa",
+      //    200);
+      // datSize = 200;
+      data = (char *)malloc(150 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaa" // 10 elements per line
          "aaaaaaaaaa"
@@ -764,13 +783,32 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaa"
          "aaaaaaaaaa"
          "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
          "aaaaaaaaaa",
-         100);
-      datSize = 100;
+         150);
+      datSize = 150;
    }
    else if (teId == 3) 
    {
-      data = (char *)malloc(100 * sizeof(char));
+      // data = (char *)malloc(200 * sizeof(char));
+      // strncpy(data,
+      //    "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa",
+      //    200);
+      // datSize = 200;
+      data = (char *)malloc(150 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaa" // 10 elements per line
          "aaaaaaaaaa"
@@ -781,13 +819,32 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaa"
          "aaaaaaaaaa"
          "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
          "aaaaaaaaaa",
-         100);
-      datSize = 100;
+         150);
+      datSize = 150;
    }
    else if (teId == 4) 
    {
-      data = (char *)malloc(100 * sizeof(char));
+      // data = (char *)malloc(200 * sizeof(char));
+      // strncpy(data,
+      //    "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa"
+      //    "aaaaaaaaaaaaaaaaaaaa",
+      //    200);
+      // datSize = 200;
+      data = (char *)malloc(150 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaa" // 10 elements per line
          "aaaaaaaaaa"
@@ -798,9 +855,14 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaa"
          "aaaaaaaaaa"
          "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
+         "aaaaaaaaaa"
          "aaaaaaaaaa",
-         100);
-      datSize = 100;
+         150);
+      datSize = 150;
    }
    else 
    {
@@ -1042,7 +1104,7 @@ S16 cuEgtpSendMsg(uint32_t duId, Buffer *mBuf)
       return RFAILED;
    }
    
-   DU_LOG("\nDEBUG  -->  EGTP : Message Sent");
+   // DU_LOG("\nDEBUG  -->  EGTP : Message Sent");
  
    return ROK;
 }
