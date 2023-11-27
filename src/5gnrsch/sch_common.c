@@ -869,10 +869,10 @@ void getPucchResource(SchCellCb *cell, SchPucchInfo *schPucchInfo, PdcchCfg *pdc
    else 
       schPucchInfo->initialCyclicShift *= 3;
 
-   DU_LOG("\nJOJO --> PUCCH freq. start PRB: %d, freq. PRB size: %d, "\
-    "time start symbol: %d, time symbol size: %d, initial cyclic shift: %d.",\
-    schPucchInfo->fdAlloc.startPrb, schPucchInfo->fdAlloc.numPrb,\
-    schPucchInfo->tdAlloc.startSymb, schPucchInfo->tdAlloc.numSymb, schPucchInfo->initialCyclicShift);
+   // DU_LOG("\nJOJO --> PUCCH freq. start PRB: %d, freq. PRB size: %d, "\
+   //  "time start symbol: %d, time symbol size: %d, initial cyclic shift: %d.",\
+   //  schPucchInfo->fdAlloc.startPrb, schPucchInfo->fdAlloc.numPrb,\
+   //  schPucchInfo->tdAlloc.startSymb, schPucchInfo->tdAlloc.numSymb, schPucchInfo->initialCyclicShift);
 
    return ROK;
 }

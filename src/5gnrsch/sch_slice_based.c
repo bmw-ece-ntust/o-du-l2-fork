@@ -1459,7 +1459,6 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
             else
             {
                /* UL Data new transmission */
-               DU_LOG("\nJOJO --> UL new transmission is triggered.");
                if(cell->ueCb[ueId-1].srRcvd || cell->ueCb[ueId-1].bsrRcvd)
                {
                   schSpcUeCb->isUlGrantPending = true;
@@ -1477,7 +1476,6 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
             }
 
             /*JOJO: Maintain UE scheduling list for multiple UE scheduling per TTI.*/
-            DU_LOG("\nJOJO --> SCH is maintaining UE scheduling list, length of UE scheduling list: %d", schSpcCell->ueToBeScheduled.count);
             pendingUeNode = schSpcCell->ueToBeScheduled.first;
             CmLList        *pendingUeNodeNext;
             bool isUEPermuted[MAX_NUM_UE] = {0};
@@ -1493,16 +1491,16 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
                   if(!schSpcUeCb->isUlGrantPending && !schSpcUeCb->isDlMsgPending)
                   {
                      /* No action required */  
-                     DU_LOG("\nJOJO --> UE id: %d, no action for pendingUeNode.", ueId);
+                     // DU_LOG("\nJOJO --> UE id: %d, no action for pendingUeNode.", ueId);
                   }
                   else if((schSpcUeCb->isUlGrantPending && !schSpcUeCb->isUlGrantScheduled) || (schSpcUeCb->isDlMsgPending && !schSpcUeCb->isDlMsgScheduled))
                   {
-                     DU_LOG("\nJOJO --> UE id: %d, add UE into the tail of pendingUeNode.", ueId);
+                     // DU_LOG("\nJOJO --> UE id: %d, add UE into the tail of pendingUeNode.", ueId);
                      cmLListAdd2Tail(&schSpcCell->ueToBeScheduled, cmLListDelFrm(&schSpcCell->ueToBeScheduled, pendingUeNode));
                   }
                   else
                   {
-                     DU_LOG("\nJOJO --> UE id: %d, remove UE from pendingUeNode.", ueId);
+                     // DU_LOG("\nJOJO --> UE id: %d, remove UE from pendingUeNode.", ueId);
                      schSliceBasedRemoveUeFrmScheduleLst(cell, pendingUeNode);
                   }
                   isUEPermuted[ueId-1] = 1;
@@ -3079,13 +3077,6 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       
       ueNode = ueNode->next;
    }
-
-   DU_LOG("\nJOJO  -->  The amount of wasted PRBs is %d in slot %d", remainingPrb, pdschTime.sfn*10 + pdschTime.slot);
-   // for(int i=0; i<MAX_NUM_UE; i++)
-   // {
-   //    DU_LOG("\nJOJO  -->  Data size %d for UE id %d is scheduled in this slot %d", dataSizeEachUE[i], i+1, pdschTime.sfn*10 + pdschTime.slot);
-   // }
-   // DU_LOG("\nJOJO  -->  Total data size %d is scheduled in slot %d", totalDataSizePerTTI, pdschTime.sfn*10 + pdschTime.slot);
 
    return ROK;
 }
