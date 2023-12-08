@@ -86,6 +86,7 @@
 #include "PUCCH-ResourceSet.h"
 #include "PUCCH-Resource.h"
 #include "PUCCH-format1.h"
+#include "PUCCH-format2.h"
 #include "PUCCH-FormatConfig.h"
 #include "BWP-UplinkDedicated.h"
 #include "PUSCH-ServingCellConfig.h"
@@ -2566,9 +2567,9 @@ uint8_t BuildQOSInfo(QosInfo *qosInfo, QoSFlowLevelQoSParameters_t *drbQos, uint
       return RFAILED;
    }
    
-   if(hoInProgress == Inter_DU_HO)
+   if(hoInProgress)
       drbQos->qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = qosInfo->nonDynFiveQI ;
-   else if(hoInProgress == false || hoInProgress == Xn_Based_Inter_CU_HO)
+   else
    {
       /*FiveQI*/
       if(actionType == ProtocolIE_ID_id_DRBs_ToBeModified_Item)
@@ -2607,7 +2608,7 @@ uint8_t BuildQOSInfo(QosInfo *qosInfo, QoSFlowLevelQoSParameters_t *drbQos, uint
       drbQos->nGRANallocationRetentionPriority.pre_emptionCapability = qosInfo->preemptionCapability;
       drbQos->nGRANallocationRetentionPriority.pre_emptionVulnerability = qosInfo->preemptionVulnerability;
    }
-   else if((hoInProgress == false) || (hoInProgress == Xn_Based_Inter_CU_HO))
+   else
    {
       drbQos->nGRANallocationRetentionPriority.priorityLevel = PriorityLevel_lowest;
       drbQos->nGRANallocationRetentionPriority.pre_emptionCapability = Pre_emptionCapability_may_trigger_pre_emption;
@@ -2693,12 +2694,6 @@ uint8_t BuildQOSInfo(QosInfo *qosInfo, QoSFlowLevelQoSParameters_t *drbQos, uint
 uint8_t BuildSNSSAI(DrbInfo *drbInfo, SNSSAI_t *snssai, Snssai *snssaiToCopy, bool hoInProgress)
 {
    /*SNSSAI*/
-   /* In case of non-HO UE context creation and Xn Based HO, DRB's SNSSAI
-    * configuration is not known beforehand. In these 2 case, the following
-    * condition will hit */
-   if(!hoInProgress || (hoInProgress == Xn_Based_Inter_CU_HO))
-      drbInfo->snssai = snssaiToCopy;
-
    /*ssT*/
    snssai->sST.size = sizeof(uint8_t);
    CU_ALLOC(snssai->sST.buf, snssai->sST.size);
@@ -2706,7 +2701,10 @@ uint8_t BuildSNSSAI(DrbInfo *drbInfo, SNSSAI_t *snssai, Snssai *snssaiToCopy, bo
    {
       return RFAILED;
    }
-   memcpy(snssai->sST.buf, &drbInfo->snssai->sst, snssai->sST.size);
+   if(!hoInProgress)
+      memcpy(snssai->sST.buf, &snssaiToCopy->sst, snssai->sST.size);
+   else
+      memcpy(snssai->sST.buf, &drbInfo->snssai->sst, snssai->sST.size);
 
    /*sD*/
    CU_ALLOC(snssai->sD, sizeof(OCTET_STRING_t));
@@ -2720,8 +2718,13 @@ uint8_t BuildSNSSAI(DrbInfo *drbInfo, SNSSAI_t *snssai, Snssai *snssaiToCopy, bo
    {
       return RFAILED;
    }
-   memcpy(snssai->sD->buf, drbInfo->snssai->sd, snssai->sD->size);
+   if(!hoInProgress)
+      memcpy(snssai->sD->buf, snssaiToCopy->sd, snssai->sD->size);
+   else
+      memcpy(snssai->sD->buf, drbInfo->snssai->sd, snssai->sD->size);
 
+   if(!hoInProgress)
+      drbInfo->snssai = snssaiToCopy;
    return ROK;
 }/*End of BuildSNSSAI*/
 
@@ -2746,14 +2749,10 @@ uint8_t BuildFlowsMap(DrbInfo *drbInfo, Flows_Mapped_To_DRB_List_t *flowMap , ui
    uint8_t  ret = ROK, idx = 0, flowCnt = 0, flowIdx = 0;
    FlowsMapped *qosFlow;
 
-   /* In case of non-HO UE context creation and Xn Based HO, DRB's SNSSAI
-    * configuration is not known beforehand. In these 2 case, the following
-    * condition will hit */
-   if(!hoInProgress || (hoInProgress == Xn_Based_Inter_CU_HO))
+   if(!hoInProgress)
       flowCnt = 1;
    else
       flowCnt = drbInfo->numFlowMap;
-
    flowMap->list.count = flowCnt;
    flowMap->list.size = flowCnt * sizeof(Flows_Mapped_To_DRB_Item_t *);
    CU_ALLOC(flowMap->list.array,flowMap->list.size);
@@ -2771,7 +2770,7 @@ uint8_t BuildFlowsMap(DrbInfo *drbInfo, Flows_Mapped_To_DRB_List_t *flowMap , ui
          return RFAILED;
       }
       
-      if(!hoInProgress || (hoInProgress == Xn_Based_Inter_CU_HO))
+      if(!hoInProgress)
       {
          flowMap->list.array[idx]->qoSFlowIdentifier = 0;
          if(actionType == ProtocolIE_ID_id_DRBs_ToBeModified_Item)
@@ -2805,7 +2804,7 @@ uint8_t BuildFlowsMap(DrbInfo *drbInfo, Flows_Mapped_To_DRB_List_t *flowMap , ui
          return RFAILED;
       }
 
-      if(((!hoInProgress) && (actionType != ProtocolIE_ID_id_DRBs_ToBeModified_Item)) || (hoInProgress == Xn_Based_Inter_CU_HO))
+      if((!hoInProgress) && (actionType != ProtocolIE_ID_id_DRBs_ToBeModified_Item))
          drbInfo->numFlowMap++;
    }
    return ROK;
@@ -2868,7 +2867,7 @@ uint8_t BuildULTnlInfo(uint8_t duId, TnlInfo *ulUpTnlInfo, ULUPTNLInformation_To
       return RFAILED;
    }
 
-   if((!hoInProgress) || (hoInProgress == Xn_Based_Inter_CU_HO))
+   if(!hoInProgress)
    {
       /* NOTE: Below IP address must be changed if running on different IP configuration */
       ulInfo->list.array[idx]->uLUPTNLInformation.choice.gTPTunnel->transportLayerAddress.buf[0] = 192;
@@ -2901,7 +2900,7 @@ uint8_t BuildULTnlInfo(uint8_t duId, TnlInfo *ulUpTnlInfo, ULUPTNLInformation_To
       return RFAILED;
    }
    
-   if((!hoInProgress) || (hoInProgress == Xn_Based_Inter_CU_HO))
+   if(!hoInProgress)
    {
       ulInfo->list.array[idx]->uLUPTNLInformation.choice.gTPTunnel->gTP_TEID.buf[0] = 0;
       ulInfo->list.array[idx]->uLUPTNLInformation.choice.gTPTunnel->gTP_TEID.buf[1] = 0;
@@ -3002,7 +3001,7 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
                choice_extension->value.choice.DRB_Information.dRB_QoS, ProtocolIE_ID_id_DRBs_ToBeSetup_Item, PDU_SESSION_ID_1, FALSE);
       else
          BuildQOSInforet =  BuildQOSInfo(&ueCb->drbList[idx].qos, &drbSetItem->qoSInformation.choice.\
-               choice_extension->value.choice.DRB_Information.dRB_QoS, ProtocolIE_ID_id_DRBs_ToBeSetup_Item, PDU_SESSION_ID_1, ueCb->hoInfo.HOType);
+               choice_extension->value.choice.DRB_Information.dRB_QoS, ProtocolIE_ID_id_DRBs_ToBeSetup_Item, PDU_SESSION_ID_1, TRUE);
       if(BuildQOSInforet != ROK)
       {
          DU_LOG("\nERROR  -->  F1AP : Failed to build QOS Info in BuildDRBSetup");
@@ -3016,7 +3015,7 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
                choice_extension->value.choice.DRB_Information.sNSSAI, cuCb.snssaiList[snssaiIdx], FALSE);
       else
          BuildSNSSAIret = BuildSNSSAI(&ueCb->drbList[idx], &drbSetItem->qoSInformation.choice.\
-               choice_extension->value.choice.DRB_Information.sNSSAI, cuCb.snssaiList[snssaiIdx], ueCb->hoInfo.HOType);
+               choice_extension->value.choice.DRB_Information.sNSSAI, NULLP, TRUE);
       if(BuildSNSSAIret != ROK)
       {
          DU_LOG("\nERROR  -->  F1AP : Failed to build SNSSAI Info in BuildDRBSetup");
@@ -3029,7 +3028,7 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
                value.choice.DRB_Information.flows_Mapped_To_DRB_List, ProtocolIE_ID_id_DRBs_ToBeSetup_Item, FALSE);
       else
          BuildFlowsMapret = BuildFlowsMap(&ueCb->drbList[idx], &drbSetItem->qoSInformation.choice.choice_extension->\
-               value.choice.DRB_Information.flows_Mapped_To_DRB_List, ProtocolIE_ID_id_DRBs_ToBeSetup_Item, ueCb->hoInfo.HOType);
+               value.choice.DRB_Information.flows_Mapped_To_DRB_List, ProtocolIE_ID_id_DRBs_ToBeSetup_Item, TRUE);
       if(BuildFlowsMapret != ROK)
       {
          DU_LOG("\nERROR  -->  F1AP : Failed to build Flow Map Info in BuildDRBSetup");
@@ -3042,7 +3041,7 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
                FALSE);
       else
          BuildULTnlInforet = BuildULTnlInfo(duId, &ueCb->drbList[idx].ulUpTnlInfo, &drbSetItem->uLUPTNLInformation_ToBeSetup_List,\
-               ueCb->hoInfo.HOType);
+               TRUE);
       if(BuildULTnlInforet != ROK)
       {
          DU_LOG("\nERROR  -->  F1AP : Failed to build tunnel Info in BuildDRBSetup");
@@ -3050,7 +3049,7 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       }
 
       /*RLCMode*/
-      if((ueCb->state != UE_HANDOVER_IN_PROGRESS) || (ueCb->hoInfo.HOType == Xn_Based_Inter_CU_HO))
+      if(ueCb->state != UE_HANDOVER_IN_PROGRESS)
       {
          drbSetItem->rLCMode = RLCMode_rlc_um_bidirectional;
          ueCb->drbList[ueCb->numDrb].rlcMode = drbSetItem->rLCMode;
@@ -4519,7 +4518,7 @@ uint8_t BuildBWPUlDedPucchCfg(PUCCH_Config_t *pucchCfg)
    PUCCH_Resource_t *rsrc = NULLP;
 
    //RESOURCE SET
-   elementCnt = 1;
+   elementCnt = 2;
    CU_ALLOC(pucchCfg->resourceSetToAddModList, sizeof(struct PUCCH_Config__resourceSetToAddModList));
    pucchCfg->resourceSetToAddModList->list.count = elementCnt;
    pucchCfg->resourceSetToAddModList->list.size = elementCnt * sizeof(PUCCH_ResourceSet_t *);
@@ -4528,6 +4527,7 @@ uint8_t BuildBWPUlDedPucchCfg(PUCCH_Config_t *pucchCfg)
    {
       CU_ALLOC(pucchCfg->resourceSetToAddModList->list.array[rsrcSetIdx], sizeof(PUCCH_ResourceSet_t));
    }
+   // First resource set for FORMAT 1
    rsrcSetIdx = 0;
    rsrcSet = pucchCfg->resourceSetToAddModList->list.array[rsrcSetIdx];
    rsrcSet->pucch_ResourceSetId = 1;
@@ -4541,9 +4541,23 @@ uint8_t BuildBWPUlDedPucchCfg(PUCCH_Config_t *pucchCfg)
    }
    rsrcIdx = 0;
    *(rsrcSet->resourceList.list.array[rsrcIdx]) = 1;
+   // Second resource set for CSI Report Format 2
+   rsrcSetIdx = 1;
+   rsrcSet = pucchCfg->resourceSetToAddModList->list.array[rsrcSetIdx];
+   rsrcSet->pucch_ResourceSetId = 2;
+   elementCnt = 1;
+   rsrcSet->resourceList.list.count = elementCnt;
+   rsrcSet->resourceList.list.size = elementCnt * sizeof(PUCCH_ResourceId_t *);
+   CU_ALLOC(rsrcSet->resourceList.list.array, rsrcSet->resourceList.list.size);
+   for(rsrcIdx=0; rsrcIdx < rsrcSet->resourceList.list.count; rsrcIdx++)
+   {
+      CU_ALLOC(rsrcSet->resourceList.list.array[rsrcIdx], sizeof(PUCCH_ResourceId_t));
+   }
+   rsrcIdx = 0;
+   *(rsrcSet->resourceList.list.array[rsrcIdx]) = 2;
 
    //RESOURCE
-   elementCnt = 1;
+   elementCnt = 2;
    CU_ALLOC(pucchCfg->resourceToAddModList, sizeof(struct PUCCH_Config__resourceToAddModList));
    pucchCfg->resourceToAddModList->list.count = elementCnt;
    pucchCfg->resourceToAddModList->list.size = elementCnt * sizeof(PUCCH_Resource_t *);
@@ -4552,6 +4566,7 @@ uint8_t BuildBWPUlDedPucchCfg(PUCCH_Config_t *pucchCfg)
    {
       CU_ALLOC(pucchCfg->resourceToAddModList->list.array[rsrcIdx], sizeof(PUCCH_Resource_t));
    }
+   //Resource 1
    rsrcIdx = 0;
    rsrc = pucchCfg->resourceToAddModList->list.array[rsrcIdx];
    rsrc->pucch_ResourceId = 1;
@@ -4562,6 +4577,20 @@ uint8_t BuildBWPUlDedPucchCfg(PUCCH_Config_t *pucchCfg)
    rsrc->format.choice.format1->nrofSymbols = 4;
    rsrc->format.choice.format1->startingSymbolIndex = 0;
    rsrc->format.choice.format1->timeDomainOCC = 0;
+   //Resource 2
+   rsrcIdx = 1;
+   rsrc = pucchCfg->resourceToAddModList->list.array[rsrcIdx];
+   rsrc->pucch_ResourceId = 2;
+   rsrc->startingPRB = 0;
+   CU_ALLOC(rsrc->intraSlotFrequencyHopping,sizeof(long));
+   *(rsrc->intraSlotFrequencyHopping)=PUCCH_Resource__intraSlotFrequencyHopping_enabled;
+   CU_ALLOC(rsrc->secondHopPRB,sizeof(PRB_Id_t));
+   *(rsrc->secondHopPRB)=1;
+   rsrc->format.present = PUCCH_Resource__format_PR_format2; 
+   CU_ALLOC(rsrc->format.choice.format2, sizeof(PUCCH_format2_t));
+   rsrc->format.choice.format2->nrofPRBs = 2;
+   rsrc->format.choice.format2->nrofSymbols = 1;
+   rsrc->format.choice.format2->startingSymbolIndex = 10;
 
    //PUCCH Format 1
    CU_ALLOC(pucchCfg->format1, sizeof(struct PUCCH_Config__format1));
@@ -4569,6 +4598,13 @@ uint8_t BuildBWPUlDedPucchCfg(PUCCH_Config_t *pucchCfg)
    CU_ALLOC(pucchCfg->format1->choice.setup, sizeof(PUCCH_FormatConfig_t));
    CU_ALLOC(pucchCfg->format1->choice.setup->nrofSlots, sizeof(long));
    *(pucchCfg->format1->choice.setup->nrofSlots) = PUCCH_FormatConfig__nrofSlots_n4;
+
+   //PUCCH Format 2
+   CU_ALLOC(pucchCfg->format2, sizeof(struct PUCCH_Config__format2));
+   pucchCfg->format2->present = PUCCH_Config__format2_PR_setup;
+   CU_ALLOC(pucchCfg->format2->choice.setup, sizeof(PUCCH_FormatConfig_t));
+   CU_ALLOC(pucchCfg->format2->choice.setup->nrofSlots, sizeof(long));
+   *(pucchCfg->format2->choice.setup->nrofSlots) = PUCCH_FormatConfig__nrofSlots_n4;
 
    //DL DATA TO UL ACK
    CU_ALLOC(pucchCfg->dl_DataToUL_ACK, sizeof(struct PUCCH_Config__dl_DataToUL_ACK));
@@ -5821,7 +5857,12 @@ void FreeBWPUlDedPucchCfg(struct BWP_UplinkDedicated__pucch_Config *ulBwpPucchCf
                for(rsrcIdx=0; rsrcIdx < pucchCfg->resourceToAddModList->list.count; rsrcIdx++)
                {
                   rsrc = pucchCfg->resourceToAddModList->list.array[rsrcIdx];
-                  CU_FREE(rsrc->format.choice.format1, sizeof(PUCCH_format1_t));
+                  if(rsrc->format.choice.format1){
+                     CU_FREE(rsrc->format.choice.format1, sizeof(PUCCH_format1_t));
+                  }else if(rsrc->format.choice.format2){
+                     CU_FREE(rsrc->format.choice.format2, sizeof(PUCCH_format2_t));
+                  }
+                  // CU_FREE(rsrc->format.choice.format1, sizeof(PUCCH_format1_t));
                   CU_FREE(pucchCfg->resourceToAddModList->list.array[rsrcIdx], sizeof(PUCCH_Resource_t));
                }
                CU_FREE(pucchCfg->resourceToAddModList->list.array, pucchCfg->resourceToAddModList->list.size);
@@ -5838,6 +5879,17 @@ void FreeBWPUlDedPucchCfg(struct BWP_UplinkDedicated__pucch_Config *ulBwpPucchCf
                CU_FREE(pucchCfg->format1->choice.setup, sizeof(PUCCH_FormatConfig_t));
             }
             CU_FREE(pucchCfg->format1, sizeof(struct PUCCH_Config__format1));
+         }
+
+         //PUCCH Format 2
+         if(pucchCfg->format2)
+         {
+            if(pucchCfg->format2->choice.setup)
+            {
+               CU_FREE(pucchCfg->format2->choice.setup->nrofSlots, sizeof(long));
+               CU_FREE(pucchCfg->format2->choice.setup, sizeof(PUCCH_FormatConfig_t));
+            }
+            CU_FREE(pucchCfg->format2, sizeof(struct PUCCH_Config__format2));
          }
 
          //DL DATA TO UL ACK
@@ -9024,17 +9076,14 @@ uint8_t fillCuToDuContainer(CuUeCb *ueCb, CUtoDURRCInformation_t *rrcMsg)
    uint8_t ret = ROK;
    uint8_t idx;
 
-   if((ueCb->state != UE_HANDOVER_IN_PROGRESS) || ((ueCb->state == UE_HANDOVER_IN_PROGRESS) && (ueCb->hoInfo.HOType == Inter_DU_HO)))
+   /* UE Capabulity RAT Container List */
+   CU_ALLOC(rrcMsg->uE_CapabilityRAT_ContainerList, sizeof(UE_CapabilityRAT_ContainerList_t));
+   if(!rrcMsg->uE_CapabilityRAT_ContainerList)
    {
-      /* UE Capabulity RAT Container List */
-      CU_ALLOC(rrcMsg->uE_CapabilityRAT_ContainerList, sizeof(UE_CapabilityRAT_ContainerList_t));
-      if(!rrcMsg->uE_CapabilityRAT_ContainerList)
-      {
-         DU_LOG("\nERROR  -->  F1AP : Memory allocation for UE capability RAT container list failed");
-         return RFAILED;
-      }
-      ret = fillUeCapRatContListBuf(rrcMsg->uE_CapabilityRAT_ContainerList);
+      DU_LOG("\nERROR  -->  F1AP : Memory allocation for UE capability RAT container list failed");
+      return RFAILED;
    }
+   ret = fillUeCapRatContListBuf(rrcMsg->uE_CapabilityRAT_ContainerList);
 
 #if 0
 
@@ -9233,7 +9282,6 @@ uint8_t BuildAndSendUeContextSetupReq(uint32_t duId, CuUeCb *ueCb)
    uint8_t   elementCnt;
    uint8_t   idx, idx1, bufLen, duIdx;
    uint32_t  spCellId;
-   uint32_t  targetDuId;
    DuDb      *targetDuDb = NULLP;
    F1AP_PDU_t      	*f1apMsg = NULLP;
    UEContextSetupRequest_t *ueSetReq = NULLP;
@@ -9319,23 +9367,16 @@ uint8_t BuildAndSendUeContextSetupReq(uint32_t duId, CuUeCb *ueCb)
       ueSetReq->protocolIEs.list.array[idx]->id	= ProtocolIE_ID_id_SpCell_ID;
       ueSetReq->protocolIEs.list.array[idx]->criticality	= 	Criticality_reject;
       ueSetReq->protocolIEs.list.array[idx]->value.present = UEContextSetupRequestIEs__value_PR_NRCGI;
-
-      /* Spec 38.473 Sec 9.2.2.1 : For handover case, this IE shall be considered as target cell. */
       if(ueCb->state == UE_HANDOVER_IN_PROGRESS)
       {
-         if(ueCb->hoInfo.HOType == Inter_DU_HO)
-            targetDuId = ueCb->hoInfo.tgtNodeId;
-         else
-            targetDuId = duId;
-
-         SEARCH_DU_DB(duIdx, targetDuId, targetDuDb);
+         /* Spec 38.473 Sec 9.2.2.1 : For handover case, this IE shall be considered as target cell. */
+         SEARCH_DU_DB(duIdx, ueCb->hoInfo.targetId, targetDuDb);
          /* Since we are supporting only one cell per DU, accessing 0th index to
           * get target cell info */
          spCellId = targetDuDb->cellCb[0].nrCellId;
       }
       else
          spCellId = ueCb->cellCb->nrCellId;
-
       Nrcgiret = BuildNrcgi(&ueSetReq->protocolIEs.list.array[idx]->value.choice.NRCGI, spCellId);
       if(Nrcgiret != ROK)
       {
@@ -9631,7 +9672,7 @@ uint8_t procDrbSetupList(uint32_t duId, CuUeCb *ueCb, DRBs_Setup_List_t *drbSetu
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t procUeContextSetupResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, char *recvBuf, MsgLen recvBufLen)
+uint8_t procUeContextSetupResponse(uint32_t duId, F1AP_PDU_t *f1apMsg)
 {
    uint8_t duIdx = 0, idx = 0, ueIdx = 0, rrcMsgType=0;
    uint8_t duUeF1apId = 0, cuUeF1apId = 0;
@@ -9663,24 +9704,11 @@ uint8_t procUeContextSetupResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, char *rec
                 {
                    /* Creating UE context in target DU */
                    memset(ueCb, 0, sizeof(CuUeCb));
-
-                   /* Check if UE is under Inter-CU handover */
-                   if(duDb->tempUeCtxtInHo && (duDb->tempUeCtxtInHo->gnbCuUeF1apId == cuUeF1apId))
-                   {
-                      memcpy(ueCb, duDb->tempUeCtxtInHo, sizeof(CuUeCb));
-                      ueCb->gnbDuUeF1apId = duUeF1apId;
-                      CU_FREE(duDb->tempUeCtxtInHo, sizeof(CuUeCb));
-                   }
-                   else
-                   {
-                      /* In case of Inter DU Handover */
-                      ueCb->cellCb = &duDb->cellCb[0];
-                      ueCb->gnbDuUeF1apId = duUeF1apId;
-                      ueCb->gnbCuUeF1apId = cuUeF1apId;
-                      ueCb->state = UE_HANDOVER_IN_PROGRESS;
-                      ueCb->hoInfo.HOType = Inter_DU_HO;
-                      ueCb->hoInfo.tgtNodeId = duId; 
-                   }
+                   ueCb->cellCb = &duDb->cellCb[0];
+                   ueCb->gnbDuUeF1apId = duUeF1apId;
+                   ueCb->gnbCuUeF1apId = cuUeF1apId;
+                   ueCb->state = UE_HANDOVER_IN_PROGRESS;
+                   ueCb->hoInfo.targetId = duId; 
                    (duDb->numUe)++;
 
                    ueCb->cellCb->ueCb[ueCb->cellCb->numUe] = ueCb;
@@ -9715,73 +9743,70 @@ uint8_t procUeContextSetupResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, char *rec
       }
    }
    
-   if(ueCb->state != UE_HANDOVER_IN_PROGRESS)
+   /* If the UE is in handover, UE context modification request is to be sent to
+    * source DU once UE context setup response is received from target DU */
+   if(ueCb->state == UE_HANDOVER_IN_PROGRESS)
+   {
+      DuDb *srcDuDb = NULLP;
+      CuUeCb *ueCbInSrcDu = NULLP;
+
+      /* Since Source DU Id and DU UE F1AP ID assigned to UE by source DU is not known here, we
+       * need to find Source DU and UE CB in source DU using CU UE F1AP ID */
+      for(duIdx=0; duIdx < cuCb.numDu; duIdx++)
+      {
+         /* UE context setup response is received from target DU. Search all
+          * DUs to find source DU except this target DU Id.*/
+         if(cuCb.duInfo[duIdx].duId != duId)
+         {
+            for(ueIdx = 0; ueIdx < MAX_NUM_UE; ueIdx++)
+            {
+               /* Check following:
+                * 1. CU UE F1AP ID in srcDU->ueCb should be same as cuUeF1apId
+                * received in UE context setup response since CU UE F1AP ID does not
+                * change for UE in handover.
+                * 2. srcDU->UeCb->uestate should be UE_HANDOVER_IN_PROGRESS
+                */
+               if((cuCb.duInfo[duIdx].ueCb[ueIdx].gnbCuUeF1apId == cuUeF1apId) &&
+                     (cuCb.duInfo[duIdx].ueCb[ueIdx].state == UE_HANDOVER_IN_PROGRESS))
+               {
+                  srcDuDb = &cuCb.duInfo[duIdx];
+                  ueCbInSrcDu = &cuCb.duInfo[duIdx].ueCb[ueIdx];
+
+                  /* Store source DU info in the new UE context created in
+                   * tareget DU */
+                  ueCb->hoInfo.sourceId = srcDuDb->duId;
+
+                  /* Copy the received container to UeCb */
+                  memcpy(&ueCbInSrcDu->f1apMsgDb.duToCuContainer, duToCuRrcContainer, sizeof(OCTET_STRING_t));
+
+                  if(BuildAndSendUeContextModificationReq(srcDuDb->duId, ueCbInSrcDu, STOP_DATA_TX) != ROK)
+                  {
+                     DU_LOG("\nERROR  ->  F1AP : Failed at BuildAndSendUeContextModificationReq()");
+                     return RFAILED;
+                  }
+                  break;
+               }
+            }
+         }
+         if(srcDuDb && ueCbInSrcDu)
+            break;
+      }
+   }
+   else
    {
       ueCb->f1apMsgDb.dlRrcMsgCount++;
       rrcMsgType = setDlRRCMsgType(ueCb);
 
       DU_LOG("\nINFO  -->  F1AP: Sending DL RRC MSG for RRC reconfiguration");
       if(BuildAndSendDLRRCMessageTransfer(duId, ueCb, SRB1, rrcMsgType) != ROK)
-      {     
+      {
          DU_LOG("\nINFO  -->  F1AP: Failed to build and send DL RRC MSG for RRC reconfiguration");
          return RFAILED;
-      }     
-   }
-   else
-   {
-      if(ueCb->hoInfo.HOType == Inter_DU_HO)
-      {
-         /* If the UE is in Inter-DU handover, UE context modification request is to be sent to
-          * source DU once UE context setup response is received from target DU */
-
-         DuDb *srcDuDb = NULLP;
-         CuUeCb *ueCbInSrcDu = NULLP;
-
-         /* Since Source DU Id and DU UE F1AP ID assigned to UE by source DU is not known here, we
-          * need to find Source DU and UE CB in source DU using CU UE F1AP ID */
-         for(duIdx=0; duIdx < cuCb.numDu; duIdx++)
-         {
-            /* UE context setup response is received from target DU. Search all
-             * DUs to find source DU except this target DU Id.*/
-            if(cuCb.duInfo[duIdx].duId != duId)
-            {
-               for(ueIdx = 0; ueIdx < MAX_NUM_UE; ueIdx++)
-               {
-                  /* Check following:
-                   * 1. CU UE F1AP ID in srcDU->ueCb should be same as cuUeF1apId
-                   * received in UE context setup response since CU UE F1AP ID does not
-                   * change for UE in handover.
-                   * 2. srcDU->UeCb->uestate should be UE_HANDOVER_IN_PROGRESS
-                   */
-                  if((cuCb.duInfo[duIdx].ueCb[ueIdx].gnbCuUeF1apId == cuUeF1apId) &&
-                        (cuCb.duInfo[duIdx].ueCb[ueIdx].state == UE_HANDOVER_IN_PROGRESS))
-                  {
-                     srcDuDb = &cuCb.duInfo[duIdx];
-                     ueCbInSrcDu = &cuCb.duInfo[duIdx].ueCb[ueIdx];
-
-                     /* Store source DU info in the new UE context created in
-                      * tareget DU */
-                     ueCb->hoInfo.srcNodeId = srcDuDb->duId;
-
-                     /* Copy the received container to UeCb */
-                     memcpy(&ueCbInSrcDu->f1apMsgDb.duToCuContainer, duToCuRrcContainer, sizeof(OCTET_STRING_t));
-
-                     if(BuildAndSendUeContextModificationReq(srcDuDb->duId, ueCbInSrcDu, STOP_DATA_TX) != ROK)
-                     {
-                        DU_LOG("\nERROR  ->  F1AP : Failed at BuildAndSendUeContextModificationReq()");
-                        return RFAILED;
-                     }
-                     break;
-                  }
-               }
-            }
-            if(srcDuDb && ueCbInSrcDu)
-               break;
-         }
       }
-      else if(ueCb->hoInfo.HOType == Xn_Based_Inter_CU_HO)
+      if(rrcMsgType == RRC_RECONFIG_COMPLETE)
       {
-         BuildAndSendHOReqAck(ueCb, duToCuRrcContainer->buf, duToCuRrcContainer->size);
+         DU_LOG("\nINFO  -->  F1AP: Sending UE Context Modification Request");
+         BuildAndSendUeContextModificationReq(duId, ueCb, RRC_RECONFIG_COMPLETE_IND);
       }
    }
 
@@ -9849,36 +9874,29 @@ uint8_t procUlRrcMsg(uint32_t duId, F1AP_PDU_t *f1apMsg)
 
                if(duDb->ueCb[duUeF1apId-1].state == UE_HANDOVER_IN_PROGRESS)
                {
-                  if(duDb->ueCb[duUeF1apId-1].hoInfo.HOType == Inter_DU_HO)
-                  {
-                     uint8_t ueIdx = 0;
-                     uint8_t srcDuId = duDb->ueCb[duUeF1apId-1].hoInfo.srcNodeId;
-                     DuDb *srcDuDb = NULLP;
-
-                     /* Release UE context in source DU because the UE is now
-                      * attached to target DU */
-                     SEARCH_DU_DB(duIdx, srcDuId, srcDuDb);
-                     for(ueIdx = 0; ueIdx < srcDuDb->numUe; ueIdx++)
-                     {
-                        if(srcDuDb->ueCb[ueIdx].gnbCuUeF1apId == cuUeF1apId)
-                        {
-                           ret = BuildAndSendUeContextReleaseCommand(srcDuId, srcDuDb->ueCb[ueIdx].gnbCuUeF1apId, srcDuDb->ueCb[ueIdx].gnbDuUeF1apId); 
-                           if(ret != ROK)
-                           {
-                              DU_LOG("\nINFO  -->  F1AP: Failed to build and send UE context release command to source DU Id [%d]", srcDuId);
-                           }
-                           break;
-                        }
-                     }
-                  }
-                  else 
-                  {
-                     BuildAndSendUeContextRelease(&duDb->ueCb[duUeF1apId-1]);
-                  }
+                  uint8_t ueIdx = 0;
+                  uint8_t srcDuId = duDb->ueCb[duUeF1apId-1].hoInfo.sourceId;
+                  DuDb *srcDuDb = NULLP;
 
                   /* In target DU DB, mark UE as active and delete HO info */
                   duDb->ueCb[duUeF1apId-1].state = UE_ACTIVE;
                   memset(&duDb->ueCb[duUeF1apId-1].hoInfo, 0, sizeof(HandoverInfo));
+
+                  /* Release UE context in source DU because the UE is now
+                   * attached to target DU */
+                  SEARCH_DU_DB(duIdx, srcDuId, srcDuDb);
+                  for(ueIdx = 0; ueIdx < srcDuDb->numUe; ueIdx++)
+                  {
+                     if(srcDuDb->ueCb[ueIdx].gnbCuUeF1apId == cuUeF1apId)
+                     {
+                        ret = BuildAndSendUeContextReleaseCommand(srcDuId, srcDuDb->ueCb[ueIdx].gnbCuUeF1apId, srcDuDb->ueCb[ueIdx].gnbDuUeF1apId); 
+                        if(ret != ROK)
+                        {
+                           DU_LOG("\nINFO  -->  F1AP: Failed to build and send UE context release command to source DU Id [%d]", srcDuId);
+                        }
+                        break;
+                     }
+                  }
                   return ret;
                }
                break;
@@ -11167,12 +11185,7 @@ uint8_t BuildAndSendUeContextModificationReq(uint32_t duId, void *cuUeCb, UeCtxt
       else if(action == RRC_RECONFIG_COMPLETE_IND)
          elementCnt = 3;
       else if((action == STOP_DATA_TX) || (action == RESTART_DATA_TX)) 
-      {
-         if(ueCb->state != UE_HANDOVER_IN_PROGRESS)
-            elementCnt = 5;
-         else
-            elementCnt = 4;
-      }
+         elementCnt = 5;
       
 #ifdef NR_DRX
       if(DRX_TO_BE_RELEASE && ueCb->drxCfgPresent)
@@ -11317,14 +11330,11 @@ uint8_t BuildAndSendUeContextModificationReq(uint32_t duId, void *cuUeCb, UeCtxt
          }
 
          /* RRC delivery status request */
-         if(ueCb->state != UE_HANDOVER_IN_PROGRESS)
-         {
-            ieIdx++;
-            ueContextModifyReq->protocolIEs.list.array[ieIdx]->id = ProtocolIE_ID_id_RRCDeliveryStatusRequest;
-            ueContextModifyReq->protocolIEs.list.array[ieIdx]->criticality = Criticality_ignore;
-            ueContextModifyReq->protocolIEs.list.array[ieIdx]->value.present = UEContextModificationRequestIEs__value_PR_RRCDeliveryStatusRequest;
-            ueContextModifyReq->protocolIEs.list.array[ieIdx]->value.choice.RRCDeliveryStatusRequest = RRCDeliveryStatusRequest_true;
-         }
+         ieIdx++;
+         ueContextModifyReq->protocolIEs.list.array[ieIdx]->id = ProtocolIE_ID_id_RRCDeliveryStatusRequest;
+         ueContextModifyReq->protocolIEs.list.array[ieIdx]->criticality = Criticality_ignore;
+         ueContextModifyReq->protocolIEs.list.array[ieIdx]->value.present = UEContextModificationRequestIEs__value_PR_RRCDeliveryStatusRequest;
+         ueContextModifyReq->protocolIEs.list.array[ieIdx]->value.choice.RRCDeliveryStatusRequest = RRCDeliveryStatusRequest_true;
       }
 
 #ifdef NR_DRX
@@ -11855,17 +11865,17 @@ uint8_t procDrbSetupModList(uint32_t duId, CuUeCb *ueCb, DRBs_SetupMod_List_t *d
 
             if(ueCb->state != UE_HANDOVER_IN_PROGRESS)
             {
-               /* extracting teId */
-               teId  = extractTeId(&drbItemIe->value.choice.DRBs_SetupMod_Item.dLUPTNLInformation_ToBeSetup_List);
-               if(teId > 0)
-               {
-                  if(addDrbTunnels(duId, teId)== ROK)
-                  {
-                     DU_LOG("\nDEBUG  --> EGTP: Tunnel Added for TeId %d", teId);
-                  }
-               }
-               else
-                  return RFAILED;
+            /* extracting teId */
+            teId  = extractTeId(&drbItemIe->value.choice.DRBs_SetupMod_Item.dLUPTNLInformation_ToBeSetup_List);
+            if(teId > 0)
+            {
+              if(addDrbTunnels(duId, teId)== ROK)
+              {
+                DU_LOG("\nDEBUG  --> EGTP: Tunnel Added for TeId %d", teId);
+              }
+            }
+            else
+               return RFAILED;
             }
          }
       }
@@ -11957,10 +11967,6 @@ uint8_t procUeContextModificationResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, ch
 
    SEARCH_DU_DB(duIdx, duId, duDb);
    ueCtxtModRsp = &f1apMsg->choice.successfulOutcome->value.choice.UEContextModificationResponse;
-
-   /* In case of Inter-CU Handover request received from peer CU */
-   if(duDb->tempUeCtxtInHo)
-      ueCb = duDb->tempUeCtxtInHo;
    
    for(idx=0; idx < ueCtxtModRsp->protocolIEs.list.count; idx++)
    {
@@ -11968,34 +11974,17 @@ uint8_t procUeContextModificationResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, ch
       {
           case ProtocolIE_ID_id_gNB_CU_UE_F1AP_ID:
              {
-                if(ueCb == NULLP)
-                {
-                   cuUeF1apId = ueCtxtModRsp->protocolIEs.list.array[idx]->value.choice.GNB_CU_UE_F1AP_ID;
-                }
-                else
-                {
-                   /* In case of Inter-CU Handover request received from peer CU */
-                   cuUeF1apId = ueCb->gnbCuUeF1apId;
-                }
+                cuUeF1apId = ueCtxtModRsp->protocolIEs.list.array[idx]->value.choice.GNB_CU_UE_F1AP_ID;
                 break;
              }
           case ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID:
              {
-                if(!ueCb)
-                {
-                   duUeF1apId = ueCtxtModRsp->protocolIEs.list.array[idx]->value.choice.GNB_DU_UE_F1AP_ID;
-                   ueCb = &duDb->ueCb[duUeF1apId-1];
+                duUeF1apId = ueCtxtModRsp->protocolIEs.list.array[idx]->value.choice.GNB_DU_UE_F1AP_ID;
+                ueCb = &duDb->ueCb[duUeF1apId-1];
 
-                   /* In case UE context modification response is received at source GNB CU from source GNB DU 
-                    * for a UE in handover, send HO request to target GNB only if not sent already.
-                    * If HO Req is already sent to target GNB, and an HO Req Ack is received, then 
-                    * ueCb->hoInfo.cuUeF1apIdTgt will be non-zero
-                    */
-                   if((ueCb->state == UE_HANDOVER_IN_PROGRESS) && (ueCb->hoInfo.HOType == Xn_Based_Inter_CU_HO) && \
-                      (ueCb->hoInfo.cuUeF1apIdTgt == 0))
-                   {
-                      BuildAndSendHOReq(ueCb, recvBuf, recvBufLen);
-                   }
+                if((ueCb->state == UE_HANDOVER_IN_PROGRESS) && (ueCb->hoInfo.HOType == Xn_Based_Inter_CU_HO))
+                {
+                   BuildAndSendHOReq(ueCb, HO_REQ, recvBuf, recvBufLen);
                 }
                 break;
              }
@@ -12035,50 +12024,44 @@ uint8_t procUeContextModificationResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, ch
     * UE context setup request to target DU */
    if(ueCb->state == UE_HANDOVER_IN_PROGRESS)
    {
-      uint8_t ueIdx = 0;
-      uint8_t tgtDuId = 0;
-      DuDb *tgtDuDb = NULLP;
-      CuUeCb *ueCbInTgtDu = NULLP;
-
       if(ueCb->hoInfo.HOType == Inter_DU_HO)
       {
-         tgtDuId = ueCb->hoInfo.tgtNodeId;
-      }
-      else if (ueCb->hoInfo.HOType == Xn_Based_Inter_CU_HO)
-      {
-         tgtDuId =  duId;
-      }
+         uint8_t ueIdx = 0;
+         DuDb *tgtDuDb = NULLP;
+         CuUeCb *ueCbInTgtDu = NULLP;
 
-      SEARCH_DU_DB(duIdx, tgtDuId, tgtDuDb);
-      if(tgtDuDb)
-      {
-         /* Since DU UE F1AP ID assigned by target DU to this UE in handover is
-          * not known here, using CU UE F1AP ID to search for UE Cb in target DU
-          * DB */
-         for(ueIdx = 0; ueIdx < MAX_NUM_UE; ueIdx++)
+         SEARCH_DU_DB(duIdx, ueCb->hoInfo.targetId, tgtDuDb);
+         if(tgtDuDb)
          {
-            if(tgtDuDb->ueCb[ueIdx].gnbCuUeF1apId == cuUeF1apId)
+            /* Since DU UE F1AP ID assigned by target DU to this UE in handover is
+             * not known here, using CU UE F1AP ID to search for UE Cb in target DU
+             * DB */
+            for(ueIdx = 0; ueIdx < MAX_NUM_UE; ueIdx++)
             {
-               ueCbInTgtDu = &tgtDuDb->ueCb[ueIdx];
-               break;
+               if(tgtDuDb->ueCb[ueIdx].gnbCuUeF1apId == cuUeF1apId)
+               {
+                  ueCbInTgtDu = &tgtDuDb->ueCb[ueIdx];
+                  break;
+               }
             }
-         }
 
-         /* If UE context is not found in Target DU, send UE context setup
-          * request */
-         if(ueCbInTgtDu == NULLP)
-         {
-            if((BuildAndSendUeContextSetupReq(tgtDuId, ueCb)) != ROK)
+            /* If UE context is not found in Target DU DU, send UE context setup
+             * request */
+            if(ueCbInTgtDu == NULLP)
             {
-               DU_LOG("\nERROR  ->  F1AP : Failed at BuildAndSendUeContextSetupReq");
-               return RFAILED;
+               if((BuildAndSendUeContextSetupReq(ueCb->hoInfo.targetId, ueCb)) != ROK)
+               {
+                  DU_LOG("\nERROR  ->  F1AP : Failed at BuildAndSendUeContextSetupReq");
+                  return RFAILED;
+               }
             }
          }
       }
    }
-
+   
 #ifdef START_DL_UL_DATA
-   startDlData();
+   // startDlData();
+   startDlDataExperiment();
 #endif
 
    return ROK;
@@ -12623,62 +12606,6 @@ uint8_t BuildAndSendPagingMsg(uint64_t gsTmsi, uint8_t duId)
 
 /*******************************************************************
  *
- * @brief Decode received character string into F1AP message 
- *
- * @details
- *
- *    Function : F1APMsgHdlr
- *
- *    Functionality:
- *         - Decodes received F1AP control message
- *
- * @params[in] 
- * @return ROK     - success
- *         RFAILED - failure
- *
- * ****************************************************************/
-uint8_t F1APDecodeMsg(F1AP_PDU_t *f1apMsg, Buffer *mBuf, char **recvBuf, MsgLen *recvBufLen)
-{
-   int i;
-   MsgLen copyCnt;
-   asn_dec_rval_t rval; /* Decoder return value */
-
-   /* Copy mBuf into char array to decode it */
-   ODU_GET_MSG_LEN(mBuf, recvBufLen);
-   CU_ALLOC(*recvBuf, (Size)(*recvBufLen));
-   if(*recvBuf == NULLP)
-   {
-      DU_LOG("\nERROR  -->  F1AP : Memory allocation failed");
-      return RFAILED;
-   }
-   if(ODU_COPY_MSG_TO_FIX_BUF(mBuf, 0, *recvBufLen, (Data *)*recvBuf, &copyCnt) != ROK)
-   {
-      DU_LOG("\nERROR  -->  F1AP : Failed while copying %d", copyCnt);
-      return RFAILED;
-   }
-
-   DU_LOG("\nDEBUG  -->  F1AP : Received flat buffer to be decoded : \n");
-   for(i=0; i< *recvBufLen; i++)
-   {
-      DU_LOG("%x ",(*recvBuf)[i]);
-   }
-
-   /* Decoding flat buffer into F1AP messsage */
-   rval = aper_decode(0, &asn_DEF_F1AP_PDU, (void **)&f1apMsg, *recvBuf, *recvBufLen, 0, 0);
-   if(rval.code == RC_FAIL || rval.code == RC_WMORE)
-   {
-      DU_LOG("\nERROR  -->  F1AP : ASN decode failed");
-      return RFAILED;
-   }
-
-   /* Printing the decoded F1AP PDU */
-   DU_LOG("\n");
-   xer_fprint(stdout, &asn_DEF_F1AP_PDU, f1apMsg);
-   return ROK;
-}
-
-/*******************************************************************
- *
  * @brief Handles received F1AP message and sends back response  
  *
  * @details
@@ -12696,21 +12623,52 @@ uint8_t F1APDecodeMsg(F1AP_PDU_t *f1apMsg, Buffer *mBuf, char **recvBuf, MsgLen 
  * ****************************************************************/
 void F1APMsgHdlr(uint32_t *duId, Buffer *mBuf)
 {
+   int i;
    char *recvBuf;
+   MsgLen copyCnt;
    MsgLen recvBufLen;
    F1AP_PDU_t *f1apMsg = NULLP;
+   asn_dec_rval_t rval; /* Decoder return value */
    F1AP_PDU_t f1apasnmsg ;
 
    DU_LOG("\nINFO  -->  F1AP : Received F1AP message buffer");
    ODU_PRINT_MSG(mBuf, 0,0);
 
-   f1apMsg = &f1apasnmsg;
-   memset(f1apMsg, 0, sizeof(F1AP_PDU_t));
-   if(F1APDecodeMsg(f1apMsg, mBuf, &recvBuf, &recvBufLen) != ROK)
+   /* Copy mBuf into char array to decode it */
+   ODU_GET_MSG_LEN(mBuf, &recvBufLen);
+   CU_ALLOC(recvBuf, (Size)recvBufLen);
+
+   if(recvBuf == NULLP)
    {
-      DU_LOG("\nERROR  -->  F1AP : F1AP PDU decode failed");
+      DU_LOG("\nERROR  -->  F1AP : Memory allocation failed");
       return;
    }
+   if(ODU_COPY_MSG_TO_FIX_BUF(mBuf, 0, recvBufLen, (Data *)recvBuf, &copyCnt) != ROK)
+   {
+      DU_LOG("\nERROR  -->  F1AP : Failed while copying %d", copyCnt);
+      return;
+   }
+
+   DU_LOG("\nDEBUG  -->  F1AP : Received flat buffer to be decoded : ");
+   for(i=0; i< recvBufLen; i++)
+   {
+      DU_LOG("%x",recvBuf[i]);
+   }
+
+   /* Decoding flat buffer into F1AP messsage */
+   f1apMsg = &f1apasnmsg;
+   memset(f1apMsg, 0, sizeof(F1AP_PDU_t));
+
+   rval = aper_decode(0, &asn_DEF_F1AP_PDU, (void **)&f1apMsg, recvBuf, recvBufLen, 0, 0);
+   CU_FREE(recvBuf, (Size)recvBufLen);
+
+   if(rval.code == RC_FAIL || rval.code == RC_WMORE)
+   {
+      DU_LOG("\nERROR  -->  F1AP : ASN decode failed");
+      return;
+   }
+   DU_LOG("\n");
+   xer_fprint(stdout, &asn_DEF_F1AP_PDU, f1apMsg);
 
    switch(f1apMsg->present)
    {
@@ -12784,7 +12742,7 @@ void F1APMsgHdlr(uint32_t *duId, Buffer *mBuf)
                case SuccessfulOutcome__value_PR_UEContextSetupResponse:
                   {
                      DU_LOG("\nINFO  -->  F1AP : UE ContextSetupResponse received");
-                     procUeContextSetupResponse(*duId, f1apMsg, recvBuf, recvBufLen);
+                     procUeContextSetupResponse(*duId, f1apMsg);
                      break;
                   }
                case SuccessfulOutcome__value_PR_UEContextModificationResponse:
@@ -12815,7 +12773,6 @@ void F1APMsgHdlr(uint32_t *duId, Buffer *mBuf)
          }
    }/* End of switch(f1apMsg->present) */
 
-   CU_FREE(recvBuf, (Size)(recvBufLen));
 } /* End of F1APMsgHdlr */
 
 /**********************************************************************

@@ -21,8 +21,7 @@
 #define __MACINT_H__
 
 #define NUM_NUMEROLOGY 5  /* Number of numerology */
-#define MAX_SI_MESSAGE 32 /* As per 138 331 V15.3, RRC Multiplicity and type constraint definitions maxSI-Message = 32 */ 
-#define NUM_SIB 32         /* As per 138 331 V15.3, RRC Multiplicity and type constraint definitions  maxSIB = 32 */ 
+
 #define NUM_SSB		1	/* max value is 64 */
 #define SSB_MASK_SIZE	1	/* SSB mask size is 32bit for sub6 */
 #define SIB1_REPETITION_PERIOD   20
@@ -88,7 +87,7 @@
 #define EVENT_MAC_UE_RESET_REQ       225
 #define EVENT_MAC_UE_RESET_RSP       226
 #define EVENT_MAC_UE_SYNC_STATUS_IND 227
-#define EVENT_MAC_DL_BROADCAST_REQ   228
+#define EVENT_MAC_UE_MCS_IDX_REPORT 228
 
 #define BSR_PERIODIC_TIMER_SF_10 10
 #define BSR_RETX_TIMER_SF_320 320
@@ -97,72 +96,156 @@
 #define PAGING_SCHED_DELTA  4
 #define MAX_PLMN 2
 
-typedef enum
-{
-   SIB_TYPE2,
-   SIB_TYPE3,
-   SIB_TYPE4,
-   SIB_TYPE5,
-   SIB_TYPE6,
-   SIB_TYPE7,
-   SIB_TYPE8,
-   SIB_TYPE9,
-   SPARE
-}SibType;
+/* Macro For CSI-Meas */
+#define MAX_NUM_NZP_CSI_RS_RESOURCE 1
+#define MAX_NUM_NZP_CSI_RS_RESOURCE_SET 1
+#define MAX_NUM_CSI_RESOURCE_CONFIG 1
+#define MAX_NUM_CSI_REPORT_CONFIG 1
 
-typedef enum
-{
-   SSB_PER_RACH_OCCASION_ONE_EIGHTH,
-   SSB_PER_RACH_OCCASION_ONE_FOURTH,
-   SSB_PER_RACH_OCCASION_ONE_HALF,
-   SSB_PER_RACH_OCCASION_ONE,
-   SSB_PER_RACH_OCCASION_TWO,
-   SSB_PER_RACH_OCCASION_FOUR,
-   SSB_PER_RACH_OCCASION_EIGHT,
-   SSB_PER_RACH_OCCASION_SIXTEEN
-}SsbPerRachOccasion;
+/* Macro for CSI Configuration */
+#define NZP_CSI_CDM_TYPE NO_CDM
+#define NZP_CSI_BIT_STRING 0b0001
+#define NZP_CSI_DENSITY THREE_DENSITY
+#define NZP_CSI_EVEN_ODD_DENSITY 0 //not required since the density is three
+#define NZP_CSI_FIRST_SYMBOL_IN_TIME_DOMAIN 2
+#define NZP_CSI_FREQ_DOMAIN_ALLOC ROW1
+#define NZP_CSI_NUM_OF_PORTS 1
 
-typedef enum
-{
-   BROADCASTING,
-   NOTBROADCASTING,
-}SiBroadcastStatus;
+/* MCS Index Buffer */
+/* Added by Akmal to track MCS Index Metrics */
+typedef struct mcsIndexBuffer{
+   uint16_t sum;
+   uint16_t count;
+}McsIndexBuffer;
 
-typedef enum
+/* Message to send MCS Index */
+typedef struct ueMcsIndexRpt
 {
-   RF8,
-   RF16,
-   RF32,
-   RF64,
-   RF128,
-   RF256,
-   RF512
-}SiPeriodicity;
+   uint16_t cellId;
+   uint8_t  ueId;
+   uint8_t mcsIndex;
+}MacUeMcsIndexRpt;
 
+/* CSI-RS Configuration */
+/* CSI-RS density --> TS38.331 v17.2.0 Page 573*/
 typedef enum
 {
-   S5,
-   S10,
-   S20, 
-   S40, 
-   S80, 
-   S160, 
-   S320, 
-   S640, 
-   S1280
-}SiWindowLength;
+   DOT5_DENSITY_EVEN,
+   DOT5_DENSITY_ODD,
+   ONE_DENSITY,
+   THREE_DENSITY
+}csiRsDensity;
 
+/* CSI-RS cdm Type --> TS38.331 v17.2.0 Page 573*/
 typedef enum
 {
-   SI_REQ_PERIOD_1,
-   SI_REQ_PERIOD_2,
-   SI_REQ_PERIOD_4,
-   SI_REQ_PERIOD_6,
-   SI_REQ_PERIOD_8,
-   SI_REQ_PERIOD_10,
-   SI_REQ_PERIOD_12,
-   SI_REQ_PERIOD_16
-}SiRequestPeriod;
+   NO_CDM,
+   FD_CDM2,
+   CDM4_FD2_TD2,
+   CDM8_FD2_TD4
+}csiRsCdmType;
+
+/* CSI nrOfPorts --> TS38.331 v17.2.0 Page 572*/
+typedef enum
+{
+   P1,
+   P2,
+   P4,
+   P8,
+   P12,
+   P16,
+   P24,
+   P32
+}csiRsNrAntPortsType;
+
+/* CSI Freq Domain Allocation --> TS38.331 v17.2.0 Page 572*/
+typedef enum
+{
+   ROW1,
+   ROW2,
+   ROW4,
+   OTHER
+}freqDomainAlloc;
+
+/* CSI Resource Power Control Offset SS --> TS38.331 v17.2.0 Page 580*/
+typedef enum
+{
+   DBMIN3,
+   DB0,
+   DB3,
+   DB6
+}powerControlOffsetSSType;
+
+/* CSI Resource Periodicity and Offset --> TS38.331 v17.2.0 Page 569*/
+typedef enum
+{
+   SLOTS4,
+   SLOTS5,
+   SLOTS8,
+   SLOTS10,
+   SLOTS16,
+   SLOTS20,
+   SLOTS32,
+   SLOTS40,
+   SLOTS64,
+   SLOTS80,
+   SLOTS160,
+   SLOTS320,
+   SLOTS640
+}ResourcePeriodicityAndOffsetChoice;
+
+/* CSI Report Periodicity and Offset --> TS38.331 v17.2.0 Page 562*/
+typedef enum{
+   SLOT4,
+   SLOT5,
+   SLOT8,
+   SLOT10,
+   SLOT16,
+   SLOT20,
+   SLOT40,
+   SLOT80,
+   SLOT160,
+   SLOT320
+}ReportPeriodicityAndOffsetChoice;
+
+/* Report Resource Config Choice --> TS38.331 v17.2.0 Page 567*/
+typedef enum
+{
+   APERIODIC,
+   SEMIPERSISTENT,
+   PERIODIC
+}CsiResourceType;
+
+/* ReportQuantity Choice --> TS38.331 v17.2.0 Page 560*/
+typedef enum{
+   NONE_REPORT,
+   CRI_RI_PMI_CQI,
+   CRI_RI_I1,
+   CRI_RI_I1_CQI,
+   CRI_RI_CQI,
+   CRI_RSRP,
+   SSB_INDEX_RSRP,
+   RI_CRI_LI_PMI_CQI
+}ReportQuantity;
+
+/* moreThanTwo Choice --> TS38.331 v17.2.0 Page 530*/
+typedef enum{
+   TWO_ONE,
+   TWO_TWO,
+   FOUR_ONE,
+   THREE_TWO,
+   SIX_ONE,
+   FOUR_TWO,
+   EIGHT_ONE,
+   FOUR_THREE,
+   SIX_TWO,
+   TWELVE_ONE,
+   FOUR_GFOUR,
+   EIGHT_TWO,
+   SIXTEEN_ONE
+}MoreThanTwoOptions;
+
+/* End of CSI-RS Configuration */
 
 typedef enum
 {
@@ -656,6 +739,62 @@ typedef struct sib1CellCfg
    SchPageCfg       pagingCfg;
 } Sib1CellCfg; 
 
+
+typedef struct cellCfg
+{
+   MacOpState      opState;
+   MacAdminState   adminState;
+   MacCellState    cellState;
+   PlmnInfoList plmnInfoList[MAX_PLMN];   /* Consits of PlmnId and Snssai list */
+   uint32_t     phyCellId;                /* Physical cell id */
+   uint32_t     tac;
+   uint32_t     ssbFreq;
+   uint16_t     subCarrSpacing;
+   DuplexMode   dupType;          /* Duplex type: TDD/FDD */
+   uint8_t      numerology;       /* Supported numerology */
+   Sib1CellCfg  sib1Cfg;          /* SIB1 config */
+}CellCfg;
+
+typedef struct ssbCfg
+{
+   uint32_t    ssbPbchPwr;       /* SSB block power */
+   uint8_t     scsCmn;           /* subcarrier spacing for common */
+   uint16_t    ssbOffsetPointA;  /* SSB subcarrier offset from point A */
+   SSBPeriod   ssbPeriod;        /* SSB Periodicity in msec */
+   uint8_t     ssbScOffset;       /* Subcarrier Offset */
+   uint32_t    ssbMask[SSB_MASK_SIZE];      /* Bitmap for actually transmitted SSB. */
+   uint8_t     beamId[NUM_SSB];
+   BetaPss     betaPss;
+   BchPduOpt   bchPayloadFlag;   /* Options for generation of payload */
+   uint8_t     mibPdu[3];           /* MIB payload */
+   uint8_t     dmrsTypeAPos;     /* DMRS Type A position */
+}SsbCfg;
+
+typedef struct fdmInfo
+{
+   uint16_t   rootSeqIdx;        /* Root sequence index */
+   uint8_t    numRootSeq;        /* Number of root sequences required for FD */
+   uint16_t   k1;                /* Frequency Offset for each FD */
+   uint8_t    zeroCorrZoneCfg;   /* Zero correlation zone cofig */
+}PrachFdmInfo;
+
+typedef struct prachCfg
+{
+   PrachSeqLen   prachSeqLen;         /* RACH Sequence length: Long/short */
+   uint8_t       prachSubcSpacing;    /* Subcarrier spacing of RACH */
+   uint8_t       msg1Fdm;             /* Number of RACH frequency domain occasions/ PRACH FDM (1,2,4,8) */
+   uint8_t       prachCfgIdx;         /* PRACH Cfg Index */
+   PrachFdmInfo  fdm[8];              /* FDM info */
+   RstSetCfg     prachRstSetCfg;      /* PRACH restricted set config */
+   uint8_t       ssbPerRach;          /* SSB per RACH occassion */
+   uint8_t       totalNumRaPreamble;  /* Total number of RA preambles */
+   uint8_t       numCbPreamblePerSsb; /* Number of CB preamble per SSB */
+   uint16_t      msg1FreqStart;       /* Msg1-FrequencyStart */
+   uint8_t       raContResTmr;        /* RA Contention Resoultion Timer */
+   uint8_t       rsrpThreshSsb;       /* RSRP Threshold SSB */
+   uint8_t       raRspWindow;         /* RA Response Window */
+}PrachCfg;
+
 typedef struct bwpParams
 {
    uint16_t firstPrb;
@@ -721,6 +860,7 @@ typedef struct puschTimeDomRsrcAlloc
    uint8_t             startSymbolAndLength;
 }PuschTimeDomRsrcAlloc;
 
+
 typedef struct puschConfigCommon
 {
    /* PUSCH-TimeDomainResourceAllocation info */
@@ -742,63 +882,6 @@ typedef struct bwpUlConfig
    PucchConfigCommon pucchCommon;
    PuschConfigCommon puschCommon;
 }BwpUlConfig;
-
-
-typedef struct cellCfg
-{
-   MacOpState      opState;
-   MacAdminState   adminState;
-   MacCellState    cellState;
-   PlmnInfoList plmnInfoList[MAX_PLMN];   /* Consits of PlmnId and Snssai list */
-   uint32_t     phyCellId;                /* Physical cell id */
-   uint32_t     tac;
-   uint32_t     ssbFreq;
-   uint16_t     subCarrSpacing;
-   DuplexMode   dupType;          /* Duplex type: TDD/FDD */
-   Sib1CellCfg  sib1Cfg;          /* SIB1 config */
-   BwpDlConfig  initialDlBwp;     /* Initial DL BWP */
-   BwpUlConfig  initialUlBwp;     /* Initial UL BWP */
-}CellCfg;
-
-typedef struct ssbCfg
-{
-   uint32_t    ssbPbchPwr;       /* SSB block power */
-   uint8_t     scsCmn;           /* subcarrier spacing for common */
-   uint16_t    ssbOffsetPointA;  /* SSB subcarrier offset from point A */
-   SSBPeriod   ssbPeriod;        /* SSB Periodicity in msec */
-   uint8_t     ssbScOffset;       /* Subcarrier Offset */
-   uint32_t    ssbMask[SSB_MASK_SIZE];      /* Bitmap for actually transmitted SSB. */
-   uint8_t     beamId[NUM_SSB];
-   BetaPss     betaPss;
-   BchPduOpt   bchPayloadFlag;   /* Options for generation of payload */
-   uint8_t     mibPdu[3];           /* MIB payload */
-   uint8_t     dmrsTypeAPos;     /* DMRS Type A position */
-}SsbCfg;
-
-typedef struct fdmInfo
-{
-   uint16_t   rootSeqIdx;        /* Root sequence index */
-   uint8_t    numRootSeq;        /* Number of root sequences required for FD */
-   uint16_t   k1;                /* Frequency Offset for each FD */
-   uint8_t    zeroCorrZoneCfg;   /* Zero correlation zone cofig */
-}PrachFdmInfo;
-
-typedef struct prachCfg
-{
-   PrachSeqLen   prachSeqLen;         /* RACH Sequence length: Long/short */
-   uint8_t       prachSubcSpacing;    /* Subcarrier spacing of RACH */
-   uint8_t       msg1Fdm;             /* Number of RACH frequency domain occasions/ PRACH FDM (1,2,4,8) */
-   uint8_t       prachCfgIdx;         /* PRACH Cfg Index */
-   PrachFdmInfo  fdm[8];              /* FDM info */
-   RstSetCfg     prachRstSetCfg;      /* PRACH restricted set config */
-   uint8_t       ssbPerRach;          /* SSB per RACH occassion */
-   uint8_t       totalNumRaPreamble;  /* Total number of RA preambles */
-   uint8_t       numCbPreamblePerSsb; /* Number of CB preamble per SSB */
-   uint16_t      msg1FreqStart;       /* Msg1-FrequencyStart */
-   uint8_t       raContResTmr;        /* RA Contention Resoultion Timer */
-   uint8_t       rsrpThreshSsb;       /* RSRP Threshold SSB */
-   uint8_t       raRspWindow;         /* RA Response Window */
-}PrachCfg;
 
 #ifdef NR_DRX
 /* The following list of structures is taken from the DRX-Config section of specification 33.331. */
@@ -860,31 +943,18 @@ typedef struct beamformingConf
    uint32_t digitalAzimuth;    
 }BeamformingConf;
 
-typedef struct csiRsCfg
-{
-   uint8_t   *csiFreqDomainAlloc;
-   uint8_t    csiNrofPorts;
-   uint8_t    csirsfirstOFDMSymbolInTimeDomain;
-   uint8_t    csirsfirstOFDMSymbolInTimeDomain2;
-   uint8_t    csirscdmType;
-   uint8_t    csirsdensity;
-   uint8_t    csirsdensitydot5;
-   uint8_t    powerControlOffset;
-   uint8_t    powerControlOffsetSS;
-   uint16_t   periodicityAndOffset;
-}CsiRsCfg;
-
 typedef struct macCellCfg
 {
    uint16_t         cellId;           /* Cell Id */
    CarrierCfg       carrCfg;          /* Carrier configuration */
    CellCfg          cellCfg;          /* Cell Configuration*/
    SsbCfg           ssbCfg;           /* SSB configuration */          
-   CsiRsCfg         csiRsCfg;         /*Reference: 38.331 CSI-MeasConfig*/
    PrachCfg         prachCfg;         /* PRACH Configuration */
 #ifdef NR_TDD
    TDDCfg           tddCfg;           /* TDD periodicity and slot configuration */
 #endif
+   BwpDlConfig      initialDlBwp;     /* Initial DL BWP */
+   BwpUlConfig      initialUlBwp;     /* Initial UL BWP */
    PrecodingConf    precodingConf;
    BeamformingConf  beamCfg;
 }MacCellCfg;
@@ -1397,6 +1467,189 @@ typedef struct beamFailRecoveryCfg
    uint8_t             msg1SubcSpacing;
 }BeamFailRecoveryCfg;
 
+/* CSI-RS Configuration */
+/* CSI Frequency Occupation --> TS38.331 v17.2.0 Page 555*/
+typedef struct freqOccupation
+{
+   uint8_t  startingRB;
+   uint8_t  numberOfRBs;
+}freqOccupation;
+
+/* CSI Resource Mapping --> TS38.331 v17.2.0 Page 572*/
+typedef struct csiRsResourceMapping
+{
+   freqDomainAlloc                  freqDomainAllocation;
+   uint16_t                         bitString;
+   csiRsNrAntPortsType              nrOfPorts;
+   uint8_t                          firstOFDMSymbolInTimeDomain;
+   uint8_t                          firstOFDMSymbolInTimeDomain2;
+   csiRsCdmType                     cdmType;
+   csiRsDensity                     density;
+   freqOccupation                   freqBand;
+}CsiRsResourceMapping;
+
+/* CSI Periodicity and Offset --> TS38.331 v17.2.0 Page 569*/
+typedef struct csiResourcePeriodicityAndOffset
+{
+   ResourcePeriodicityAndOffsetChoice choice;
+   uint8_t                            offset;
+}CsiResourcePeriodicityAndOffset;
+
+/* NZP Csi Rs Resource --> TS38.331 v17.2.0 Page 680*/
+typedef struct nzpCsiRsResource
+{
+   uint8_t                          nzpCsiRsResourceId;
+   CsiRsResourceMapping             resourceMapping;
+   int                              powerControlOffset;
+   powerControlOffsetSSType         powerControlOffsetSS;
+   uint8_t                          scramblingId;
+   CsiResourcePeriodicityAndOffset  periodicityAndOffset;
+}NzpCsiRsResource;
+
+/* CSI Measurement Config --> TS38.331 v17.2.0 Page 558*/
+typedef struct nzpCsiRsResourceSet
+{
+   uint8_t  nzpCsiRsRsrcSetId;
+   uint8_t  nzpCsiRsRsrcIdList[MAX_NUM_NZP_CSI_RS_RESOURCE];
+}NzpCsiRsResourceSet;
+
+/* CSI Resource Config --> TS38.331 v17.2.0 Page 567*/
+typedef struct nzpCsiRsSsb
+{
+   uint8_t  nzpCsiRsRsrcSetIdList[MAX_NUM_NZP_CSI_RS_RESOURCE_SET];
+   /*FUTURE WORKS*/
+   /*CSI SSB RESOURCE SET LIST*/
+}NzpCsiRsSsb;
+
+/* CSI Resource Config --> TS38.331 v17.2.0 Page 567*/
+typedef struct csiResourceSetList
+{
+   NzpCsiRsSsb    nzpCsiRsSsbResourceSetList;
+   /*FUTURE WORKS*/
+   /*CSI-IM ResourceSetList*/
+}CsiResourceSetList;
+
+/* CSI Resource Config --> TS38.331 v17.2.0 Page 567*/
+typedef struct csiResourceConfig
+{
+   uint8_t              csiResourceConfigId;
+   CsiResourceSetList   resourceSetList;
+   CsiResourceType      resourceType;
+   uint8_t              bwpId;
+}CsiResourceConfig;
+
+
+/* CSI Report Config --> TS38.331 v17.2.0 Page 559*/
+typedef struct pucchCsiResource
+{
+   uint8_t  bwpId;
+   uint8_t  rsrcId;
+}PucchCsiResource;
+
+/* CSI Report Config --> TS38.331 v17.2.0 Page 559*/
+typedef struct periodicCsiReportConfig
+{
+   ReportPeriodicityAndOffsetChoice    choice;
+   uint8_t                             offset;
+   PucchCsiResource                    pucchCsiRsrcList[MAX_NUM_PUCCH_RESRC];
+}PeriodicCsiReportConfig;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct twoPorts{
+   
+}TwoPorts;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct moreThanTwoPorts{
+   MoreThanTwoOptions      antennaConfig;
+}MoreThanTwoPorts;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct singlePanel{
+   union{
+      bool              isTwoPort;
+      TwoPorts          twoPort;
+      bool              isMoreThanTwoPort;
+      MoreThanTwoPorts  moreThanTwoPort;
+   }nrOfAntennaPorts;
+   uint8_t     ri_restriction_bit;
+}SinglePanel;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct codebookType1{
+   union{
+      //Currently only support single panel
+      bool        isSinglePanel;
+      SinglePanel singlePanel;
+   }subType;
+   uint8_t        codebook_mode;
+}CodebookType1;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct codebookConfig{
+   union{
+      // Currently only support codebook type 1
+      bool           isType1;
+      CodebookType1  type1;
+   }codebookType;
+}CodebookConfig;
+
+typedef struct csiReportContent{
+   uint8_t     cri_bitlen;
+   uint8_t     ri_bitlen;
+   uint8_t     pmi_x1_bitlen[8];
+   uint8_t     pmi_x2_bitlen[8];
+   uint8_t     cqi_bitlen[8];
+   uint8_t     ri_restriction_bit;  
+}CsiReportContent;
+
+typedef struct cri_ri_li_pmi_cqi{
+   uint16_t cri;
+   uint16_t ri;
+   uint16_t li;
+   uint16_t pmi_x1;
+   uint16_t pmi_x2;
+   uint16_t wb_cqi_1tb;
+   uint16_t wb_cqi_2tb;
+   uint16_t cqi_table;
+   uint16_t csi_report_id;
+}CRI_RI_LI_PMI_CQI;
+
+typedef struct csiReportResult{
+   CRI_RI_LI_PMI_CQI cri_ri_li_pmi_cqi_report;
+}CsiReportResult;
+
+/* CSI Report Config --> TS38.331 v17.2.0 Page 559*/
+typedef struct csiReportConfig
+{
+   uint8_t                 reportConfigId;
+   CsiResourceType         reportConfigType;
+   // Currently, only periodic reporting is supported
+   union{
+      PeriodicCsiReportConfig periodicReportInfo;
+      /*TODO : Add other reporting type*/
+   }reportConfig;
+   
+   ReportQuantity          reportQuantity;
+   CodebookConfig          codebookConfig;
+   CsiReportContent        reportContent;
+   
+   // Storing report result and config
+   CsiReportResult         reportResult;
+   uint8_t                 codebook_mode;
+   uint8_t                 N1;
+   uint8_t                 N2;
+}CsiReportConfig;
+
+/* CSI Measurement Config --> TS38.331 v17.2.0 Page 558*/
+typedef struct csiMeasConfig
+{
+   NzpCsiRsResource     nzpCsiRsRsrcToAddModList[MAX_NUM_NZP_CSI_RS_RESOURCE];
+   NzpCsiRsResourceSet  nzpCsiRsRsrcSetToAddModList[MAX_NUM_NZP_CSI_RS_RESOURCE_SET];
+   CsiResourceConfig    csiRsrcCfgToAddModList[MAX_NUM_CSI_RESOURCE_CONFIG];
+   CsiReportConfig      csiRprtCfgToAddModList[MAX_NUM_CSI_REPORT_CONFIG];
+}CsiMeasConfig;
+
 /* Serving cell configuration */
 typedef struct servCellCfgInfo
 {
@@ -1409,6 +1662,7 @@ typedef struct servCellCfgInfo
    uint8_t              *bwpInactivityTmr;
    PdschServCellCfg     pdschServCellCfg;
    InitialUlBwp         initUlBwp;
+   CsiMeasConfig        csiMeasCfg;
    BeamFailRecoveryCfg  beamFailureRecoveryCfg;
    uint8_t              numUlBwpToAdd;
    UlBwpInfo            ulBwpToAddList[MAX_NUM_BWP];
@@ -1441,6 +1695,7 @@ typedef struct servCellRecfgInfo
    uint8_t            *bwpInactivityTmr;
    PdschServCellCfg   pdschServCellCfg;
    InitialUlBwp       initUlBwp;
+   CsiMeasConfig      csiMeasCfg;
    uint8_t            numUlBwpToAddOrMod;
    UlBwpInfo          ulBwpToAddOrModList[MAX_NUM_BWP];
    uint8_t            numUlBwpToRel;
@@ -1540,11 +1795,11 @@ typedef struct modulationInfo
    McsTable    mcsTable;    /* MCS table */
 }ModulationInfo;
 
-typedef struct macUeCreateReq
+typedef struct macUeCfg
 {
    uint16_t               cellId;
    uint8_t                ueId;
-   uint8_t                beamIdx;
+   uint8_t                beamIdx; 
    uint16_t               crnti;
    bool                   macCellGrpCfgPres;
    MacCellGrpCfg          macCellGrpCfg;
@@ -1557,7 +1812,7 @@ typedef struct macUeCreateReq
    ModulationInfo         ulModInfo;    /* UL modulation info */
    uint8_t                numLcs;
    LcCfg                  lcCfgList[MAX_NUM_LC];
-}MacUeCreateReq;
+}MacUeCfg;
 
 /* UE Re-configuration */
 typedef struct macUeRecfg
@@ -1611,7 +1866,7 @@ typedef struct sCellFailInfo
    FailureCause  cause;
 }SCellFailInfo;
 
-typedef struct macUeCreateRsp
+typedef struct ueCfgRsp
 {
    uint16_t       cellId;
    uint16_t       ueId;
@@ -1624,9 +1879,9 @@ typedef struct macUeCreateRsp
    SCellFailInfo  *failedSCellList;
    uint8_t        numDRBModFailed;   /* valid values : 0 to MAX_NUM_DRB */
    DRBFailInfo    *failedDRBModlist;
-}MacUeCreateRsp;
+}MacUeCfgRsp;
 
-typedef struct macUeCreateRsp MacUeRecfgRsp;
+typedef struct ueCfgRsp MacUeRecfgRsp;
 
 typedef struct rachRsrcReq
 {
@@ -1727,7 +1982,6 @@ typedef struct macSliceCfgReq
 typedef struct macSliceCfgReq MacSliceRecfgReq;
 typedef struct macSliceCfgRsp MacSliceRecfgRsp;
 
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.17 DL PCCH Indication */
 typedef struct dlPcchInd
 {
    uint16_t  cellId;
@@ -1737,8 +1991,6 @@ typedef struct dlPcchInd
    uint8_t  *pcchPdu;
 }DlPcchInd;
 
-
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.1 Cell Start */
 typedef struct cellInfo
 {
     SlotTimingInfo slotInfo;
@@ -1748,14 +2000,12 @@ typedef struct cellInfo
 typedef struct cellInfo CellStartInfo;
 typedef struct cellInfo CellStopInfo;
 
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.12 UE Reset Request */
 typedef struct ueReset
 {
     uint16_t cellId;
     uint8_t  ueId;
 }MacUeResetReq;
 
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.13 UE Reset Response */
 typedef struct ueResetRsp
 {
    uint16_t cellId;
@@ -1763,88 +2013,12 @@ typedef struct ueResetRsp
    CauseOfResult  status;
 }MacUeResetRsp;
 
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.14 UE Sync Status Indication */
 typedef struct ueSyncStatusInd
 {
    uint16_t   cellId;
    uint8_t    ueId;
    SyncStatus status;
 }MacUeSyncStatusInd;
-
-/* The following list of structures is taken from the SI-SchedulingInfo section of specification 33.331. */
-typedef struct sibTypeInfo
-{
-   SibType sibType;
-   uint8_t valueTag;
-   bool    areaScope;
-}SibTypeInfo;
-
-typedef struct sibMappingInfo
-{
-   uint8_t      numSibTypeInfo;
-   SibTypeInfo  sibTypeInfo[NUM_SIB];
-}SibMappingInfo;
-
-typedef struct schedulingInfo 
-{
-   SiBroadcastStatus siBroadcastStatus;
-   SiPeriodicity     siPeriodicity;
-   SibMappingInfo    sibMappingInfo;
-}SchedulingInfo;
-
-typedef struct rachOccasionsSi
-{
-   RachCfgGeneric     rachConfigSi;
-   SsbPerRachOccasion ssbPerRachOccasion;
-}RachOccasionsSi;
-
-typedef struct siReqRsrc 
-{
-   uint8_t raPreambleStartIndex;
-   uint8_t raAssociationPeriodIndex;
-   uint8_t raSsbOccasionMaskIndex; 
-}SiReqRsrc;
-
-typedef struct siRequestResource
-{
-   uint8_t    numOfSiReqRsrc;
-   SiReqRsrc  siReqRsrc[MAX_SI_MESSAGE];
-}SiRequestResource;
-
-typedef struct siRequestConfig
-{
-   RachOccasionsSi    rachOccasionsSi;
-   SiRequestPeriod    siRequestPeriod;
-   SiRequestResource  siRequestResource;
-}SiRequestConfig;
-
-typedef struct schedulingInfoList
-{
-   uint8_t        numSchInfo;
-   SchedulingInfo schedulingInfo[MAX_SI_MESSAGE];
-}SchedulingInfoList;
-
-typedef struct siSchedulingInfo
-{
-   SchedulingInfoList schInfoList;
-   SiWindowLength     siWindowLength;
-   SiRequestConfig    siRequestConfig;
-   SiRequestConfig    siRequestConfigSUL;
-   uint8_t            *siAreaID;
-}SiSchedulingInfo;
-
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.18 DL Broadcast Request  */
-typedef struct macDlBroadcastReq
-{
-    uint16_t         cellId;
-    uint8_t          numSiBlock;
-    SiSchedulingInfo **siSchedulingInfo;
-}MacDlBroadcastReq;
-
-/* DL broadcast req from DU APP to MAC*/
-typedef uint8_t (*DuMacDlBroadcastReq) ARGS((
-         Pst           *pst,
-         MacDlBroadcastReq *dlBroadcast));
 
 /* Functions for CellUp Ind from MAC to DU APP*/
 typedef uint8_t (*DuMacCellUpInd) ARGS((
@@ -1901,12 +2075,12 @@ typedef uint8_t (*DuMacDlCcchInd) ARGS((
 /* UE create Request from DU APP to MAC*/
 typedef uint8_t (*DuMacUeCreateReq) ARGS((
 	 Pst           *pst,
-	 MacUeCreateReq      *ueCfg ));
+	 MacUeCfg      *ueCfg ));
 
 /* UE create Response from MAC to DU APP */
-typedef uint8_t (*MacDuUeCreateRspFunc) ARGS((
+typedef uint8_t (*MacDuUeCfgRspFunc) ARGS((
 	 Pst           *pst, 
-	 MacUeCreateRsp   *cfgRsp));
+	 MacUeCfgRsp   *cfgRsp));
 
 /* UE Reconfig Request from DU APP to MAC */
 typedef uint8_t (*DuMacUeReconfigReq) ARGS((
@@ -1993,6 +2167,11 @@ typedef uint8_t (*MacDuUeSyncStatusIndFunc) ARGS((
         Pst            *pst,
         MacUeSyncStatusInd *syncStatusInd));
 
+/* MCS Index Report from MAC to DU APP */
+typedef uint8_t (*MacDuMcsIdxRptFunc) ARGS((
+	 Pst           *pst, 
+	 MacUeMcsIndexRpt      *MacMcsIdxRpt));
+
 uint64_t ueBitMapPerCell[MAX_NUM_CELL]; /* Bit Map to store used/free UE-IDX per Cell */
 
 uint8_t packMacCellUpInd(Pst *pst, OduCellId *cellId);
@@ -2019,13 +2198,13 @@ uint8_t duHandleUlCcchInd(Pst *pst, UlCcchIndInfo *ulCcchIndInfo);
 uint8_t packMacDlCcchInd(Pst *pst, DlCcchIndInfo *dlCcchIndInfo);
 uint8_t unpackMacDlCcchInd(DuMacDlCcchInd func, Pst *pst, Buffer *mBuf);
 uint8_t MacProcDlCcchInd(Pst *pst, DlCcchIndInfo *dlCcchIndInfo);
-uint8_t packDuMacUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg);
+uint8_t packDuMacUeCreateReq(Pst *pst, MacUeCfg *ueCfg);
 uint8_t unpackMacUeCreateReq(DuMacUeCreateReq func, Pst *pst, Buffer *mBuf);
-uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg);
+uint8_t MacProcUeCreateReq(Pst *pst, MacUeCfg *ueCfg);
 uint8_t sendStopIndMacToDuApp(uint16_t cellId);
-uint8_t packDuMacUeCreateRsp(Pst *pst, MacUeCreateRsp *cfgRsp);
-uint8_t unpackDuMacUeCreateRsp(MacDuUeCreateRspFunc func, Pst *pst, Buffer *mBuf);
-uint8_t DuProcMacUeCreateRsp(Pst *pst, MacUeCreateRsp *cfgRsp);
+uint8_t packDuMacUeCfgRsp(Pst *pst, MacUeCfgRsp *cfgRsp);
+uint8_t unpackDuMacUeCfgRsp(MacDuUeCfgRspFunc func, Pst *pst, Buffer *mBuf);
+uint8_t DuProcMacUeCfgRsp(Pst *pst, MacUeCfgRsp *cfgRsp);
 uint8_t packDuMacUeReconfigReq(Pst *pst, MacUeRecfg *ueRecfg);
 uint8_t unpackMacUeReconfigReq(DuMacUeReconfigReq func, Pst *pst, Buffer *mBuf);
 uint8_t MacProcUeReconfigReq(Pst *pst, MacUeRecfg *ueRecfg);
@@ -2082,9 +2261,8 @@ uint8_t unpackDuMacUeResetRsp(MacDuUeResetRspFunc func, Pst *pst, Buffer *mBuf);
 uint8_t packDuMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t DuProcMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t unpackDuMacUeSyncStatusInd(MacDuUeSyncStatusIndFunc func, Pst *pst, Buffer *mBuf);
-uint8_t packDuMacDlBroadcastReq(Pst *pst, MacDlBroadcastReq *dlBroadcastReq);
-uint8_t MacProcDlBroadcastReq(Pst *pst,  MacDlBroadcastReq *dlBroadcastReq);
-uint8_t unpackMacDlBroadcastReq(DuMacDlBroadcastReq func, Pst *pst, Buffer *mBuf);
+uint8_t packDuMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt);
+uint8_t DuProcMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt);
 #endif
 
 

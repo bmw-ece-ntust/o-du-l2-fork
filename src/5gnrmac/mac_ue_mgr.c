@@ -28,11 +28,11 @@
 #include "mac.h"
 #include "mac_utils.h"
 
-MacDuUeCreateRspFunc macDuUeCreateRspOpts[] =
+MacDuUeCfgRspFunc macDuUeCfgRspOpts[] =
 {
-   packDuMacUeCreateRsp,   /* packing for loosely coupled */
-   DuProcMacUeCreateRsp,   /* packing for tightly coupled */
-   packDuMacUeCreateRsp   /* packing for light weight loosly coupled */
+   packDuMacUeCfgRsp,   /* packing for loosely coupled */
+   DuProcMacUeCfgRsp,   /* packing for tightly coupled */
+   packDuMacUeCfgRsp   /* packing for light weight loosly coupled */
 };
 
 MacDuUeRecfgRspFunc macDuUeRecfgRspOpts[] =
@@ -1360,6 +1360,73 @@ uint8_t fillInitialDlBwp(InitialDlBwp macInitDlBwp, SchInitalDlBwp *schInitDlBwp
 
 /*******************************************************************
  *
+ * @brief Fill CSI Meas Cfg for SCH UE config
+ *
+ * @details
+ *
+ *    Function : fillCsiMeasCfg
+ *
+ *    Functionality: Fill CSI Meas Cfg for SCH UE config
+ *
+ * @params[in] macInitDlBwp : CSI Meas Cfg at MAC
+ *             schInitDlBwp : CSI Meas Cfg to be filled
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t fillCsiMeasCfg(CsiMeasConfig macCsiMeasCfg, SchCsiMeasConfig *schCsiMeasCfg)
+{
+   /* Filling NZP CSI Resource */
+   // schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0] = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0];
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].nzpCsiRsResourceId = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].nzpCsiRsResourceId;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.bitString = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.bitString;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.cdmType = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.cdmType;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.density = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.density;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.firstOFDMSymbolInTimeDomain2 = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.firstOFDMSymbolInTimeDomain2;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.firstOFDMSymbolInTimeDomain = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.firstOFDMSymbolInTimeDomain;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.freqBand.numberOfRBs = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.freqBand.numberOfRBs;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.freqBand.startingRB = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.freqBand.startingRB;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.freqDomainAllocation = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.freqDomainAllocation;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].resourceMapping.nrOfPorts = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.nrOfPorts;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].powerControlOffset = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].powerControlOffset;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].powerControlOffsetSS = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].powerControlOffsetSS;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].scramblingId = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].scramblingId;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].periodicityAndOffset.choice = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].periodicityAndOffset.choice;
+   schCsiMeasCfg->nzpCsiRsRsrcToAddModList[0].periodicityAndOffset.offset = macCsiMeasCfg.nzpCsiRsRsrcToAddModList[0].periodicityAndOffset.offset;
+
+
+   /* Filling CSI Resource Set */
+   schCsiMeasCfg->nzpCsiRsRsrcSetToAddModList[0].nzpCsiRsRsrcSetId = macCsiMeasCfg.nzpCsiRsRsrcSetToAddModList[0].nzpCsiRsRsrcSetId;
+   schCsiMeasCfg->nzpCsiRsRsrcSetToAddModList[0].nzpCsiRsRsrcIdList[0] = macCsiMeasCfg.nzpCsiRsRsrcSetToAddModList[0].nzpCsiRsRsrcIdList[0];
+
+   /* Filling CSI Resource Config */
+   schCsiMeasCfg->csiRsrcCfgToAddModList[0].bwpId = macCsiMeasCfg.csiRsrcCfgToAddModList[0].bwpId;
+   schCsiMeasCfg->csiRsrcCfgToAddModList[0].csiResourceConfigId = macCsiMeasCfg.csiRsrcCfgToAddModList[0].csiResourceConfigId;
+   schCsiMeasCfg->csiRsrcCfgToAddModList[0].resourceType = macCsiMeasCfg.csiRsrcCfgToAddModList[0].resourceType;
+   schCsiMeasCfg->csiRsrcCfgToAddModList[0].resourceSetList.nzpCsiRsSsbResourceSetList.nzpCsiRsRsrcSetIdList[0] = macCsiMeasCfg.csiRsrcCfgToAddModList[0].resourceSetList.nzpCsiRsSsbResourceSetList.nzpCsiRsRsrcSetIdList[0];
+
+   /* Filling CSI Report Config */
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].reportConfigId = macCsiMeasCfg.csiRprtCfgToAddModList[0].reportConfigId;
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].reportConfigType = macCsiMeasCfg.csiRprtCfgToAddModList[0].reportConfigType;
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].reportConfig.periodicReportInfo.choice = macCsiMeasCfg.csiRprtCfgToAddModList[0].reportConfig.periodicReportInfo.choice;
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].reportConfig.periodicReportInfo.offset = macCsiMeasCfg.csiRprtCfgToAddModList[0].reportConfig.periodicReportInfo.offset;
+   
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].codebookConfig.codebookType.isType1 = macCsiMeasCfg.csiRprtCfgToAddModList[0].codebookConfig.codebookType.isType1;
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].codebookConfig.codebookType.type1.codebook_mode = macCsiMeasCfg.csiRprtCfgToAddModList[0].codebookConfig.codebookType.type1.codebook_mode;
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].codebookConfig.codebookType.type1.subType.isSinglePanel = macCsiMeasCfg.csiRprtCfgToAddModList[0].codebookConfig.codebookType.type1.subType.isSinglePanel;
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].codebookConfig.codebookType.type1.subType.singlePanel.nrOfAntennaPorts.isTwoPort = macCsiMeasCfg.csiRprtCfgToAddModList[0].codebookConfig.codebookType.type1.subType.singlePanel.nrOfAntennaPorts.isTwoPort;
+
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].N1 = macCsiMeasCfg.csiRprtCfgToAddModList[0].N1;
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].N2 = macCsiMeasCfg.csiRprtCfgToAddModList[0].N2;
+   schCsiMeasCfg->csiRprtCfgToAddModList[0].reportQuantity = macCsiMeasCfg.csiRprtCfgToAddModList[0].reportQuantity;
+
+   DU_LOG("\nAKMAL PRINT CSI MEAS CFG --> Success Copying config from MAC to SCH (spcellconfig)");
+
+   return ROK;
+}
+
+/*******************************************************************
+ *
  * @brief Fills Sp Cell config to be sent to scheduler
  *
  * @details
@@ -1437,6 +1504,12 @@ uint8_t fillSpCellCfg(SpCellCfg macSpCellCfg, SchSpCellCfg *schSpCellCfg)
       memcpy(&servCellCfg->ulBwpToAddList[idx], &macSpCellCfg.servCellCfg.ulBwpToAddList[idx], sizeof(UlBwpInfo));
    }
    servCellCfg->firstActvUlBwpId =  macSpCellCfg.servCellCfg.firstActvUlBwpId;
+
+   if(fillCsiMeasCfg(macSpCellCfg.servCellCfg.csiMeasCfg, &servCellCfg->csiMeasCfg)!=ROK){
+      DU_LOG("\nERROR --> MAC : fillCsiMeasCfg() failed");
+      return RFAILED;
+   }
+   DU_LOG("\nAKMAL PRINT CSI MEAS CFG --> MAC : testing scramblingId value :%d",servCellCfg->csiMeasCfg.nzpCsiRsRsrcToAddModList[0].scramblingId);
 
    return ROK;
 }
@@ -1542,6 +1615,11 @@ uint8_t fillSpCellRecfg(SpCellRecfg macSpCellRecfg, SchSpCellRecfg *schSpCellRec
       memcpy(&servCellRecfg->ulBwpToRelList[idx], &macSpCellRecfg.servCellCfg.ulBwpToRelList[idx], sizeof(UlBwpInfo));
    }
    servCellRecfg->firstActvUlBwpId =  macSpCellRecfg.servCellCfg.firstActvUlBwpId;
+
+   if(fillCsiMeasCfg(macSpCellRecfg.servCellCfg.csiMeasCfg, &servCellRecfg->csiMeasCfg)!=ROK){
+      DU_LOG("\nERROR --> MAC : fillCsiMeasCfg() failed");
+      return RFAILED;
+   }
 
    return ROK;
 }
@@ -1756,7 +1834,7 @@ uint8_t fillLogicalChannelCfg(SchLcCfg *schLcCfg, LcCfg *macLcCfg)
  *
  * ****************************************************************/
 
-uint8_t fillSchLcCfgList(SchUeCfgReq *schUeCfg, MacUeCreateReq *ueCfg)
+uint8_t fillSchLcCfgList(SchUeCfgReq *schUeCfg, MacUeCfg *ueCfg)
 {
    uint8_t lcIdx;
 
@@ -1836,7 +1914,7 @@ uint8_t fillSchLcRecfgList(SchUeRecfgReq *schUeRecfg, MacUeRecfg *ueRecfg)
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t fillSchUeCfg(SchUeCfgReq *schUeCfg, MacUeCreateReq *ueCfg)
+uint8_t fillSchUeCfg(SchUeCfgReq *schUeCfg, MacUeCfg *ueCfg)
 {
    uint8_t ret = ROK;
 
@@ -2225,7 +2303,7 @@ void updateMacDlLcCtxt(UeDlCb *dlInfo, LcCfg *ueLcCfg, uint8_t lcIdToDel)
  *
  * ****************************************************************/
 
-uint8_t fillMacLcCfgList(MacUeCb *ueCb, MacUeCreateReq *ueCfg)
+uint8_t fillMacLcCfgList(MacUeCb *ueCb, MacUeCfg *ueCfg)
 {
    uint8_t lcIdx = 0;
 
@@ -2378,7 +2456,7 @@ uint8_t updateMacLcCfgList(MacUeCb *ueCb, MacUeRecfg *ueRecfg)
  *
  * ****************************************************************/
 
-uint8_t fillMacUeCb(MacUeCb *ueCb, MacUeCreateReq *ueCfg, uint8_t cellIdx)
+uint8_t fillMacUeCb(MacUeCb *ueCb, MacUeCfg *ueCfg, uint8_t cellIdx)
 {
    uint8_t ret = ROK;
 
@@ -2531,7 +2609,7 @@ void deleteMacRaCb(uint16_t cellIdx, MacUeCb *ueCb)
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t createUeCb(uint8_t cellIdx, MacUeCb *ueCb, MacUeCreateReq *ueCfg)
+uint8_t createUeCb(uint8_t cellIdx, MacUeCb *ueCb, MacUeCfg *ueCfg)
 {
    uint8_t ret = ROK;
    uint8_t hqProcIdx = 0;
@@ -2630,7 +2708,7 @@ uint8_t modifyUeCb(uint8_t cellIdx, MacUeCb *ueCb, MacUeRecfg *ueRecfg)
  *
  * ****************************************************************/
 
-uint8_t procMacUeCfgData(Pst *pst, MacUeCreateReq *ueCfg, MacUeRecfg *ueRecfg)
+uint8_t procMacUeCfgData(Pst *pst, MacUeCfg *ueCfg, MacUeRecfg *ueRecfg)
 {
    uint8_t ret = ROK, ueId = 0;
    uint16_t  cellIdx, cellId;
@@ -2702,27 +2780,27 @@ uint8_t procMacUeCfgData(Pst *pst, MacUeCreateReq *ueCfg, MacUeRecfg *ueRecfg)
  *
  *    Functionality: Function to store the UeCfg Data
  *
- * @params[in] MacUeCreateReq pointer 
+ * @params[in] MacUeCfg pointer 
  * @return ROK     - success
  *         RFAILED - failure
  *
  * ****************************************************************/
 
-uint8_t copyToTmpData(MacUeCreateReq *ueCfg, MacUeRecfg *ueRecfg)
+uint8_t copyToTmpData(MacUeCfg *ueCfg, MacUeRecfg *ueRecfg)
 {
    uint8_t cellIdx;
 
    if(ueCfg != NULLP)
    {
-      MacUeCreateReq *tmpData = NULLP;
+      MacUeCfg *tmpData = NULLP;
 
-      MAC_ALLOC(tmpData, sizeof(MacUeCreateReq));
+      MAC_ALLOC(tmpData, sizeof(MacUeCfg));
       if(!tmpData)
       {
          DU_LOG("\nERROR  -->  MAC: Memory Alloc Failed at copyToTmpData()");
          return RFAILED;
       }
-      memcpy(tmpData, ueCfg, sizeof(MacUeCreateReq));
+      memcpy(tmpData, ueCfg, sizeof(MacUeCfg));
       GET_CELL_IDX(ueCfg->cellId, cellIdx);
       macCb.macCell[cellIdx]->ueCfgTmpData[ueCfg->ueId-1] = tmpData;
    }
@@ -2758,7 +2836,7 @@ uint8_t copyToTmpData(MacUeCreateReq *ueCfg, MacUeRecfg *ueRecfg)
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg)
+uint8_t MacProcUeCreateReq(Pst *pst, MacUeCfg *ueCfg)
 {
    uint8_t ret = ROK;
    SchUeCfgReq   schUeCfg;
@@ -2780,6 +2858,7 @@ uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg)
       if(ret == ROK)
       {
          /*Sending Cfg Req to SCH */
+         DU_LOG("\nAKMAL PRINT CSI MEAS CFG : MAC --> Received CSI MEAS CFG Scrambling ID = %d",ueCfg->spCellCfg.servCellCfg.csiMeasCfg.nzpCsiRsRsrcToAddModList[0].scramblingId);
          ret = fillSchUeCfg(&schUeCfg, ueCfg);
          if(ret != ROK)
             DU_LOG("\nERROR  -->  MAC : Failed to fill Sch Ue Cfg at MacProcUeCreateReq()");
@@ -2802,7 +2881,7 @@ uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg)
       ret = RFAILED;
    }
    /* FREE shared memory */
-   MAC_FREE_SHRABL_BUF(pst->region, pst->pool, ueCfg, sizeof(MacUeCreateReq));
+   MAC_FREE_SHRABL_BUF(pst->region, pst->pool, ueCfg, sizeof(MacUeCfg));
 
    return ret;
 }
@@ -2825,10 +2904,10 @@ uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg)
  * ****************************************************************/
 uint8_t MacSendUeCreateRsp(MacRsp result, SchUeCfgRsp *schCfgRsp)
 {
-   MacUeCreateRsp   *cfgRsp;
+   MacUeCfgRsp   *cfgRsp;
    Pst        rspPst;
 
-   MAC_ALLOC_SHRABL_BUF(cfgRsp, sizeof(MacUeCreateRsp));
+   MAC_ALLOC_SHRABL_BUF(cfgRsp, sizeof(MacUeCfgRsp));
    if(!cfgRsp)
    {
       DU_LOG("\nERROR  -->  MAC: Memory allocation for UE config response failed");
@@ -2836,7 +2915,7 @@ uint8_t MacSendUeCreateRsp(MacRsp result, SchUeCfgRsp *schCfgRsp)
    }
 
    /* Filling UE Config response */
-   memset(cfgRsp, 0, sizeof(MacUeCreateRsp));
+   memset(cfgRsp, 0, sizeof(MacUeCfgRsp));
    cfgRsp->cellId = schCfgRsp->cellId;
    cfgRsp->ueId = schCfgRsp->ueId;
    cfgRsp->result = result;
@@ -2844,7 +2923,7 @@ uint8_t MacSendUeCreateRsp(MacRsp result, SchUeCfgRsp *schCfgRsp)
    /* Fill Post structure and send UE Create response*/
    memset(&rspPst, 0, sizeof(Pst));
    FILL_PST_MAC_TO_DUAPP(rspPst, EVENT_MAC_UE_CREATE_RSP);
-   return (*macDuUeCreateRspOpts[rspPst.selector])(&rspPst, cfgRsp); 
+   return (*macDuUeCfgRspOpts[rspPst.selector])(&rspPst, cfgRsp); 
 }
 
 /*******************************************************************
@@ -2900,14 +2979,14 @@ uint8_t MacSendUeReconfigRsp(MacRsp result, SchUeRecfgRsp *schCfgRsp)
  *
  * @params[in] cellIdx, ueId
  *
- * @return MacUeCreateReq pointer - success
+ * @return MacUeCfg pointer - success
  *         NULLP - failure
  *
  * ****************************************************************/
 
-MacUeCreateReq *getMacUeCfg(uint16_t cellIdx, uint8_t ueId)
+MacUeCfg *getMacUeCfg(uint16_t cellIdx, uint8_t ueId)
 {
-   MacUeCreateReq *ueCfg = NULLP;
+   MacUeCfg *ueCfg = NULLP;
    if(macCb.macCell[cellIdx])
    {
       ueCfg = macCb.macCell[cellIdx]->ueCfgTmpData[ueId-1];
@@ -2974,7 +3053,7 @@ uint8_t MacProcSchUeCfgRsp(Pst *pst, SchUeCfgRsp *schCfgRsp)
    uint8_t result = MAC_DU_APP_RSP_NOK;
    uint8_t ret = ROK;
    uint16_t cellIdx;
-   MacUeCreateReq *ueCfg = NULLP;
+   MacUeCfg *ueCfg = NULLP;
 
 #ifdef CALL_FLOW_DEBUG_LOG
    switch(pst->event)
@@ -3016,7 +3095,7 @@ uint8_t MacProcSchUeCfgRsp(Pst *pst, SchUeCfgRsp *schCfgRsp)
       DU_LOG("\nERROR  -->  MAC: SCH UeConfigRsp for CRNTI[%d] is failed in MacProcSchUeCfgRsp()", schCfgRsp->crnti);
    }
    ret = MacSendUeCreateRsp(result, schCfgRsp);
-   MAC_FREE(ueCfg, sizeof(MacUeCreateReq));
+   MAC_FREE(ueCfg, sizeof(MacUeCfg));
    ueCfg = NULLP;
    return ret; 
 }
