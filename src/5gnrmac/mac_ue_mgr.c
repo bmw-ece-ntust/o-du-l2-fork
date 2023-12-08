@@ -28,11 +28,11 @@
 #include "mac.h"
 #include "mac_utils.h"
 
-MacDuUeCreateRspFunc macDuUeCreateRspOpts[] =
+MacDuUeCfgRspFunc macDuUeCfgRspOpts[] =
 {
-   packDuMacUeCreateRsp,   /* packing for loosely coupled */
-   DuProcMacUeCreateRsp,   /* packing for tightly coupled */
-   packDuMacUeCreateRsp   /* packing for light weight loosly coupled */
+   packDuMacUeCfgRsp,   /* packing for loosely coupled */
+   DuProcMacUeCfgRsp,   /* packing for tightly coupled */
+   packDuMacUeCfgRsp   /* packing for light weight loosly coupled */
 };
 
 MacDuUeRecfgRspFunc macDuUeRecfgRspOpts[] =
@@ -1756,7 +1756,7 @@ uint8_t fillLogicalChannelCfg(SchLcCfg *schLcCfg, LcCfg *macLcCfg)
  *
  * ****************************************************************/
 
-uint8_t fillSchLcCfgList(SchUeCfgReq *schUeCfg, MacUeCreateReq *ueCfg)
+uint8_t fillSchLcCfgList(SchUeCfgReq *schUeCfg, MacUeCfg *ueCfg)
 {
    uint8_t lcIdx;
 
@@ -1836,7 +1836,7 @@ uint8_t fillSchLcRecfgList(SchUeRecfgReq *schUeRecfg, MacUeRecfg *ueRecfg)
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t fillSchUeCfg(SchUeCfgReq *schUeCfg, MacUeCreateReq *ueCfg)
+uint8_t fillSchUeCfg(SchUeCfgReq *schUeCfg, MacUeCfg *ueCfg)
 {
    uint8_t ret = ROK;
 
@@ -2225,7 +2225,7 @@ void updateMacDlLcCtxt(UeDlCb *dlInfo, LcCfg *ueLcCfg, uint8_t lcIdToDel)
  *
  * ****************************************************************/
 
-uint8_t fillMacLcCfgList(MacUeCb *ueCb, MacUeCreateReq *ueCfg)
+uint8_t fillMacLcCfgList(MacUeCb *ueCb, MacUeCfg *ueCfg)
 {
    uint8_t lcIdx = 0;
 
@@ -2378,7 +2378,7 @@ uint8_t updateMacLcCfgList(MacUeCb *ueCb, MacUeRecfg *ueRecfg)
  *
  * ****************************************************************/
 
-uint8_t fillMacUeCb(MacUeCb *ueCb, MacUeCreateReq *ueCfg, uint8_t cellIdx)
+uint8_t fillMacUeCb(MacUeCb *ueCb, MacUeCfg *ueCfg, uint8_t cellIdx)
 {
    uint8_t ret = ROK;
 
@@ -2531,7 +2531,7 @@ void deleteMacRaCb(uint16_t cellIdx, MacUeCb *ueCb)
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t createUeCb(uint8_t cellIdx, MacUeCb *ueCb, MacUeCreateReq *ueCfg)
+uint8_t createUeCb(uint8_t cellIdx, MacUeCb *ueCb, MacUeCfg *ueCfg)
 {
    uint8_t ret = ROK;
    uint8_t hqProcIdx = 0;
@@ -2630,7 +2630,7 @@ uint8_t modifyUeCb(uint8_t cellIdx, MacUeCb *ueCb, MacUeRecfg *ueRecfg)
  *
  * ****************************************************************/
 
-uint8_t procMacUeCfgData(Pst *pst, MacUeCreateReq *ueCfg, MacUeRecfg *ueRecfg)
+uint8_t procMacUeCfgData(Pst *pst, MacUeCfg *ueCfg, MacUeRecfg *ueRecfg)
 {
    uint8_t ret = ROK, ueId = 0;
    uint16_t  cellIdx, cellId;
@@ -2702,27 +2702,27 @@ uint8_t procMacUeCfgData(Pst *pst, MacUeCreateReq *ueCfg, MacUeRecfg *ueRecfg)
  *
  *    Functionality: Function to store the UeCfg Data
  *
- * @params[in] MacUeCreateReq pointer 
+ * @params[in] MacUeCfg pointer 
  * @return ROK     - success
  *         RFAILED - failure
  *
  * ****************************************************************/
 
-uint8_t copyToTmpData(MacUeCreateReq *ueCfg, MacUeRecfg *ueRecfg)
+uint8_t copyToTmpData(MacUeCfg *ueCfg, MacUeRecfg *ueRecfg)
 {
    uint8_t cellIdx;
 
    if(ueCfg != NULLP)
    {
-      MacUeCreateReq *tmpData = NULLP;
+      MacUeCfg *tmpData = NULLP;
 
-      MAC_ALLOC(tmpData, sizeof(MacUeCreateReq));
+      MAC_ALLOC(tmpData, sizeof(MacUeCfg));
       if(!tmpData)
       {
          DU_LOG("\nERROR  -->  MAC: Memory Alloc Failed at copyToTmpData()");
          return RFAILED;
       }
-      memcpy(tmpData, ueCfg, sizeof(MacUeCreateReq));
+      memcpy(tmpData, ueCfg, sizeof(MacUeCfg));
       GET_CELL_IDX(ueCfg->cellId, cellIdx);
       macCb.macCell[cellIdx]->ueCfgTmpData[ueCfg->ueId-1] = tmpData;
    }
@@ -2758,7 +2758,7 @@ uint8_t copyToTmpData(MacUeCreateReq *ueCfg, MacUeRecfg *ueRecfg)
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg)
+uint8_t MacProcUeCreateReq(Pst *pst, MacUeCfg *ueCfg)
 {
    uint8_t ret = ROK;
    SchUeCfgReq   schUeCfg;
@@ -2802,7 +2802,7 @@ uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg)
       ret = RFAILED;
    }
    /* FREE shared memory */
-   MAC_FREE_SHRABL_BUF(pst->region, pst->pool, ueCfg, sizeof(MacUeCreateReq));
+   MAC_FREE_SHRABL_BUF(pst->region, pst->pool, ueCfg, sizeof(MacUeCfg));
 
    return ret;
 }
@@ -2825,10 +2825,10 @@ uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg)
  * ****************************************************************/
 uint8_t MacSendUeCreateRsp(MacRsp result, SchUeCfgRsp *schCfgRsp)
 {
-   MacUeCreateRsp   *cfgRsp;
+   MacUeCfgRsp   *cfgRsp;
    Pst        rspPst;
 
-   MAC_ALLOC_SHRABL_BUF(cfgRsp, sizeof(MacUeCreateRsp));
+   MAC_ALLOC_SHRABL_BUF(cfgRsp, sizeof(MacUeCfgRsp));
    if(!cfgRsp)
    {
       DU_LOG("\nERROR  -->  MAC: Memory allocation for UE config response failed");
@@ -2836,7 +2836,7 @@ uint8_t MacSendUeCreateRsp(MacRsp result, SchUeCfgRsp *schCfgRsp)
    }
 
    /* Filling UE Config response */
-   memset(cfgRsp, 0, sizeof(MacUeCreateRsp));
+   memset(cfgRsp, 0, sizeof(MacUeCfgRsp));
    cfgRsp->cellId = schCfgRsp->cellId;
    cfgRsp->ueId = schCfgRsp->ueId;
    cfgRsp->result = result;
@@ -2844,7 +2844,7 @@ uint8_t MacSendUeCreateRsp(MacRsp result, SchUeCfgRsp *schCfgRsp)
    /* Fill Post structure and send UE Create response*/
    memset(&rspPst, 0, sizeof(Pst));
    FILL_PST_MAC_TO_DUAPP(rspPst, EVENT_MAC_UE_CREATE_RSP);
-   return (*macDuUeCreateRspOpts[rspPst.selector])(&rspPst, cfgRsp); 
+   return (*macDuUeCfgRspOpts[rspPst.selector])(&rspPst, cfgRsp); 
 }
 
 /*******************************************************************
@@ -2900,14 +2900,14 @@ uint8_t MacSendUeReconfigRsp(MacRsp result, SchUeRecfgRsp *schCfgRsp)
  *
  * @params[in] cellIdx, ueId
  *
- * @return MacUeCreateReq pointer - success
+ * @return MacUeCfg pointer - success
  *         NULLP - failure
  *
  * ****************************************************************/
 
-MacUeCreateReq *getMacUeCfg(uint16_t cellIdx, uint8_t ueId)
+MacUeCfg *getMacUeCfg(uint16_t cellIdx, uint8_t ueId)
 {
-   MacUeCreateReq *ueCfg = NULLP;
+   MacUeCfg *ueCfg = NULLP;
    if(macCb.macCell[cellIdx])
    {
       ueCfg = macCb.macCell[cellIdx]->ueCfgTmpData[ueId-1];
@@ -2974,7 +2974,7 @@ uint8_t MacProcSchUeCfgRsp(Pst *pst, SchUeCfgRsp *schCfgRsp)
    uint8_t result = MAC_DU_APP_RSP_NOK;
    uint8_t ret = ROK;
    uint16_t cellIdx;
-   MacUeCreateReq *ueCfg = NULLP;
+   MacUeCfg *ueCfg = NULLP;
 
 #ifdef CALL_FLOW_DEBUG_LOG
    switch(pst->event)
@@ -3016,7 +3016,7 @@ uint8_t MacProcSchUeCfgRsp(Pst *pst, SchUeCfgRsp *schCfgRsp)
       DU_LOG("\nERROR  -->  MAC: SCH UeConfigRsp for CRNTI[%d] is failed in MacProcSchUeCfgRsp()", schCfgRsp->crnti);
    }
    ret = MacSendUeCreateRsp(result, schCfgRsp);
-   MAC_FREE(ueCfg, sizeof(MacUeCreateReq));
+   MAC_FREE(ueCfg, sizeof(MacUeCfg));
    ueCfg = NULLP;
    return ret; 
 }

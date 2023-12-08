@@ -16,7 +16,7 @@
 ################################################################################
  *******************************************************************************/
 
-#ifndef __DU_CONFIG_H_
+#ifndef __DU_CONFIG_H__
 #define __DU_CONFIG_H__
 
 #ifdef O1_ENABLE
@@ -24,18 +24,16 @@
 #endif
 
 /* MACROS */
-#define GNB_ID  1 /* As per 38.423,Sec 9.2.2.1, gnbId range b/w 0 to 4294967295 */
-
 #define DU_INST 0
 #define DU_ID 1
 
 #ifndef O1_ENABLE
-#define DU_IP_V4_ADDR "192.168.130.81"
-#define CU_IP_V4_ADDR "192.168.130.82"
-#define RIC_IP_V4_ADDR "192.168.130.80"
+#define DU_IP_V4_ADDR "192.168.8.5"
+#define CU_IP_V4_ADDR "192.168.8.245"
+#define RIC_IP_V4_ADDR "192.168.8.46" // 228
 
 #define F1_SCTP_PORT 38472  /* As per the spec 38.472, the registered port number for F1AP is 38472 */
-#define E2_SCTP_PORT 36421
+#define E2_SCTP_PORT 36421 /* 32222 */
 #endif
 
 #define F1_EGTP_PORT  2152  /* As per the spec 29.281, the registered port number for GTP-U is 2152 */
@@ -48,6 +46,7 @@
 //TODO: while testing for TDD, Mu1 and 100 MHz, this flag must be enabled
 #ifdef NR_TDD
 #define DUPLEX_MODE DUP_MODE_TDD
+#define NR_NUMEROLOGY 1
 #define NR_DL_ARFCN 623400
 #define NR_UL_ARFCN 623400
 #define NR_FREQ_BAND 78
@@ -55,6 +54,7 @@
 #define NR_BANDWIDTH BANDWIDTH_100MHZ
 #else
 #define DUPLEX_MODE DUP_MODE_FDD
+#define NR_NUMEROLOGY 0
 #define NR_DL_ARFCN 428000
 #define NR_UL_ARFCN 390000
 #define NR_FREQ_BAND 1
@@ -76,8 +76,7 @@
 #define SUL_ARFCN 100
 #define SUL_BAND 2
 
-#define TIME_CFG 4
-#define MEAS_TIMING_ARFCN 630432
+#define TIME_CFG 0
 #define CARRIER_IDX 1
 #define NUM_TX_ANT 2
 #define NUM_RX_ANT 2
@@ -254,7 +253,7 @@
 #define PHR_PROHIBHIT_TMR 0
 #define PHR_PWR_FACTOR_CHANGE 3
 #define PHR_MODE_OTHER_CG 0
-#define SN_FIELD_LEN_12BIT 0 /*As per Spec 38.331, The network configures only value size12 in SN-FieldLengthAM for SRB */
+#define SN_FIELD_LEN 1
 #define T_POLL_RETRANSMIT 8       /* Enum for 45ms */ 
 #define T_POLL_RETRANSMIT_VAL 45  /* Value in ms */
 #define POLL_PDU 0                /* Enum for 4 pdus */
@@ -297,7 +296,7 @@
 #define MAX_RATIO        30
 #define MIN_RATIO        20
 #define DEDICATED_RATIO  10
-#define NUM_OF_SUPPORTED_SLICE  2
+#define NUM_OF_SUPPORTED_SLICE  3
 
 #ifdef NR_DRX
 /* Macros for Drx configuration */
@@ -715,7 +714,7 @@ typedef struct f1DuCellInfo
    uint16_t           tac;          /* tracking area code */
    uint16_t           epsTac;       /* Configured EPS TAC */
    NrModeInfo         f1Mode;       /* NR mode info : FDD/TDD */
-   uint8_t            measTimeCfgDuration;  /* Measurement timing configuration */
+   uint8_t            measTimeCfg;  /* Measurement timing configuration */
    F1CellDir          cellDir;      /* Cell Direction */
    F1CellType         cellType;     /* Cell Type */
    F1BrdcstPlmnInfo   brdcstPlmnInfo[MAX_BPLMN_NRCELL_MINUS_1]; /* Broadcast PLMN Identity Info List */
@@ -1241,7 +1240,6 @@ typedef struct sib1Params
    long      cellResvdForOpUse;
    long      connEstFailCnt;
    long      connEstFailOffValidity;
-   long      connEstFailOffset;
    SiSchedInfo           siSchedInfo;
    SrvCellCfgCommSib     srvCellCfgCommSib;
 }Sib1Params;
@@ -1252,7 +1250,7 @@ typedef struct duCfgParams
    F1EgtpParams       egtpParams;                  /* EGTP Params */
    uint32_t           maxUe;
    uint32_t           duId;
-   char               *duName;
+   uint8_t            duName[CU_DU_NAME_LEN_MAX];
    SchedulerCfg       schedCfg;
    F1DuSrvdCellInfo   srvdCellLst[MAX_NUM_CELL];  /* Serving cell list *///TODO: this must be removed eventually
    F1RrcVersion       rrcVersion;                 /* RRC version */
@@ -1261,6 +1259,15 @@ typedef struct duCfgParams
    Sib1Params         sib1Params;                 /* SIB1 Params */
    MacSliceCfgReq     tempSliceCfg;
 }DuCfgParams;
+
+typedef struct f1SetupMsg
+{
+   uint8_t f1MsgReqBufSize;
+   char    *f1MsgReqBuf; 
+   uint8_t f1MsgRspBufSize;
+   char    *f1MsgRspBuf;
+}F1SetupMsg;
+
 
 #ifndef O1_ENABLE
 //RRM POLICY STRUCT

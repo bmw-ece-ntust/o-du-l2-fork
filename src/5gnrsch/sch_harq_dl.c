@@ -141,6 +141,7 @@ void schDlHqDeleteFromFreeList(SchDlHqProcCb *hqP)
  **/
 void schDlHqAddToInUseList(SchDlHqProcCb *hqP)
 {
+   DU_LOG("\nDennis --> Add hqP: %p to in use list", &hqP->dlHqEntLnk);
    cmLListAdd2Tail(&(hqP->hqEnt->inUse), &hqP->dlHqEntLnk);
 }
 /**
@@ -212,6 +213,7 @@ void schDlReleaseHqProcess(SchDlHqProcCb *hqP)
    SchCellCb  *cellCb = NULLP;
    if(hqP)
    {
+      DU_LOG("\nDennis --> Release hqP: %p", &hqP->dlHqEntLnk);
       cellCb = hqP->hqEnt->cell;
       cellCb->api->SchFreeDlHqProcCb(hqP);
       schDlHqDeleteFromInUseList(hqP);

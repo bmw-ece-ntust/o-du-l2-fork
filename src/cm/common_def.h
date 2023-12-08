@@ -56,8 +56,8 @@
 #define RADIO_FRAME_DURATION 10 /* Time duration of a radio frame in ms */
 /* MAX values */
 #define MAX_NUM_CELL 2 /* Changed to 2 to support cell Id 2 even if there is only one cell in DU */
-#define MAX_NUM_MU   4
-#define MAX_NUM_UE   3
+#define MAX_NUM_MU   7
+#define MAX_NUM_UE   7
 #define MAX_NUM_UE_PER_TTI 1
 #define MAX_NUM_LC   MAX_DRB_LCID + 1   /*Spec 38.331: Sec 6.4: maxLC-ID Keyword*/
 #define MAX_NUM_SRB  3    /* Max. no of Srbs */
@@ -105,6 +105,7 @@
 
 /* PRB allocation as per 38.101, Section 5.3.2 */
 #define TOTAL_PRB_20MHZ_MU0 106
+#define TOTAL_PRB_50MHZ_MU0 270
 #define TOTAL_PRB_100MHZ_MU1 273
 #ifdef NR_TDD
 #define MAX_NUM_RB TOTAL_PRB_100MHZ_MU1  /* value for numerology 1, 100 MHz */
@@ -112,8 +113,9 @@
 #define MAX_NUM_RB TOTAL_PRB_20MHZ_MU0 /* value for numerology 0, 20 MHz */
 #endif
 
-#define ODU_UE_THROUGHPUT_PRINT_TIME_INTERVAL      5     /* in milliseconds */
-#define ODU_SNSSAI_THROUGHPUT_PRINT_TIME_INTERVAL  60000 /* in milliseconds */
+#define ODU_UE_THROUGHPUT_PRINT_TIME_INTERVAL      500     /* in milliseconds */
+#define ODU_SNSSAI_THROUGHPUT_PRINT_TIME_INTERVAL  500 /* in milliseconds */
+#define ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL     500 /* in milliseconds */
 
 /*Spec 38.331 Sec 6.4: Maximum number of paging occasion per paging frame*/
 #define MAX_PO_PER_PF 4
@@ -125,9 +127,6 @@
 #endif
 
 #define MAX_SFN   1024
-
-/*First SCS in kHz as per 3gpp spec 38.211 Table 4.2-1 */
-#define BASE_SCS 15
 
 /* Defining macros for common utility functions */
 #define ODU_GET_MSG_BUF SGetMsg
@@ -148,7 +147,6 @@
 #define ODU_PRINT_MSG SPrntMsg
 #define ODU_REM_PRE_MSG SRemPreMsg
 #define ODU_REM_PRE_MSG_MULT SRemPreMsgMult
-#define ODU_REM_POST_MSG_MULT SRemPstMsgMult
 #define ODU_REG_TMR_MT SRegTmrMt
 #define ODU_SEGMENT_MSG SSegMsg
 #define ODU_CAT_MSG SCatMsg
@@ -250,8 +248,7 @@ typedef enum
    CONFIG_UNKNOWN,
    CONFIG_ADD,
    CONFIG_MOD,
-   CONFIG_DEL,
-   CONFIG_REESTABLISH
+   CONFIG_DEL
 }ConfigType;
 
 #ifdef NR_TDD
@@ -279,13 +276,13 @@ typedef enum
 
 typedef enum
 {
-   SSB_5MS,
-   SSB_10MS,
-   SSB_20MS,
-   SSB_40MS,
-   SSB_80MS,
-   SSB_160MS
-}SSBPeriodicity;
+   SCS_5MS,
+   SCS_10MS,
+   SCS_20MS,
+   SCS_40MS,
+   SCS_80MS,
+   SCS_160MS
+}ScsPeriodicity;
 
 typedef enum
 {
@@ -355,7 +352,7 @@ void oduCpyFixBufToMsg(uint8_t *fixBuf, Buffer *mBuf, uint16_t len);
 uint8_t buildPlmnId(Plmn plmn, uint8_t *buf);
 uint16_t convertScsEnumValToScsVal(uint8_t scsEnumValue);
 uint8_t convertScsValToScsEnum(uint32_t num);
-uint8_t convertSSBPeriodicityToEnum(uint32_t num);
+uint8_t convertScsPeriodicityToEnum(uint32_t num);
 
 uint8_t SGetSBufNewForDebug(char *file, const char *func, int line, Region region, Pool pool, Data **ptr, Size size);
 uint8_t SPutSBufNewForDebug(char *file, const char *func, int line, Region region, Pool pool, Data *ptr, Size size);

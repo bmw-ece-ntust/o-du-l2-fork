@@ -381,7 +381,7 @@ void schInitTddSlotCfg(SchCellCb *cell, SchCellCfg *schCellCfg)
    int8_t slotIdx, symbIdx;
 
    periodicityInMicroSec = schGetPeriodicityInMsec(schCellCfg->tddCfg.tddPeriod);
-   cell->numSlotsInPeriodicity = (periodicityInMicroSec * pow(2, cell->numerology))/1000;
+   cell->numSlotsInPeriodicity = (periodicityInMicroSec * pow(2, schCellCfg->numerology))/1000;
    cell->slotFrmtBitMap = 0;
    schFillSlotConfig(cell, schCellCfg->tddCfg);
    for(slotIdx = cell->numSlotsInPeriodicity-1; slotIdx >= 0; slotIdx--)
@@ -434,7 +434,7 @@ void fillSsbStartSymb(SchCellCb *cellCb)
 {
    uint8_t cnt, scs, symbIdx, ssbStartSymbArr[SCH_MAX_SSB_BEAM];
 
-   scs = cellCb->cellCfg.ssbScs;
+   scs = cellCb->cellCfg.scsCommon;
 
    memset(ssbStartSymbArr, 0, sizeof(SCH_MAX_SSB_BEAM));
    symbIdx = 0;
@@ -496,7 +496,6 @@ void fillSsbStartSymb(SchCellCb *cellCb)
  **/
 uint8_t schInitCellCb(Inst inst, SchCellCfg *schCellCfg)
 {
-   uint16_t scsInKhz = 0;
    SchCellCb *cell= NULLP;
    SCH_ALLOC(cell, sizeof(SchCellCb));
    if(!cell)
@@ -507,11 +506,7 @@ uint8_t schInitCellCb(Inst inst, SchCellCfg *schCellCfg)
 
    cell->cellId = schCellCfg->cellId; 
    cell->instIdx = inst;
-   scsInKhz = convertScsEnumValToScsVal(schCellCfg->ssbScs);
-   
-   /*Ref : 3GPP 38.211 Table 4.2-1: SCS = (2 ^ numerology * 15kHz)*/
-   cell->numerology = log2(scsInKhz/BASE_SCS);
-   switch(cell->numerology)
+   switch(schCellCfg->numerology)
    {
       case SCH_NUMEROLOGY_0:
 	 {
@@ -539,7 +534,7 @@ uint8_t schInitCellCb(Inst inst, SchCellCfg *schCellCfg)
 	 }
 	 break;
       default:
-	 DU_LOG("\nERROR  -->  SCH : Numerology %d not supported", cell->numerology);
+	 DU_LOG("\nERROR  -->  SCH : Numerology %d not supported", schCellCfg->numerology);
    }
 #ifdef NR_TDD
    schInitTddSlotCfg(cell, schCellCfg);   
@@ -800,7 +795,7 @@ uint8_t SchProcCellCfgReq(Pst *pst, SchCellCfg *schCellCfg)
    cellCb->macInst = pst->srcInst;
 
    /* derive the SIB1 config parameters */
-   ret = fillSchSib1Cfg(cellCb->numerology, schCellCfg->dlBandwidth, cellCb->numSlots,
+   ret = fillSchSib1Cfg(schCellCfg->numerology, schCellCfg->dlBandwidth, cellCb->numSlots,
 	 &(schCellCfg->pdcchCfgSib1), &(cellCb->sib1SchCfg), schCellCfg->phyCellId,
 	 schCellCfg->dlCfgCommon.schFreqInfoDlSib.offsetToPointA, schCellCfg->sib1PduLen);
    
@@ -1080,9 +1075,13 @@ uint8_t SchProcDlRlcBoInfo(Pst *pst, DlRlcBoInfo *dlBoInfo)
    bool isLcIdValid = false;
    SchUeCb *ueCb = NULLP;
    SchCellCb *cell = NULLP;
+   SchSliceBasedCellCb *schSpcCellCb;
    Inst  inst = pst->dstInst-SCH_INST_START;   
 
+#ifdef SLICE_BASED_DEBUG_LOG
    DU_LOG("\nDEBUG  -->  SCH : Received RLC BO Status indication LCId [%d] BO [%d]", dlBoInfo->lcId, dlBoInfo->dataVolume);
+#endif
+
    cell = schCb[inst].cells[inst];
 
    if(cell == NULLP)
@@ -1127,6 +1126,8 @@ uint8_t SchProcDlRlcBoInfo(Pst *pst, DlRlcBoInfo *dlBoInfo)
       /* TODO : These part of changes will be corrected during DL scheduling as
        * per K0 - K1 -K2 */
       SET_ONE_BIT(ueId, cell->boIndBitMap);
+      schSpcCellCb = (SchSliceBasedCellCb *)cell->schSpcCell;
+
       if(ueCb->dlInfo.dlLcCtxt[lcId].lcId == lcId)
       {
          ueCb->dlInfo.dlLcCtxt[lcId].bo = dlBoInfo->dataVolume;
@@ -1135,6 +1136,12 @@ uint8_t SchProcDlRlcBoInfo(Pst *pst, DlRlcBoInfo *dlBoInfo)
       {
          DU_LOG("ERROR --> SCH: LCID:%d is not configured in SCH Cb",lcId);
          return RFAILED;
+      }
+
+      /* For thesis Experiment 1.2: Set timer up when receive traffic */
+      if(lcId != 1)
+      {
+         schSpcCellCb->isTimerStart = true;
       }
    }
    /* Adding UE Id to list of pending UEs to be scheduled */
@@ -1591,6 +1598,7 @@ uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_
    CmLList        *freePrbNode = NULLP;
    SchPrbAlloc    *prbAlloc = NULLP;
    bool           checkOccasion = FALSE;
+   PduTxOccsaion  ssbOccasion=0, sib1Occasion=0;
 
    *startPrb = 0; /*Initialize the StartPRB to zero*/
 
@@ -1600,7 +1608,6 @@ uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_
    if(dir == DIR_DL)
    {
       SchDlSlotInfo  *schDlSlotInfo = cell->schDlSlotInfo[slotTime.slot];
-      PduTxOccsaion  ssbOccasion=0, sib1Occasion=0;
 
       prbAlloc = &schDlSlotInfo->prbAlloc;
 
@@ -1694,7 +1701,11 @@ uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_
 
       }
       freePrbNode = freePrbNode->next;
-   }  
+   }
+#ifdef SLICE_BASED_DEBUG_LOG
+   DU_LOG("\nDennis --> Max Free PRB is:%d, SSB Occassion, SIB1 Occcassion, Check Occassion: [%d, %d, %d]", \
+   maxFreePRB, ssbOccasion, sib1Occasion, checkOccasion);
+#endif
    return(maxFreePRB);
 }
 
@@ -1884,8 +1895,10 @@ void freeSchSliceCfgReq(SchSliceCfgReq *sliceCfgReq)
 uint8_t SchProcSliceCfgReq(Pst *pst, SchSliceCfgReq *schSliceCfgReq)
 {
    uint8_t ret = ROK;
+   SchCellCb *cellCb;
    Inst   inst = pst->dstInst - SCH_INST_START;
 
+   cellCb = schCb[inst].cells[0];
    DU_LOG("\nINFO  -->  SCH : Received Slice Cfg request from MAC");
    if(schSliceCfgReq)
    {
@@ -1896,6 +1909,10 @@ uint8_t SchProcSliceCfgReq(Pst *pst, SchSliceCfgReq *schSliceCfgReq)
          {
             DU_LOG("\nERROR  -->  SCH : Failed to fill the slice cfg rsp");
             ret = RFAILED;
+         }
+         else
+         {
+            cellCb->api->SchSliceCfgReq(cellCb);
          }
          freeSchSliceCfgReq(schSliceCfgReq);
       }
@@ -2011,7 +2028,9 @@ uint8_t SchProcSliceRecfgReq(Pst *pst, SchSliceRecfgReq *schSliceRecfgReq)
 {
    uint8_t ret = ROK;
    Inst   inst = pst->dstInst - SCH_INST_START;
+   SchCellCb *cellCb;
 
+   cellCb = schCb[inst].cells[0];
    DU_LOG("\nINFO  -->  SCH : Received Slice ReCfg request from MAC");
    if(schSliceRecfgReq)
    {
@@ -2022,6 +2041,10 @@ uint8_t SchProcSliceRecfgReq(Pst *pst, SchSliceRecfgReq *schSliceRecfgReq)
          {
             DU_LOG("\nERROR  -->  SCH : Failed to fill sch slice cfg response");
             ret = RFAILED;
+         }
+         else
+         {
+            cellCb->api->SchSliceRecfgReq(cellCb);
          }
          freeSchSliceCfgReq(schSliceRecfgReq);
       }
@@ -2314,7 +2337,7 @@ uint8_t SchProcPagingInd(Pst *pst,  SchPageInd *pageInd)
  *     File : rg_sch_lmm.c 
  *
  **********************************************************/
-Void SchFillCfmPst
+void SchFillCfmPst
 (
 Pst           *reqPst,
 Pst           *cfmPst,
