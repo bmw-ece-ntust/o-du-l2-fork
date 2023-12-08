@@ -308,8 +308,13 @@ typedef struct schPrbAlloc
 
 /**
  * @brief
- * scheduler allocationsfor DL per cell.
+ * scheduler allocations for DL per cell.
  */
+
+/*******************************************************************
+ * NTUST@JOJO
+ * enable support for multiple UEs per TTI
+ * ****************************************************************/
 typedef struct schDlSlotInfo
 {
    SchPrbAlloc  prbAlloc;                 /*!< PRB allocated/available in this slot */
@@ -317,8 +322,10 @@ typedef struct schDlSlotInfo
    uint8_t      ssbIdxSupported;          /*!< Max SSB index */
    SsbInfo      ssbInfo[MAX_SSB_IDX];     /*!< SSB info */
    bool         sib1Pres;                 /*!< Flag to determine if SIB1 is present in this slot */
-   uint8_t      pdcchUe;                  /*!< UE for which PDCCH is scheduled in this slot */
-   uint8_t      pdschUe;                  /*!< UE for which PDSCH is scheduled in this slot */
+   /* JOJO: Extend list of UEs will be scheduled for PDCCH to multiple UEs.*/
+   uint8_t      pdcchUe[MAX_NUM_UE];     
+   /* JOJO: Extend list of UEs will be scheduled for PDSCH to multiple UEs.*/ 
+   uint8_t      pdschUe[MAX_NUM_UE];      
    RarAlloc     *rarAlloc[MAX_NUM_UE];    /*!< RAR allocation per UE*/
    DciInfo      *ulGrant;
    DlMsgSchInfo *dlMsgAlloc[MAX_NUM_UE];  /*!< Dl msg allocation per UE*/
@@ -341,6 +348,11 @@ typedef struct schRaCb
  * @brief
  * scheduler allocationsfor UL per cell.
  */
+
+/*******************************************************************
+ * NTUST@JOJO
+ * enable support for multiple UEs per TTI
+ * ****************************************************************/
 typedef struct schUlSlotInfo
 {
    SchPrbAlloc  prbAlloc;         /*!< PRB allocated/available per symbol */
@@ -348,8 +360,10 @@ typedef struct schUlSlotInfo
    bool         puschPres;        /*!< PUSCH presence field */
    SchPuschInfo *schPuschInfo;    /*!< PUSCH info */
    bool         pucchPres;        /*!< PUCCH presence field */
-   SchPucchInfo schPucchInfo;     /*!< PUCCH info */
-   uint8_t      pucchUe;          /*!< Store UE id for which PUCCH is scheduled */
+   /* JOJO: Store PUCCH scheduling info. of multiple UEs.*/
+   SchPucchInfo schPucchInfo[MAX_NUM_UE];  
+   /* JOJO: Extend list of UEs will be scheduled for PDSCH to multiple UEs.*/   
+   uint8_t      pucchUe[MAX_NUM_UE];          
    uint8_t      puschUe;          /*!< Store UE id for which PUSCH is scheduled */
 }SchUlSlotInfo;
 
@@ -367,6 +381,7 @@ typedef struct schLcCtxt
 {
    uint8_t lcId;     // logical Channel ID
    uint8_t lcp;      // logical Channel Prioritization
+   uint16_t   fiveQi; // 5QI
    SchLcState lcState;
    uint32_t bo;
    uint16_t   pduSessionId; /*Pdu Session Id*/
@@ -565,6 +580,8 @@ typedef struct schAllApis
    void (* SchDlRlcBoInfo)(SchCellCb *cellCb, uint16_t ueId);
    void (* SchSrUciInd)(SchCellCb *cellCb, uint16_t ueId);
    void (* SchBsr)(SchCellCb *cellCb, uint16_t ueId);
+   void (* SchSliceCfgReq)(SchCellCb *cellCb);
+   void (* SchSliceRecfgReq)(SchCellCb *cellCb);
    void (* SchHandleLcList)(void *ptr, CmLList *node, ActionTypeLL action);
    void (* SchAddToDlHqRetxList)(SchDlHqProcCb *hqP);
    void (* SchAddToUlHqRetxList)(SchUlHqProcCb *hqP);
@@ -615,7 +632,6 @@ typedef struct schCellCb
    SchDlSlotInfo **schDlSlotInfo;                   /*!< SCH resource allocations in DL */
    SchUlSlotInfo **schUlSlotInfo;                   /*!< SCH resource allocations in UL */
    SchCellCfg    cellCfg;                           /*!< Cell ocnfiguration */
-   uint8_t       numerology;
    bool          firstSsbTransmitted;
    bool          firstSib1Transmitted;
    uint8_t       ssbStartSymbArr[SCH_MAX_SSB_BEAM]; /*!< start symbol per SSB beam */
@@ -717,7 +733,7 @@ uint8_t schDlRsrcAllocMsg4(SchCellCb *cell, SlotTimingInfo msg4Time, uint8_t ueI
 uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, bool isRetx, SchDlHqProcCb *hqP);
 uint8_t allocatePrbDl(SchCellCb *cell, SlotTimingInfo slotTime, uint8_t startSymbol, uint8_t symbolLength, \
    uint16_t *startPrb, uint16_t numPrb);
-void fillDlMsgInfo(DlMsgSchInfo *dlMsgInfo, uint16_t crnti, bool isRetx, SchDlHqProcCb* hqP); /*AS per 38.473 V15.3.0, Section 9.3.1.32 crnti value range is b/w 0..65535*/
+void fillDlMsgInfo(DlMsgSchInfo *dlMsgInfo, uint8_t crnti, bool isRetx, SchDlHqProcCb* hqP);
 bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool dedMsg, uint8_t *pdschStartSymbol,\
 uint8_t *pdschSymblLen, SlotTimingInfo *pdcchTime,  SlotTimingInfo *pdschTime, SlotTimingInfo *pucchTime, bool isRetx, SchDlHqProcCb *hqP);
 RaRspWindowStatus isInRaRspWindow(SchRaReq *raReq, SlotTimingInfo frameToCheck, uint16_t numSlotsPerSystemFrame);

@@ -263,24 +263,25 @@ uint8_t MacProcRlcDlData(Pst* pstInfo, RlcDlData *dlData)
    uint8_t   lcIdx = 0;
    uint8_t   *txPdu = NULLP;
    uint16_t  cellIdx = 0, txPduLen = 0;
-   MacDlData macDlData;
+   MacDlData *macDlData;
    MacDlSlot *currDlSlot = NULLP;
    DlRlcBoInfo dlBoInfo;
 
-   memset(&macDlData , 0, sizeof(MacDlData));
+   MAC_ALLOC(macDlData, sizeof(MacDlData));
+   memset(macDlData , 0, sizeof(MacDlData));
    DU_LOG("\nDEBUG  -->  MAC: Received DL data for sfn=%d slot=%d numPdu= %d", \
       dlData->slotInfo.sfn, dlData->slotInfo.slot, dlData->numPdu);
 
    GET_UE_ID(dlData->rnti, ueId);   
 
    /* Copy the pdus to be muxed into mac Dl data */
-   macDlData.ueId = ueId;
-   macDlData.numPdu = dlData->numPdu;
+   macDlData->ueId = ueId;
+   macDlData->numPdu = dlData->numPdu;
    for(pduIdx = 0;  pduIdx < dlData->numPdu; pduIdx++)
    {
-      macDlData.pduInfo[pduIdx].lcId = dlData->pduInfo[pduIdx].lcId;
-      macDlData.pduInfo[pduIdx].pduLen = dlData->pduInfo[pduIdx].pduLen;
-      macDlData.pduInfo[pduIdx].dlPdu = dlData->pduInfo[pduIdx].pduBuf;
+      macDlData->pduInfo[pduIdx].lcId = dlData->pduInfo[pduIdx].lcId;
+      macDlData->pduInfo[pduIdx].pduLen = dlData->pduInfo[pduIdx].pduLen;
+      macDlData->pduInfo[pduIdx].dlPdu = dlData->pduInfo[pduIdx].pduBuf;
    }
 
    GET_CELL_IDX(dlData->cellId, cellIdx);
@@ -303,7 +304,9 @@ uint8_t MacProcRlcDlData(Pst* pstInfo, RlcDlData *dlData)
             DU_LOG("\nERROR  -->  MAC : Memory allocation failed in MacProcRlcDlData");
             return RFAILED;
          }
-         macMuxPdu(&macDlData, NULLP, txPdu, txPduLen);
+
+         DU_LOG("\nDennis  -->  MAC: macDlData: %p", macDlData);
+         macMuxPdu(macDlData, NULLP, txPdu, txPduLen);
 
          currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgPduLen = txPduLen;
          currDlSlot->dlInfo.dlMsgAlloc[ueId-1]->dlMsgPdu = txPdu;
@@ -337,6 +340,9 @@ uint8_t MacProcRlcDlData(Pst* pstInfo, RlcDlData *dlData)
    {
       MAC_FREE_SHRABL_BUF(pstInfo->region, pstInfo->pool, dlData, sizeof(RlcDlData));
    }
+
+   MAC_FREE(macDlData, sizeof(MacDlData));
+
    return ROK;
 }
 
@@ -764,7 +770,7 @@ uint8_t macProcLongBsr(uint16_t cellId, uint16_t crnti,uint8_t numLcg,\
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t buildAndSendHarqInd(HarqInfoF0F1 *harqInfo, uint16_t crnti, uint16_t cellIdx, SlotTimingInfo *slotInd)
+uint8_t buildAndSendHarqInd(HarqInfoF0F1 *harqInfo, uint8_t crnti, uint16_t cellIdx, SlotTimingInfo *slotInd)
 {
    uint16_t harqCounter=0;
    Pst pst;
@@ -807,7 +813,7 @@ uint8_t buildAndSendHarqInd(HarqInfoF0F1 *harqInfo, uint16_t crnti, uint16_t cel
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t buildAndSendSrInd(UciInd *macUciInd, uint16_t crnti)
+uint8_t buildAndSendSrInd(UciInd *macUciInd, uint8_t crnti)
 {
    uint16_t cellIdx;
    Pst pst;

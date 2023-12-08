@@ -19,7 +19,6 @@
 /* This file contains message handling functionality for DU APP */
 #include "common_def.h"
 #include "lrg.h"
-#include "du_tmr.h"
 #include "legtp.h"
 #include "lkw.h"
 #include "kwu.h"
@@ -28,7 +27,6 @@
 #include "kwu.x"
 #include "du_app_mac_inf.h"
 #include "du_app_rlc_inf.h"
-#include "du_e2ap_mgr.h"
 #include "du_cfg.h"
 #include "du_app_rlc_inf.h"
 #include "du_mgr.h"
@@ -2019,17 +2017,57 @@ uint8_t DuProcMacSliceRecfgRsp(Pst *pst,  MacSliceRecfgRsp *recfgRsp)
    }
    return ROK;
 }
+/*******************************************************************
+ *
+ * @brief process the PRB measurement received from MAC
+ *
+ * @details
+ *
+ *    Function : DuProcMacPrbPm
+ *
+ *    Functionality: process the mac PRB measurement received from MAC
+ *
+ * @params[in] Post structure, MacPrbPm  *macPrbPm
+ *             
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ **********************************************************************/
+uint8_t DuProcMacPrbPm(Pst *pst,  MacPrbPm *macPrbPm)
+{
+   if(macPrbPm != NULLP)
+   {
+      // DU_LOG("\nINFO  -->  DU_APP : MAC PRB Measurement received successfully ");
+      // DU_LOG("\nINFO  -->  DU_APP : total PRB = %d, Used PRB = %d ", macPrbPm->totalPrb, macPrbPm->usedPrb);
+
+      kpmStoreMacMetric(macPrbPm);
+      if(macPrbPm->listOfSlicePm){
+         // DU_LOG("\nINFO  -->  DU_APP : macPrbPm->sliceNum = %d ", macPrbPm->sliceNum);
+         DU_FREE_SHRABL_BUF(pst->region, pst->pool, macPrbPm->listOfSlicePm, (macPrbPm->sliceNum) * sizeof(MacSlicePrbPmList));
+      }
+      
+      // if(macPrbPm->sliceNum>0){
+      //    
+      //       
+      // }
+      DU_FREE_SHRABL_BUF(pst->region, pst->pool, macPrbPm, sizeof(MacPrbPm));
+   }
+   else{
+      DU_LOG("\nERROR  -->  DU APP : DuProcMacPrbPm, Empty Metrics");
+   }
+   return ROK;
+}
 
 /*******************************************************************
 *
-* @brief Handles received Slice Metrics from RLC and forward it to O1 
+* @brief Handles received Slice Metrics from RLC and forward it to E2 Handler
 *
 * @details
 *
 *    Function : DuProcRlcSliceMetrics
 *
 *    Functionality:
-*      Handles received Slice Metrics from RLC and forward it to O1
+*      Handles received Slice Metrics from RLC and forward it to E2 Handler
 *
 * @params[in] Post structure pointer
 *              SlicePmList *sliceStats
@@ -2054,19 +2092,73 @@ uint8_t DuProcRlcSliceMetrics(Pst *pst, SlicePmList *sliceStats)
        DU_LOG("\nINFO   -->  DU_APP: SliceId[SST-SD]:%d-%d, DlTput %.5lf, UlTput:%.5lf", sliceStats->sliceRecord[sliceRecord].networkSliceIdentifier.sst,\
                         sliceStats->sliceRecord[sliceRecord].networkSliceIdentifier.sd,sliceStats->sliceRecord[sliceRecord].ThpDl,\
                         sliceStats->sliceRecord[sliceRecord].ThpUl);
+
     }
 #ifdef O1_ENABLE
-    if(sliceStats)
-    {
-       sendSliceMetric((SliceMetricList*) sliceStats);
-    }
+   // SliceMetricList *sliceStatsList = (SliceMetricList*)calloc(1, sizeof(SliceMetricList));
+   // sliceStatsList->nRecords = sliceStats->numSlice;
+   // sliceStatsList->sliceRecord = (SliceMetricRecord*)calloc(sliceStatsList->nRecords, sizeof(SliceMetricRecord));
+   //  if(sliceStats)
+   //  {
+   //    for(sliceRecord = 0; sliceRecord < sliceStats->numSlice; sliceRecord++)
+   //    {
+   //       sliceStatsList->sliceRecord[sliceRecord].networkSliceIdentifier.sd = sliceStats->sliceRecord[sliceRecord].networkSliceIdentifier.sd;
+   //       sliceStatsList->sliceRecord[sliceRecord].networkSliceIdentifier.sst = sliceStats->sliceRecord[sliceRecord].networkSliceIdentifier.sst;
+   //       sliceStatsList->sliceRecord[sliceRecord].DRB_UEThpDl_SNSSAI = sliceStats->sliceRecord[sliceRecord].ThpDl;
+   //       sliceStatsList->sliceRecord[sliceRecord].DRB_UEThpDl_SNSSAI = 30;
+   //    }
+   //     sendSliceMetric(sliceStatsList);
+   //  }
 #endif
+
+   kpmStoreSliceRlcMetric(sliceStats);
+   kpmSendMetrics();
 
    DU_FREE_SHRABL_BUF(pst->region, pst->pool,sliceStats->sliceRecord, (sliceStats->numSlice) * (sizeof(SlicePm)));
    DU_FREE_SHRABL_BUF(pst->region, pst->pool,sliceStats, sizeof(SlicePmList));
 
    return ROK;
 }
+
+/*******************************************************************
+*
+* @brief Handles received Cell Metrics from RLC and forward it to E2 
+*
+* @details
+*
+*    Function : DuProcRlcCellMetrics
+*
+*    Functionality:
+*      Handles received Cell Metrics from RLC and forward it to E2
+*
+* @params[in] Post structure pointer
+*              CellPmList *celleStats
+*
+* @return ROK     - success
+*         RFAILED - failure
+*
+* ****************************************************************/
+uint8_t DuProcRlcCellMetrics(Pst *pst, CellPmList *cellStats)
+{
+    uint8_t cellRecord = 0;
+
+    DU_LOG("\nDEBUG  -->  DU APP : Received Cell Metrics");
+    if(cellStats == NULLP)
+    {
+       DU_LOG("\nERROR  -->  DU APP : Empty Metrics");
+       return RFAILED;
+    }
+   else{
+      kpmStoreCellRlcMetric(cellStats);
+   }
+
+   
+   DU_FREE_SHRABL_BUF(pst->region, pst->pool, cellStats->ueRecord, (cellStats->numUe) * (sizeof(UePm)));
+   DU_FREE_SHRABL_BUF(pst->region, pst->pool, cellStats, sizeof(CellPmList));
+
+   return ROK;
+}
+
 
 /**********************************************************************
   End of file

@@ -212,6 +212,7 @@ void schDlReleaseHqProcess(SchDlHqProcCb *hqP)
    SchCellCb  *cellCb = NULLP;
    if(hqP)
    {
+      DU_LOG("\nDennis --> Release hqP: %p", &hqP->dlHqEntLnk);
       cellCb = hqP->hqEnt->cell;
       cellCb->api->SchFreeDlHqProcCb(hqP);
       schDlHqDeleteFromInUseList(hqP);

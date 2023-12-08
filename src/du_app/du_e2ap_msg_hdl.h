@@ -18,13 +18,40 @@
 
 /* This file contains all E2AP message handler related functionality */
 
+#ifndef _AP_H_
+#define _AP_H_
+
 #define ENCODE_FAIL -1
 
-uint8_t  BuildAndSendE2SetupReq();
-uint8_t  BuildAndSendE2NodeConfigUpdate();
-uint8_t BuildAndSendE2ResetRequest(E2CauseType failureType, E2Cause failureCause);
-void     E2APMsgHdlr(Buffer *mBuf);
-uint8_t BuildAndSendRicIndication(RicSubscription *ricSubscriptionInfo);
+uint8_t sctpSend(Buffer *mBuf, uint8_t itfType);
+uint8_t setRrmPolicy(RrmPolicyList rrmPolicy[], uint8_t policyNum);
+
+typedef struct e2apDb
+{
+   uint16_t     ricId;                    
+   uint8_t      *plmn;
+   uint32_t     ricReqId;
+   uint32_t     ricInstanceId;
+   uint32_t     ranFuncId;
+   uint8_t     *ricEventTrigger;
+   uint32_t     ricActionId;
+   uint32_t     ricActionType;
+
+   // For E2SM-RC
+   uint32_t     ricCtrlReqId;
+   uint32_t     ricCtrlInstanceId;
+   uint32_t     ranCtrlFuncId;
+
+}E2apMsgDb;
+
+E2apMsgDb e2apMsgDb;
+
+uint8_t BuildAndSendE2SetupReq();
+uint8_t SendE2APMsg(Region , Pool );
+void E2APMsgHdlr(Buffer *mBuf);
+uint8_t BuildAndSendE2NodeConfigUpdate();
+
+#endif
 /**********************************************************************
   End of file
  **********************************************************************/

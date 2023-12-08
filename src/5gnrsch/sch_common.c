@@ -445,17 +445,30 @@ uint16_t fillPucchResourceInfo(uint8_t ueId, SchPucchInfo *schPucchInfo, Inst in
       pucchCfg = &cell->cellCfg.ulCfgCommon.schInitialUlBwp.pucchCommon;
       pucchIdx = pucchCfg->pucchResourceCommon;
       ulBwp = &cell->cellCfg.ulCfgCommon.schInitialUlBwp.bwp;
-      startPrb = ulBwp->freqAlloc.startPrb + pucchResourceSet[pucchIdx][3];
-      ret = allocatePrbUl(cell, slotInfo, pucchResourceSet[pucchIdx][1], pucchResourceSet[pucchIdx][2],\
-            &startPrb, PUCCH_NUM_PRB_FORMAT_0_1_4);
+
+      /*JOJO: Dynamically allocate resource to PUCCH based on PDCCH and PUCCH table.*/
+      if(schPucchInfo->fdAlloc.startPrb == 0)
+         schPucchInfo->fdAlloc.startPrb = ulBwp->freqAlloc.startPrb + pucchResourceSet[pucchIdx][3];
+      if(schPucchInfo->fdAlloc.numPrb == 0)
+         schPucchInfo->fdAlloc.numPrb = PUCCH_NUM_PRB_FORMAT_0_1_4;
+      if(schPucchInfo->tdAlloc.startSymb == 0)
+         schPucchInfo->tdAlloc.startSymb = pucchResourceSet[pucchIdx][1];
+      if(schPucchInfo->tdAlloc.numSymb == 0)
+         schPucchInfo->tdAlloc.numSymb = pucchResourceSet[pucchIdx][2];
+
+      schPucchInfo->pucchFormat = pucchResourceSet[pucchIdx][0];
+
+      /*JOJO: Disable the checking, since PUCCH will involve UE multiplexing in the same PRB. */
+      // startPrb = ulBwp->freqAlloc.startPrb + pucchResourceSet[pucchIdx][3];
+      // ret = allocatePrbUl(cell, slotInfo, schPucchInfo->tdAlloc.startSymb, schPucchInfo->tdAlloc.numSymb,\
+      //       &(schPucchInfo->fdAlloc.startPrb), schPucchInfo->fdAlloc.numPrb);
       if (ret == ROK)
       {
-         schPucchInfo->fdAlloc.startPrb = ulBwp->freqAlloc.startPrb + pucchResourceSet[pucchIdx][3];
-         schPucchInfo->fdAlloc.numPrb = PUCCH_NUM_PRB_FORMAT_0_1_4;
-         schPucchInfo->tdAlloc.startSymb = pucchResourceSet[pucchIdx][1];
-         schPucchInfo->tdAlloc.numSymb = pucchResourceSet[pucchIdx][2];
-         schPucchInfo->pucchFormat = pucchResourceSet[pucchIdx][0];
-
+         // schPucchInfo->fdAlloc.startPrb = ulBwp->freqAlloc.startPrb + pucchResourceSet[pucchIdx][3];
+         // schPucchInfo->fdAlloc.numPrb = PUCCH_NUM_PRB_FORMAT_0_1_4;
+         // schPucchInfo->tdAlloc.startSymb = pucchResourceSet[pucchIdx][1];
+         // schPucchInfo->tdAlloc.numSymb = pucchResourceSet[pucchIdx][2];
+         // schPucchInfo->pucchFormat = pucchResourceSet[pucchIdx][0];
          /* set SR and UCI flag to false */
          schPucchInfo->srFlag  = true;
       }
@@ -481,27 +494,32 @@ uint8_t schUlResAlloc(SchCellCb *cell, Inst schInst)
 #ifdef NR_DRX 
    SchUeCb   *ueCb;
 #endif
-   UlSchedInfo ulSchedInfo;
+   UlSchedInfo ulSchedInfo[MAX_NUM_UE]; /* JOJO: Create the UL scheduling info. for multiple UEs.*/
    SchUlSlotInfo  *schUlSlotInfo = NULLP;
    SlotTimingInfo ulTimingInfo;
-   memset(&ulSchedInfo, 0, sizeof(UlSchedInfo));
+   memset(&ulSchedInfo, 0, MAX_NUM_UE * sizeof(UlSchedInfo)); /* JOJO: Allocate memory for UL scheduling info. for multiple UEs.*/
 
    /* add PHY delta */
    ADD_DELTA_TO_TIME(cell->slotInfo,ulTimingInfo,PHY_DELTA_UL+SCHED_DELTA, cell->numSlots);
 
-   ulSchedInfo.cellId = cell->cellId;
-   ulSchedInfo.slotIndInfo.cellId = ulSchedInfo.cellId;
-   ulSchedInfo.slotIndInfo.sfn = ulTimingInfo.sfn;
-   ulSchedInfo.slotIndInfo.slot = ulTimingInfo.slot;
+   /* JOJO: Assign cell id and slot info. to each UE.*/
+   for(int ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+   {
+      ulSchedInfo[ueIdx].cellId = cell->cellId;
+      ulSchedInfo[ueIdx].slotIndInfo.cellId = ulSchedInfo[ueIdx].cellId;
+      ulSchedInfo[ueIdx].slotIndInfo.sfn = ulTimingInfo.sfn;
+      ulSchedInfo[ueIdx].slotIndInfo.slot = ulTimingInfo.slot;
+   }
 
    /* Schedule resources for PRACH */
    if(cell->firstSib1Transmitted)
-    schPrachResAlloc(cell, &ulSchedInfo, ulTimingInfo);
+    schPrachResAlloc(cell, &ulSchedInfo, ulTimingInfo); /* JOJO: Select first element of UL scheduling info. for PRACH.*/
 
    schUlSlotInfo = cell->schUlSlotInfo[ulTimingInfo.slot]; 
    if(schUlSlotInfo->schPuschInfo)
    {
-      GET_CRNTI(ulSchedInfo.crnti, schUlSlotInfo->puschUe);
+      uint8_t ueId = schUlSlotInfo->puschUe; /* JOJO: Get UE id.*/
+      GET_CRNTI(ulSchedInfo[ueId-1].crnti, ueId); /* JOJO: Get CRNTI.*/
       /* Check the ue drx status if the UE is active for uplink scheduling or not  */
 #ifdef NR_DRX 
       ueCb = schGetUeCb(cell, ulSchedInfo.crnti);
@@ -511,28 +529,36 @@ uint8_t schUlResAlloc(SchCellCb *cell, Inst schInst)
             return RFAILED;
       }
 #endif
-      ulSchedInfo.dataType |= SCH_DATATYPE_PUSCH;
-      memcpy(&ulSchedInfo.schPuschInfo, schUlSlotInfo->schPuschInfo,
+      /* JOJO: Copy PUSCH info. to specific UL scheduling info.*/
+      ulSchedInfo[ueId-1].dataType |= SCH_DATATYPE_PUSCH; 
+      memcpy(&ulSchedInfo[ueId-1].schPuschInfo, schUlSlotInfo->schPuschInfo,
 	    sizeof(SchPuschInfo));
       SCH_FREE(schUlSlotInfo->schPuschInfo, sizeof(SchPuschInfo));
       schUlSlotInfo->schPuschInfo = NULL;
    }
 
-   if(schUlSlotInfo->pucchPres)
+   /* JOJO: Loop over DL HARQ of each UE for multiple UE scheduling per TTI.*/
+    if(schUlSlotInfo->pucchPres)
    {
-      GET_CRNTI(ulSchedInfo.crnti, schUlSlotInfo->pucchUe);
-      ret = fillPucchResourceInfo(schUlSlotInfo->pucchUe, &schUlSlotInfo->schPucchInfo, schInst, ulTimingInfo);
-      if (ret == ROK)
+      for(int ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
       {
-         ulSchedInfo.dataType |= SCH_DATATYPE_UCI;
-         memcpy(&ulSchedInfo.schPucchInfo, &schUlSlotInfo->schPucchInfo,
-               sizeof(SchPucchInfo));
+         if(schUlSlotInfo->pucchUe[ueIdx] != 0)
+         {
+            GET_CRNTI(ulSchedInfo[ueIdx].crnti, schUlSlotInfo->pucchUe[ueIdx]);
+            ret = fillPucchResourceInfo(schUlSlotInfo->pucchUe[ueIdx], &schUlSlotInfo->schPucchInfo[ueIdx], schInst, ulTimingInfo);
+            if (ret == ROK)
+            {
+               ulSchedInfo[ueIdx].dataType |= SCH_DATATYPE_UCI;
+               memcpy(&ulSchedInfo[ueIdx].schPucchInfo, &schUlSlotInfo->schPucchInfo[ueIdx],
+                     sizeof(SchPucchInfo));
+            }
+            else
+            {
+               return RFAILED;
+            }
+            memset(&schUlSlotInfo->schPucchInfo[ueIdx], 0, sizeof(SchPucchInfo));
+         }
       }
-      else
-      {
-         return RFAILED;
-      }
-      memset(&schUlSlotInfo->schPucchInfo, 0, sizeof(SchPucchInfo));
    }
 
    //send msg to MAC
@@ -739,7 +765,113 @@ uint8_t schDlRsrcAllocMsg4(SchCellCb *cell, SlotTimingInfo msg4Time, uint8_t ueI
 
    return ROK;
 }
- 
+
+/*******************************************************************
+ *
+ * @brief Scheduling for Pucch Resource for multiple UEs per TTI
+ *
+ * @details
+ *
+ *    Function : schAllocPucchResourceMu
+ *
+ *    Functionality:
+ *       Scheduling for Pucch Resource for multiple UEs per TTI
+ *
+ * @params[in] SchCellCb *cell, SlotTimingInfo pdcchTime, 
+ * @params[in] SlotTimingInfo pucchTime, uint16_t crnti
+ * @params[in] SchUeCb *ueCb, bool isRetx, SchDlHqProcCb *hqP
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ *******************************************************************/
+
+uint16_t schAllocPucchResourceMu(SchCellCb *cell, SlotTimingInfo pdcchTime, SlotTimingInfo pucchTime, uint16_t crnti,
+                               SchUeCb *ueCb, bool isRetx, SchDlHqProcCb *hqP)
+{
+   uint16_t pucchSlot = 0, pdcchSlot = 0;
+   uint8_t ueId = 0;
+   SchUlSlotInfo  *schUlSlotInfo = NULLP;
+   PdcchCfg  *pdcchCfg = NULLP;
+
+   pucchSlot = pucchTime.slot;
+   pdcchSlot = pdcchTime.slot;
+   
+   schUlSlotInfo = cell->schUlSlotInfo[pucchSlot];
+   GET_UE_ID(crnti, ueId);
+   memset(&schUlSlotInfo->schPucchInfo[ueId-1], 0, sizeof(SchPucchInfo));
+
+   pdcchCfg = cell->schDlSlotInfo[pdcchSlot]->dlMsgAlloc[ueId-1]->dlMsgPdcchCfg;
+   schUlSlotInfo->pucchPres = true;
+   if(ueCb != NULLP)
+   {
+      /* set HARQ flag to true */
+      schUlSlotInfo->schPucchInfo[ueId-1].harqInfo.harqBitLength = 1; /* 1 bit for HARQ */
+      /*JOJO: PUCCH allocation should be based on PDCCH allocation.*/
+      getPucchResource(cell, &schUlSlotInfo->schPucchInfo[ueId-1], pdcchCfg);
+      
+      ADD_DELTA_TO_TIME(pucchTime, pucchTime, 3, cell->numSlots); /* SLOT_DELAY=3 */
+      cmLListAdd2Tail(&(ueCb->hqDlmap[pucchTime.slot]->hqList), &hqP->ulSlotLnk);
+   }
+   return ROK;
+}
+
+/*******************************************************************
+ *
+ * @brief Get resource for PUCCH
+ *
+ * @details
+ *
+ *    Function : getPucchResource
+ *
+ *    Functionality:
+ *       Get resource for PUCCH
+ *
+ * @params[in] SchCellCb *cell, SchPucchInfo *schPucchInfo, PdcchCfg *pdcchCfg
+ * @return ROK     - success
+ *
+ * ****************************************************************/
+
+void getPucchResource(SchCellCb *cell, SchPucchInfo *schPucchInfo, PdcchCfg *pdcchCfg)
+{
+   SchPucchCfgCmn *pucchCfg = NULLP;
+   SchBwpParams *ulBwp = NULLP;
+   uint8_t pucchIdx = 0, rPucch = -1, deltaPRI = 0;
+   uint16_t numCCE = 0;
+   int prbOffset = 0, prbOffsetM8 = 0;
+
+   /*JOJO: Get the UL BWP config.*/
+   pucchCfg = &cell->cellCfg.ulCfgCommon.schInitialUlBwp.pucchCommon;
+   pucchIdx = pucchCfg->pucchResourceCommon;
+   ulBwp = &cell->cellCfg.ulCfgCommon.schInitialUlBwp.bwp;
+
+   /*JOJO: Calculate r_pucch.*/ 
+   numCCE = pdcchCfg->coresetCfg.coreSetSize * pdcchCfg->coresetCfg.durationSymbols / pdcchCfg->coresetCfg.regBundleSize;
+   rPucch = ((pdcchCfg->dci.cceIndex << 1) / numCCE) + (deltaPRI << 1);
+
+   /*JOJO: Calculate the resource allocation of PUCCH.*/
+   prbOffset = rPucch / defaultPucchCsset[pucchIdx];
+   prbOffsetM8 = (rPucch - 8) / defaultPucchCsset[pucchIdx];
+
+   schPucchInfo->fdAlloc.startPrb = (rPucch >> 3) == 0 ? \
+              pucchResourceSet[pucchIdx][3] + prbOffset: \
+              ulBwp->freqAlloc.numPrb - 1 - pucchResourceSet[pucchIdx][3] - prbOffsetM8;
+   schPucchInfo->fdAlloc.numPrb = PUCCH_NUM_PRB_FORMAT_0_1_4;
+   schPucchInfo->tdAlloc.startSymb = pucchResourceSet[pucchIdx][1];
+   schPucchInfo->tdAlloc.numSymb = pucchResourceSet[pucchIdx][2];
+   schPucchInfo->secondPrbHop = 0;
+
+   /*JOJO: Handle cyclic shift.*/
+   schPucchInfo->initialCyclicShift = rPucch % defaultPucchCsset[pucchIdx];
+   if(pucchIdx == 3 || pucchIdx == 7 || pucchIdx == 11)
+      schPucchInfo->initialCyclicShift *= 6;
+   else if(pucchIdx == 1 || pucchIdx == 2) 
+      schPucchInfo->initialCyclicShift *= 4;
+   else 
+      schPucchInfo->initialCyclicShift *= 3;
+
+   return ROK;
+}
+
 /*******************************************************************
  *
  * @brief Scheduling for Pucch Resource
@@ -763,16 +895,20 @@ uint16_t schAllocPucchResource(SchCellCb *cell, SlotTimingInfo pucchTime, uint16
 {
    uint16_t pucchSlot = 0;
    SchUlSlotInfo  *schUlSlotInfo = NULLP;
+   uint8_t ueId = 0;
 
    pucchSlot = pucchTime.slot;
    schUlSlotInfo = cell->schUlSlotInfo[pucchSlot];
-   memset(&schUlSlotInfo->schPucchInfo, 0, sizeof(SchPucchInfo));
+   /* JOJO: Allocate memory to PUCCH info. for specific UE.*/
+   GET_UE_ID(crnti, ueId);
+   memset(&schUlSlotInfo->schPucchInfo[ueId-1], 0, sizeof(SchPucchInfo));
+   // memset(&schUlSlotInfo->schPucchInfo, 0, sizeof(SchPucchInfo));
 
    schUlSlotInfo->pucchPres = true;
    if(ueCb != NULLP)
    {
       /* set HARQ flag to true */
-      schUlSlotInfo->schPucchInfo.harqInfo.harqBitLength = 1; /* 1 bit for HARQ */
+      schUlSlotInfo->schPucchInfo[ueId-1].harqInfo.harqBitLength = 1; /* JOJO: Set HARQ bit for specific UE.*/
       ADD_DELTA_TO_TIME(pucchTime, pucchTime, 3, cell->numSlots); /* SLOT_DELAY=3 */
       cmLListAdd2Tail(&(ueCb->hqDlmap[pucchTime.slot]->hqList), &hqP->ulSlotLnk);
    }
@@ -850,8 +986,11 @@ uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t c
    pdcch->dci.rnti = ueCb.crnti;
    pdcch->dci.scramblingId = cell->cellCfg.phyCellId;
    pdcch->dci.scramblingRnti = 0;
-   pdcch->dci.cceIndex = 0; /* 0-3 for UL and 4-7 for DL */
-   pdcch->dci.aggregLevel = 4;
+   // pdcch->dci.cceIndex = 0; /* 0-3 for UL and 4-7 for DL */
+   // pdcch->dci.aggregLevel = 4;
+   /*JOJO: Allocate CCE index to each UE based on TS 38.211 section 7.3.2.*/
+   pdcch->dci.cceIndex = pdcch->dci.aggregLevel * (ueId - 1);
+   pdcch->dci.aggregLevel = 2;
    pdcch->dci.beamPdcchInfo.numPrgs = 1;
    pdcch->dci.beamPdcchInfo.prgSize = 1;
    pdcch->dci.beamPdcchInfo.digBfInterfaces = 0;
@@ -1092,7 +1231,7 @@ SchPdschConfig pdschDedCfg, uint8_t ulAckListCount, uint8_t *UlAckTbl)
       /* Initialization the K0K1 structure, total num of slot and calculating the slot pattern length. */
       memset(k0K1InfoTbl, 0, sizeof(SchK0K1TimingInfoTbl));
       k0K1InfoTbl->tblSize = cell->numSlots;
-      totalCfgSlot = calculateSlotPatternLength(cell->cellCfg.ssbScs, cell->cellCfg.tddCfg.tddPeriod);
+      totalCfgSlot = calculateSlotPatternLength(cell->cellCfg.scsCommon, cell->cellCfg.tddCfg.tddPeriod);
       
       /* Storing time domain resource allocation list based on common or 
        * dedicated configuration availability. */
@@ -1322,7 +1461,7 @@ SchK2TimingInfoTbl *msg3K2InfoTbl, SchK2TimingInfoTbl *k2InfoTbl)
       k2InfoTbl->tblSize = cell->numSlots;
       if(msg3K2InfoTbl)
          msg3K2InfoTbl->tblSize = cell->numSlots;
-      totalCfgSlot = calculateSlotPatternLength(cell->cellCfg.ssbScs, cell->cellCfg.tddCfg.tddPeriod);
+      totalCfgSlot = calculateSlotPatternLength(cell->cellCfg.scsCommon, cell->cellCfg.tddCfg.tddPeriod);
 
       /* Checking all possible indexes for K2. */
       for(slotIdx = 0; slotIdx < cell->numSlots; slotIdx++)
@@ -1340,7 +1479,7 @@ SchK2TimingInfoTbl *msg3K2InfoTbl, SchK2TimingInfoTbl *k2InfoTbl)
                k2Val = timeDomRsrcAllocList[k2Index].k2;
                if(!k2Val)
                {
-                  switch(cell->cellCfg.ssbScs)
+                  switch(cell->cellCfg.scsCommon)
                   {
                      case SCS_15KHZ:
                         k2Val = DEFAULT_K2_VALUE_FOR_SCS15;
@@ -1390,7 +1529,7 @@ SchK2TimingInfoTbl *msg3K2InfoTbl, SchK2TimingInfoTbl *k2InfoTbl)
 
                if(msg3K2InfoTbl)
                {
-                   msg3Delta = puschDeltaTable[cell->numerology];
+                   msg3Delta = puschDeltaTable[cell->cellCfg.numerology];
 
                   /* Check for K2 for MSG3 */
                   /* Current slot + k2 should be either UL or FLEXI slot.
@@ -1691,12 +1830,12 @@ void updateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAlloc,\
 *    Functionality:
 *       fill DL message information for MSG4 and Dedicated DL Msg
 *
-* @params[in] DlMsgInfo *dlMsgInfo,  uint16_t crnti
+* @params[in] DlMsgInfo *dlMsgInfo,  uint8_t crnti
 * @params[in] bool isRetx, SchDlHqProcCb *hqP
 * @return void
 *
 *******************************************************************/
-void fillDlMsgInfo(DlMsgSchInfo *dlMsgSchInfo, uint16_t crnti, bool isRetx, SchDlHqProcCb *hqP)
+void fillDlMsgInfo(DlMsgSchInfo *dlMsgSchInfo, uint8_t crnti, bool isRetx, SchDlHqProcCb *hqP)
 {
    hqP->tbInfo[0].isEnabled = TRUE;
    hqP->tbInfo[0].state = HQ_TB_WAITING;
@@ -1854,11 +1993,14 @@ uint8_t schProcessMsg4Req(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId
    }
 
    /* PUCCH resource */
+   DU_LOG("\nDennis  -->  UE:%d is added to PUCCH for HARQ in schProcessMsg4Req()", ueId);
    schAllocPucchResource(cell, pucchTime, cell->raCb[ueId-1].tcrnti, &cell->ueCb[ueId-1], isRetxMsg4, *msg4HqProc);
 
-   cell->schDlSlotInfo[pdcchTime.slot]->pdcchUe = ueId;
-   cell->schDlSlotInfo[pdschTime.slot]->pdschUe = ueId;
-   cell->schUlSlotInfo[pucchTime.slot]->pucchUe = ueId;
+   /* JOJO: Store UE id into specific element in UE list.*/
+   cell->schDlSlotInfo[pdcchTime.slot]->pdcchUe[ueId-1] = ueId;
+   cell->schDlSlotInfo[pdschTime.slot]->pdschUe[ueId-1] = ueId;
+   cell->schUlSlotInfo[pucchTime.slot]->pucchUe[ueId-1] = ueId;
+
    cell->raCb[ueId-1].msg4recvd = FALSE;
    if(isRetxMsg4)
    {
@@ -2167,9 +2309,9 @@ uint8_t schMsg3RetxSchedulingForUe(SchRaCb *raCb)
    if(schGetSlotSymbFrmt(dciSlot, raCb->cell->slotFrmtBitMap) == DL_SLOT)
 #endif
    {
-      /* If PDCCH is already scheduled on this slot, cannot schedule PDSCH for another UE here. */
-      if(cell->schDlSlotInfo[dciSlot]->pdcchUe != 0)
-         return false;
+      /* JOJO: Scheduler should be able to schedule PDSCH for multiple UEs here. */
+      // if(cell->schDlSlotInfo[dciSlot]->pdcchUe != 0)
+      //    return false;
 
       k2Found = schGetMsg3K2(cell, &raCb->msg3HqProc, dciTime.slot, &msg3Time, TRUE);
 
@@ -2225,7 +2367,7 @@ bool schGetMsg3K2(SchCellCb *cell, SchUlHqProcCb* msg3HqProc, uint16_t dlTime, S
    SchK2TimingInfoTbl   *msg3K2InfoTbl=NULLP;
    SlotTimingInfo       currTime, msg3TempTime;
    currTime = cell->slotInfo;
-   puschMu = cell->numerology;
+   puschMu = cell->cellCfg.numerology;
 
    if (isRetx)
    {
@@ -2241,7 +2383,7 @@ bool schGetMsg3K2(SchCellCb *cell, SchUlHqProcCb* msg3HqProc, uint16_t dlTime, S
    {
       numK2 = cell->msg3K2InfoTbl.k2TimingInfo[dlTime].numK2;
       msg3K2InfoTbl = &cell->k2InfoTbl;
-      msg3MinSchTime = minMsg3SchTime[cell->numerology];
+      msg3MinSchTime = minMsg3SchTime[cell->cellCfg.numerology];
       msg3Delta = puschDeltaTable[puschMu];
    }
 
