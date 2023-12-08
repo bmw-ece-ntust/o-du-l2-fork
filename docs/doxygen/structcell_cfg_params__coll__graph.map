@@ -1,0 +1,5 @@
+<map id="cellCfgParams" name="cellCfgParams">
+<area shape="rect" id="node1" title=" " alt="" coords="5,184,112,211"/>
+<area shape="rect" id="node2" href="$struct_plmn_identity.html" title=" " alt="" coords="11,5,106,32"/>
+<area shape="rect" id="node3" href="$structnr_ecgi.html" title=" " alt="" coords="95,95,153,121"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="schSliceBasedScheduleSlot" name="schSliceBasedScheduleSlot">
+<area shape="rect" id="node1" title="Scheduling of Slots in UL And DL." alt="" coords="5,56,192,83"/>
+<area shape="rect" id="node2" href="$sch__common_8c.html#a445d9b835c761ab604f4090c11ee6d02" title="Handles retransmission for MSG3." alt="" coords="240,5,441,32"/>
+<area shape="rect" id="node4" href="$sch__rach_8c.html#a98f22c4ab396e491ca777cc69d8d37eb" title="Processes any pending RA request." alt="" coords="275,56,406,83"/>
+<area shape="rect" id="node5" href="$sch__slice__based_8c.html#adf2a99bd683babf0a208f250a3b0c22f" title="Timer for experiment." alt="" coords="261,107,420,133"/>
+<area shape="rect" id="node3" href="$sch__common_8c.html#a4a9d21018009181a7fcd1eea063c82f7" title="Get K2 value for MSG3." alt="" coords="489,5,601,32"/>
+</map>

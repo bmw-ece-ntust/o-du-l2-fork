@@ -1,0 +1,4 @@
+<map id="schMsg3RetxSchedulingForUe" name="schMsg3RetxSchedulingForUe">
+<area shape="rect" id="node1" title="Handles retransmission for MSG3." alt="" coords="5,5,207,32"/>
+<area shape="rect" id="node2" href="$sch__common_8c.html#a4a9d21018009181a7fcd1eea063c82f7" title="Get K2 value for MSG3." alt="" coords="255,5,367,32"/>
+</map>

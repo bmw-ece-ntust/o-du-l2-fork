@@ -1,0 +1,15 @@
+<map id="rlcDlLch" name="rlcDlLch">
+<area shape="rect" id="node1" title="Structure to hold mapping between logical channel and Radio Bearer." alt="" coords="181,452,250,479"/>
+<area shape="rect" id="node2" href="$struct__rlc_dl_rb_cb.html" title="Structure to hold information about a Radio Bearer as required by RLC." alt="" coords="172,363,259,389"/>
+<area shape="rect" id="node3" href="$structrlc_um_dl.html" title="Structure to hold Unacknowledged mode downlink information for a RB." alt="" coords="5,273,73,300"/>
+<area shape="rect" id="node4" href="$structsnssai.html" title=" " alt="" coords="97,273,157,300"/>
+<area shape="rect" id="node5" href="$structrlc_am_dl.html" title="Structure to hold Acknowledged Mode Downlink information for a RB." alt="" coords="181,273,249,300"/>
+<area shape="rect" id="node6" href="$structrlc_status_pdu.html" title=" " alt="" coords="80,184,177,211"/>
+<area shape="rect" id="node7" href="$structrlc_nack_info.html" title=" " alt="" coords="85,95,172,121"/>
+<area shape="rect" id="node8" href="$structrlc_sdu.html" title="Structure to hold information regarding a SDU received from PDCP." alt="" coords="207,5,266,32"/>
+<area shape="rect" id="node11" href="$structrlc_sdu_map.html" title="Structure to hold information about which SDUs a PDU/segment carries." alt="" coords="253,95,337,121"/>
+<area shape="rect" id="node9" href="$structrlc_retx.html" title="Structure to hold info about a PDU/segment to be re&#45;transmitted." alt="" coords="264,184,327,211"/>
+<area shape="rect" id="node10" href="$structrlc_am_hdr.html" title="Structure to hold an Acknowledged Mode header." alt="" coords="361,95,437,121"/>
+<area shape="rect" id="node12" href="$structrlc_tm.html" title="Structure to hold Transparent Mode information for a RB." alt="" coords="273,273,328,300"/>
+<area shape="rect" id="node13" href="$structrlc_lch_info.html" title="Structure to hold information about a Logical channel." alt="" coords="353,273,430,300"/>
+</map>

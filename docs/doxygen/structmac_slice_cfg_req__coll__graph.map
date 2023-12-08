@@ -1,0 +1,8 @@
+<map id="macSliceCfgReq" name="macSliceCfgReq">
+<area shape="rect" id="node1" title=" " alt="" coords="125,273,244,300"/>
+<area shape="rect" id="node2" href="$structmac_slice_rrm_policy.html" title=" " alt="" coords="117,184,253,211"/>
+<area shape="rect" id="node3" href="$structrrm_policy_member_list.html" title=" " alt="" coords="31,95,176,121"/>
+<area shape="rect" id="node4" href="$struct_plmn_identity.html" title=" " alt="" coords="5,5,100,32"/>
+<area shape="rect" id="node5" href="$structsnssai.html" title=" " alt="" coords="124,5,184,32"/>
+<area shape="rect" id="node6" href="$structrrm_policy_ratio.html" title=" " alt="" coords="214,95,321,121"/>
+</map>

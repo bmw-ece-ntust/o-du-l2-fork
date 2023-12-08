@@ -1,0 +1,7 @@
+<map id="schSliceBasedUlIntraSliceScheduling" name="schSliceBasedUlIntraSliceScheduling">
+<area shape="rect" id="node1" title="UL Intra&#45;slice scheduling." alt="" coords="5,39,180,80"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#a543da9f02ebbc22aec244d7471317deb" title="Allocate PRB for each LC with FCFS algorithm (allocate the PRB by demand)" alt="" coords="228,5,419,47"/>
+<area shape="rect" id="node5" href="$sch__slice__based_8c.html#a0ee86522626c7b5a020bf334cef2e3dd" title="Update the req BO for Lcinfo list for each slice." alt="" coords="231,71,416,112"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#ad101a490cff306f768340d6a61441e64" title="Calculate the Estimated TBS Size based on Spec 38.421 , Sec 5.3.1.2." alt="" coords="467,5,680,47"/>
+<area shape="rect" id="node4" href="$sch__utils_8c.html#a534dab2c236f1131902ff301fb53ccea" title="calculation of transport block size." alt="" coords="728,13,896,39"/>
+</map>

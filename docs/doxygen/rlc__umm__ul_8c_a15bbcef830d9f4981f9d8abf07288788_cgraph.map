@@ -1,0 +1,4 @@
+<map id="rlcUmmAddRcvdSeg" name="rlcUmmAddRcvdSeg">
+<area shape="rect" id="node1" title="Private handler to store the received segment." alt="" coords="5,5,147,32"/>
+<area shape="rect" id="node2" href="$rlc__utl__ul_8c.html#a12bcbf30e8b146636edcab42b905ab5c" title="Retrieve the UL buffer from the list." alt="" coords="195,5,329,32"/>
+</map>

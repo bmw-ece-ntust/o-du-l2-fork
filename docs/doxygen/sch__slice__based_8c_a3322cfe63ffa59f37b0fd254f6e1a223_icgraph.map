@@ -1,0 +1,10 @@
+<map id="schSliceBasedSortLcByPriorLevel" name="schSliceBasedSortLcByPriorLevel">
+<area shape="rect" id="node1" title="Sort the logical channel according to priority level within a slice." alt="" coords="747,71,937,112"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#a061b1aa1bddb20555680e5d71d459a85" title="Fill the lcInfo into corresponding slice control block for each UE." alt="" coords="509,5,683,47"/>
+<area shape="rect" id="node4" href="$sch__slice__based_8c.html#a2ee3f762fce1138e20a4ea824aa3a9a1" title="Allocate resource for each UE and LC with RR algorithm (equally allocating PRB)" alt="" coords="493,137,699,163"/>
+<area shape="rect" id="node8" href="$sch__slice__based_8c.html#a015e738f8e0542b8507c1956d329bd58" title="Allocate resource for each UE and LC with WeightFairQueue algorithm (Proportionally allocating resour..." alt="" coords="503,71,689,112"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#aeb5b3a8c02c9584edc8bf4281b1f086d" title="Function to handle UE configuration request." alt="" coords="236,13,445,39"/>
+<area shape="rect" id="node5" href="$sch__slice__based_8c.html#a603087ce3c4049fd61cf3f22cc1d41de" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="253,132,428,173"/>
+<area shape="rect" id="node6" href="$sch__slice__based_8c.html#a75141ecb8b2f9e00d58f6e5801662312" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="253,67,428,108"/>
+<area shape="rect" id="node7" href="$sch__slice__based_8c.html#afff659247fd026f2f4f0e970d8378381" title="Handles Slice configuration request." alt="" coords="5,74,188,101"/>
+</map>

@@ -1,0 +1,14 @@
+<map id="SchSliceBasedSliceCfgReq" name="SchSliceBasedSliceCfgReq">
+<area shape="rect" id="node1" title="Handles Slice configuration request." alt="" coords="5,44,188,71"/>
+<area shape="rect" id="node2" href="$sch__utils_8c.html#ac8608ff3295ee09445888b5cb85d03ec" title="Function to add a node to a linked list." alt="" coords="773,107,887,133"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#a75141ecb8b2f9e00d58f6e5801662312" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,91,411,133"/>
+<area shape="rect" id="node4" href="$sch__slice__based_8c.html#a2ee3f762fce1138e20a4ea824aa3a9a1" title="Allocate resource for each UE and LC with RR algorithm (equally allocating PRB)" alt="" coords="459,157,665,184"/>
+<area shape="rect" id="node9" href="$sch__slice__based_8c.html#a8b308a79d1ee64aa7e64867a88424abe" title="Sort the UE according to the weight." alt="" coords="459,40,665,67"/>
+<area shape="rect" id="node10" href="$sch__slice__based_8c.html#a0ee86522626c7b5a020bf334cef2e3dd" title="Update the req BO for Lcinfo list for each slice." alt="" coords="469,91,655,133"/>
+<area shape="rect" id="node11" href="$sch__slice__based_8c.html#a015e738f8e0542b8507c1956d329bd58" title="Allocate resource for each UE and LC with WeightFairQueue algorithm (Proportionally allocating resour..." alt="" coords="469,209,655,250"/>
+<area shape="rect" id="node5" href="$sch__slice__based_8c.html#ae9dec559675452caf7bae4a94a965172" title="Allocate PRB for each LC with Round Robin alogrithm (equally allocating PRB)" alt="" coords="713,157,947,184"/>
+<area shape="rect" id="node8" href="$sch__slice__based_8c.html#a3322cfe63ffa59f37b0fd254f6e1a223" title="Sort the logical channel according to priority level within a slice." alt="" coords="735,209,925,250"/>
+<area shape="rect" id="node6" href="$sch__slice__based_8c.html#ad101a490cff306f768340d6a61441e64" title="Calculate the Estimated TBS Size based on Spec 38.421 , Sec 5.3.1.2." alt="" coords="995,213,1208,254"/>
+<area shape="rect" id="node7" href="$sch__utils_8c.html#a534dab2c236f1131902ff301fb53ccea" title="calculation of transport block size." alt="" coords="1256,220,1424,247"/>
+<area shape="rect" id="node12" href="$sch__slice__based_8c.html#a438b99079ebd33699e69171075a92fb7" title="Allocate PRB for each LC with WFQ alogrithm (proportionally allocating PRB based on weight)" alt="" coords="737,274,923,315"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="schSliceBasedUpdateLcListReqBo" name="schSliceBasedUpdateLcListReqBo">
+<area shape="rect" id="node1" title="Update the req BO for Lcinfo list for each slice." alt="" coords="459,104,644,145"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#a603087ce3c4049fd61cf3f22cc1d41de" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,5,411,47"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#a75141ecb8b2f9e00d58f6e5801662312" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,71,411,112"/>
+<area shape="rect" id="node5" href="$sch__slice__based_8c.html#a8087eb77056f9ade32f504334a21a6c7" title="UL Intra&#45;slice scheduling." alt="" coords="236,136,411,177"/>
+<area shape="rect" id="node6" href="$sch__slice__based_8c.html#aed2f647162ef945d8324263f0173267f" title="UL Intra&#45;slice scheduling for multi&#45;thread feature." alt="" coords="236,201,411,243"/>
+<area shape="rect" id="node4" href="$sch__slice__based_8c.html#afff659247fd026f2f4f0e970d8378381" title="Handles Slice configuration request." alt="" coords="5,78,188,105"/>
+</map>

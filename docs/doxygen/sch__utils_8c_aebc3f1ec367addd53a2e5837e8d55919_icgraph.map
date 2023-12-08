@@ -1,0 +1,8 @@
+<map id="deleteNodeFromLList" name="deleteNodeFromLList">
+<area shape="rect" id="node1" title="Function to delete a node from linked list." alt="" coords="577,71,723,98"/>
+<area shape="rect" id="node2" href="$sch__utils_8c.html#aed09863e24f4239d05cfc6d1627baa52" title="Function to update free PRB list." alt="" coords="336,5,529,47"/>
+<area shape="rect" id="node3" href="$sch__utils_8c.html#a0f65db74549ddf0a06dd2b60711292fb" title="initialize DL slot info" alt="" coords="385,71,480,98"/>
+<area shape="rect" id="node6" href="$sch__utils_8c.html#a9b88435bda23ffe60b43956f8e17a2eb" title="initialize UL slot info" alt="" coords="385,122,480,149"/>
+<area shape="rect" id="node4" href="$sch_8c.html#a0e81341a4f36985ebbc43aadb4d84e17" title="init cellCb based on cellCfg" alt="" coords="189,97,288,123"/>
+<area shape="rect" id="node5" href="$sch_8c.html#ac1abaf9877fa437976713317b2c91adc" title="cell config from MAC to SCH." alt="" coords="5,97,141,123"/>
+</map>

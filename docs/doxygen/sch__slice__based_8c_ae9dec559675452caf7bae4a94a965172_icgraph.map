@@ -1,0 +1,8 @@
+<map id="schSliceBasedRoundRobinAlgoforLc" name="schSliceBasedRoundRobinAlgoforLc">
+<area shape="rect" id="node1" title="Allocate PRB for each LC with Round Robin alogrithm (equally allocating PRB)" alt="" coords="712,46,945,73"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#a2ee3f762fce1138e20a4ea824aa3a9a1" title="Allocate resource for each UE and LC with RR algorithm (equally allocating PRB)" alt="" coords="459,17,664,43"/>
+<area shape="rect" id="node6" href="$sch__slice__based_8c.html#a015e738f8e0542b8507c1956d329bd58" title="Allocate resource for each UE and LC with WeightFairQueue algorithm (Proportionally allocating resour..." alt="" coords="468,68,655,109"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#a603087ce3c4049fd61cf3f22cc1d41de" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,5,411,47"/>
+<area shape="rect" id="node4" href="$sch__slice__based_8c.html#a75141ecb8b2f9e00d58f6e5801662312" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,71,411,112"/>
+<area shape="rect" id="node5" href="$sch__slice__based_8c.html#afff659247fd026f2f4f0e970d8378381" title="Handles Slice configuration request." alt="" coords="5,78,188,105"/>
+</map>

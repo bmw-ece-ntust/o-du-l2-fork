@@ -1,0 +1,4 @@
+<map id="rlcSeg" name="rlcSeg">
+<area shape="rect" id="node1" title="Structure to hold a RLC AM PDU segment." alt="" coords="14,95,73,121"/>
+<area shape="rect" id="node2" href="$structrlc_am_hdr.html" title="Structure to hold an Acknowledged Mode header." alt="" coords="5,5,81,32"/>
+</map>

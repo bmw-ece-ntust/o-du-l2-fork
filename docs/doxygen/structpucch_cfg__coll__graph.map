@@ -1,0 +1,21 @@
+<map id="pucchCfg" name="pucchCfg">
+<area shape="rect" id="node1" title=" " alt="" coords="824,197,900,224"/>
+<area shape="rect" id="node2" href="$structpucch_multi_csi_cfg.html" title=" " alt="" coords="551,5,674,32"/>
+<area shape="rect" id="node3" href="$structpucch_power_control.html" title=" " alt="" coords="545,56,680,83"/>
+<area shape="rect" id="node4" href="$structp0_pucch_cfg.html" title=" " alt="" coords="241,5,333,32"/>
+<area shape="rect" id="node5" href="$structpath_loss_ref_r_s_cfg.html" title=" " alt="" coords="222,56,353,83"/>
+<area shape="rect" id="node6" href="$structpucch_resrc_cfg.html" title=" " alt="" coords="557,107,668,133"/>
+<area shape="rect" id="node7" href="$structpucch_resrc_info.html" title=" " alt="" coords="232,107,343,133"/>
+<area shape="rect" id="node8" href="$structpucch_format0.html" title=" " alt="" coords="12,23,117,49"/>
+<area shape="rect" id="node9" href="$structpucch_format2__3.html" title=" " alt="" coords="5,80,124,107"/>
+<area shape="rect" id="node10" href="$structpucch_format1.html" title=" " alt="" coords="12,131,117,157"/>
+<area shape="rect" id="node11" href="$structpucch_format4.html" title=" " alt="" coords="12,181,117,208"/>
+<area shape="rect" id="node12" href="$structpucch_dl_data_to_ul_ack.html" title=" " alt="" coords="540,157,685,184"/>
+<area shape="rect" id="node13" href="$structpucch_format_cfg.html" title=" " alt="" coords="554,236,671,263"/>
+<area shape="rect" id="node14" href="$structpucch_sched_req_cfg.html" title=" " alt="" coords="545,287,681,313"/>
+<area shape="rect" id="node15" href="$structsched_req_resrc_info.html" title=" " alt="" coords="220,287,355,313"/>
+<area shape="rect" id="node16" href="$structpucch_spatial_cfg.html" title=" " alt="" coords="555,337,671,364"/>
+<area shape="rect" id="node17" href="$structspatial_relation_info.html" title=" " alt="" coords="224,337,351,364"/>
+<area shape="rect" id="node18" href="$structpucch_resrc_set_cfg.html" title=" " alt="" coords="547,388,678,415"/>
+<area shape="rect" id="node19" href="$structpucch_resrc_set_info.html" title=" " alt="" coords="222,388,353,415"/>
+</map>

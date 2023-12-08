@@ -1,0 +1,5 @@
+<map id="SchProcRachRsrcReq" name="SchProcRachRsrcReq">
+<area shape="rect" id="node1" title="Process RACH resource request for CFRA." alt="" coords="5,31,157,57"/>
+<area shape="rect" id="node2" href="$mac__msg__router_8c.html#a8532fea59e74cd15986cbe49ab2f941a" title="Callback function for events from entity SCH." alt="" coords="205,5,344,32"/>
+<area shape="rect" id="node3" href="$sch__utils_8c.html#ab78f84859a52d4055ed5201ba0e72c28" title="fetching ueCb from cellCb" alt="" coords="227,56,323,83"/>
+</map>

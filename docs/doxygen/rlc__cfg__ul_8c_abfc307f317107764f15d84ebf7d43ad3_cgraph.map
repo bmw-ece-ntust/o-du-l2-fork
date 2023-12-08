@@ -1,0 +1,4 @@
+<map id="rlcCfgValidateUlRb" name="rlcCfgValidateUlRb">
+<area shape="rect" id="node1" title="This primitive validates uplink Add RB Configuration and reserve memory for RB creation." alt="" coords="5,5,136,32"/>
+<area shape="rect" id="node2" href="$rlc__cfg__ul_8c.html#a060dde8be3aeb6cd4c56263c6e98d7bf" title="This primitive validates uplink Add RB Configuration and reserve memory for RB creation." alt="" coords="184,5,347,32"/>
+</map>

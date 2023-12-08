@@ -1,0 +1,6 @@
+<map id="f1SrvdPlmn" name="f1SrvdPlmn">
+<area shape="rect" id="node1" title=" " alt="" coords="64,199,151,225"/>
+<area shape="rect" id="node2" href="$struct_plmn_identity.html" title=" " alt="" coords="5,95,100,121"/>
+<area shape="rect" id="node3" href="$structf1_tai_slice_supp_lst.html" title=" " alt="" coords="124,95,251,121"/>
+<area shape="rect" id="node4" href="$structsnssai.html" title=" " alt="" coords="157,5,217,32"/>
+</map>

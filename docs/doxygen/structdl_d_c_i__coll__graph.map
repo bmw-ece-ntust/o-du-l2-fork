@@ -1,0 +1,12 @@
+<map id="dlDCI" name="dlDCI">
+<area shape="rect" id="node1" title=" " alt="" coords="741,273,794,300"/>
+<area shape="rect" id="node2" href="$structbeamforming_info.html" title=" " alt="" coords="679,95,795,121"/>
+<area shape="rect" id="node5" href="$structpdsch_cfg.html" title=" " alt="" coords="427,184,503,211"/>
+<area shape="rect" id="node3" href="$structprg.html" title=" " alt="" coords="717,5,757,32"/>
+<area shape="rect" id="node4" href="$structtx_power_pdcch_info.html" title=" " alt="" coords="885,184,1012,211"/>
+<area shape="rect" id="node6" href="$structtx_power_pdsch_info.html" title=" " alt="" coords="5,95,132,121"/>
+<area shape="rect" id="node7" href="$structpdsch_time_alloc.html" title=" " alt="" coords="157,95,271,121"/>
+<area shape="rect" id="node8" href="$structcodewordinfo.html" title=" " alt="" coords="296,95,393,121"/>
+<area shape="rect" id="node9" href="$structpdsch_freq_alloc.html" title=" " alt="" coords="418,95,530,121"/>
+<area shape="rect" id="node10" href="$structdmrs_info.html" title=" " alt="" coords="555,95,625,121"/>
+</map>

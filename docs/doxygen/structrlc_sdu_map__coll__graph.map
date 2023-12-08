@@ -1,0 +1,4 @@
+<map id="rlcSduMap" name="rlcSduMap">
+<area shape="rect" id="node1" title="Structure to hold information about which SDUs a PDU/segment carries." alt="" coords="5,95,89,121"/>
+<area shape="rect" id="node2" href="$structrlc_sdu.html" title="Structure to hold information regarding a SDU received from PDCP." alt="" coords="18,5,77,32"/>
+</map>

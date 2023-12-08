@@ -1,0 +1,6 @@
+<map id="cuSctpParams" name="cuSctpParams">
+<area shape="rect" id="node1" title=" " alt="" coords="5,288,113,315"/>
+<area shape="rect" id="node2" href="$structsctp_cfg_per_intf.html" title=" " alt="" coords="68,184,171,211"/>
+<area shape="rect" id="node3" href="$structsctp_dest_info.html" title=" " alt="" coords="69,95,164,121"/>
+<area shape="rect" id="node4" href="$structip_addr.html" title=" " alt="" coords="17,5,75,32"/>
+</map>

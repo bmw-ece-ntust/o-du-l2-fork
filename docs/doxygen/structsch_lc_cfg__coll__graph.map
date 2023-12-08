@@ -1,0 +1,11 @@
+<map id="schLcCfg" name="schLcCfg">
+<area shape="rect" id="node1" title=" " alt="" coords="152,184,228,211"/>
+<area shape="rect" id="node2" href="$structsnssai.html" title=" " alt="" coords="5,95,65,121"/>
+<area shape="rect" id="node3" href="$structsch_dl_lc_cfg.html" title=" " alt="" coords="90,95,178,121"/>
+<area shape="rect" id="node4" href="$struct_sch_ul_lc_cfg.html" title=" " alt="" coords="202,95,293,121"/>
+<area shape="rect" id="node5" href="$structsch_drb_qos.html" title=" " alt="" coords="317,95,404,121"/>
+<area shape="rect" id="node6" href="$structsch_non_dyn_five_qi.html" title=" " alt="" coords="55,5,181,32"/>
+<area shape="rect" id="node7" href="$structsch_grb_qos_flow_info.html" title=" " alt="" coords="205,5,340,32"/>
+<area shape="rect" id="node8" href="$structsch_ng_ran_alloc_and_ret_pri.html" title=" " alt="" coords="365,5,535,32"/>
+<area shape="rect" id="node9" href="$structsch_dyn_five_qi.html" title=" " alt="" coords="560,5,663,32"/>
+</map>

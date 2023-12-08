@@ -1,0 +1,4 @@
+<map id="rlcDatReq" name="rlcDatReq">
+<area shape="rect" id="node1" title="Structure to hold information sent to MAC in a Data Request." alt="" coords="5,95,84,121"/>
+<area shape="rect" id="node2" href="$structrlc_bo_rep.html" title="Structure to hold buffer occupancy report sent to MAC." alt="" coords="7,5,82,32"/>
+</map>

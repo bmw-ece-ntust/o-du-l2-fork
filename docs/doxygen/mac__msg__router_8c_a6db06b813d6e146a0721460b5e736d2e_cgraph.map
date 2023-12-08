@@ -1,0 +1,10 @@
+<map id="macActvTsk" name="macActvTsk">
+<area shape="rect" id="node1" title="Task Activation callback function." alt="" coords="5,93,99,120"/>
+<area shape="rect" id="node2" href="$mac__msg__router_8c.html#af6a3448590bb082e18ec7a469451e028" title="Task Activation callback function Entity DU APP." alt="" coords="151,43,293,69"/>
+<area shape="rect" id="node5" href="$mac__msg__router_8c.html#af26318ea1b78f39a453a584bdbc5e69a" title="Task Activation callback function Entity Lower MAC." alt="" coords="147,93,297,120"/>
+<area shape="rect" id="node6" href="$mac__msg__router_8c.html#a1aea070e95b1365da6f2edfd5acce755" title="Task Activation callback function Entity RLC." alt="" coords="160,144,284,171"/>
+<area shape="rect" id="node3" href="$rg__lmm_8c.html#a55137eca0e03bb8967e76afb52c418f6" title="Layer Manager Configuration request handler." alt="" coords="353,5,465,32"/>
+<area shape="rect" id="node4" href="$rg__lmm_8c.html#ae884c6c04eb08793feafd89fbf962603" title="Layer Manager Statistics request handler." alt="" coords="352,56,465,83"/>
+<area shape="rect" id="node7" href="$rg__uim_8c.html#aa712e930b6f0f3ca576df2f2768beb12" title="Handler for Bind request." alt="" coords="349,119,468,145"/>
+<area shape="rect" id="node8" href="$rg__uim_8c.html#aac502c05b9e7ef344aa5ae18cd66aefc" title="Handler for Unbind request." alt="" coords="345,169,472,196"/>
+</map>

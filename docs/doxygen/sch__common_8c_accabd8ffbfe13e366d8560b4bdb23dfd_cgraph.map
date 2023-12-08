@@ -1,0 +1,7 @@
+<map id="fillPucchResourceInfo" name="fillPucchResourceInfo">
+<area shape="rect" id="node1" title="Function to fill Pucch Resource Info." alt="" coords="5,31,152,57"/>
+<area shape="rect" id="node2" href="$sch__common_8c.html#a1ba7daf94d221a5cd905a2fa83783f77" title="Function to fill Pucch Dedicated Cfg for UL Sched Info." alt="" coords="200,31,397,57"/>
+<area shape="rect" id="node3" href="$sch__common_8c.html#a6fc31a6a9e23b43683c2147f70171bd9" title="Function to fill Pucch format for UL Sched Info." alt="" coords="445,31,607,57"/>
+<area shape="rect" id="node4" href="$sch__common_8c.html#a2504e83b56fb737d7862e71e2ca621bf" title="Function to fill Pucch Format 0." alt="" coords="655,5,773,32"/>
+<area shape="rect" id="node5" href="$sch__common_8c.html#a3eed935d6749914831eb51abf82d4cbe" title="Function to fill Pucch Format 1." alt="" coords="655,56,773,83"/>
+</map>

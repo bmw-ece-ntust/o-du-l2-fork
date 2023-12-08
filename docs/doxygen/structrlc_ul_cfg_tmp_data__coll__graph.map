@@ -1,0 +1,13 @@
+<map id="rlcUlCfgTmpData" name="rlcUlCfgTmpData">
+<area shape="rect" id="node1" title="Structure to hold transaction information in configuration request." alt="" coords="146,377,264,404"/>
+<area shape="rect" id="node2" href="$structrlc_ul_cell_cb.html" title="Structure to hold uplink information about the Cells." alt="" coords="48,288,135,315"/>
+<area shape="rect" id="node3" href="$structrlc_ul_lch.html" title="Structure to hold mapping between logical channel and Radio Bearer." alt="" coords="57,185,126,212"/>
+<area shape="rect" id="node9" href="$structrlc_ul_ue_cb.html" title="Structure to hold uplink information about the UEs." alt="" coords="165,288,245,315"/>
+<area shape="rect" id="node4" href="$struct__rlc_ul_rb_cb.html" title="Structure to hold uplink information about a Radio Bearer." alt="" coords="210,95,296,121"/>
+<area shape="rect" id="node11" href="$structrlc_ul_ent_tmp_data.html" title="Structure to hold temporary data of configuration." alt="" coords="328,237,448,264"/>
+<area shape="rect" id="node5" href="$structsnssai.html" title=" " alt="" coords="90,5,150,32"/>
+<area shape="rect" id="node6" href="$structrlc_um_ul.html" title="Structure to hold uplink information in UM mode for a particular RB." alt="" coords="174,5,242,32"/>
+<area shape="rect" id="node7" href="$structrlc_am_ul.html" title="Structure to hold information about an uplink AM Radio Bearer." alt="" coords="266,5,334,32"/>
+<area shape="rect" id="node8" href="$structrlc_lch_info.html" title="Structure to hold information about a Logical channel." alt="" coords="358,5,436,32"/>
+<area shape="rect" id="node10" href="$structrlc_ue_delete_info.html" title="Structure to hold ue delete information." alt="" coords="150,185,260,212"/>
+</map>

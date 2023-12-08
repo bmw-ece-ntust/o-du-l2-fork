@@ -1,0 +1,22 @@
+<map id="cuCellCb" name="cuCellCb">
+<area shape="rect" id="node1" title=" " alt="" coords="229,288,304,315"/>
+<area shape="rect" id="node2" href="$structcu_ue_cb.html" title=" " alt="" coords="407,377,475,404"/>
+<area shape="rect" id="node3" href="$structsrb_info.html" title=" " alt="" coords="329,288,389,315"/>
+<area shape="rect" id="node4" href="$structmac_lc_cfg.html" title=" " alt="" coords="177,184,257,211"/>
+<area shape="rect" id="node14" href="$structdrb_info.html" title=" " alt="" coords="449,288,509,315"/>
+<area shape="rect" id="node5" href="$structrlc_lc_cfg.html" title=" " alt="" coords="325,184,395,211"/>
+<area shape="rect" id="node6" href="$structum_uni_dir_ul_bearer_cfg.html" title=" " alt="" coords="5,95,149,121"/>
+<area shape="rect" id="node7" href="$structul_um_cfg.html" title=" " alt="" coords="135,5,206,32"/>
+<area shape="rect" id="node11" href="$structum_bi_dir_bearer_cfg.html" title=" " alt="" coords="173,95,299,121"/>
+<area shape="rect" id="node8" href="$structam_bearer_cfg.html" title=" " alt="" coords="491,95,589,121"/>
+<area shape="rect" id="node9" href="$structdl_am_cfg.html" title=" " alt="" coords="427,5,498,32"/>
+<area shape="rect" id="node10" href="$structul_am_cfg.html" title=" " alt="" coords="522,5,593,32"/>
+<area shape="rect" id="node12" href="$structdl_um_cfg.html" title=" " alt="" coords="277,5,347,32"/>
+<area shape="rect" id="node13" href="$structum_uni_dir_dl_bearer_cfg.html" title=" " alt="" coords="323,95,467,121"/>
+<area shape="rect" id="node15" href="$struct_tnl_info.html" title=" " alt="" coords="472,184,531,211"/>
+<area shape="rect" id="node16" href="$structqos_info.html" title=" " alt="" coords="638,95,701,121"/>
+<area shape="rect" id="node17" href="$structflows_mapped.html" title=" " alt="" coords="639,184,737,211"/>
+<area shape="rect" id="node18" href="$structsnssai.html" title=" " alt="" coords="761,184,821,211"/>
+<area shape="rect" id="node19" href="$structf1ap_db.html" title=" " alt="" coords="533,288,595,315"/>
+<area shape="rect" id="node20" href="$structhandover_info.html" title=" " alt="" coords="620,288,713,315"/>
+</map>

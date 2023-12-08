@@ -1,0 +1,11 @@
+<map id="f1CuActCellInfo" name="f1CuActCellInfo">
+<area shape="rect" id="node1" title=" " alt="" coords="140,377,251,404"/>
+<area shape="rect" id="node2" href="$structf1_cell_info.html" title=" " alt="" coords="106,288,181,315"/>
+<area shape="rect" id="node3" href="$structnr_ecgi.html" title=" " alt="" coords="17,199,75,225"/>
+<area shape="rect" id="node4" href="$struct_plmn_identity.html" title=" " alt="" coords="5,95,100,121"/>
+<area shape="rect" id="node5" href="$structf1_srvd_plmn.html" title=" " alt="" coords="100,199,187,225"/>
+<area shape="rect" id="node6" href="$structf1_tai_slice_supp_lst.html" title=" " alt="" coords="131,95,257,121"/>
+<area shape="rect" id="node7" href="$structsnssai.html" title=" " alt="" coords="164,5,224,32"/>
+<area shape="rect" id="node8" href="$structf1_cu_sys_info.html" title=" " alt="" coords="205,288,295,315"/>
+<area shape="rect" id="node9" href="$structf1_sib_type.html" title=" " alt="" coords="211,199,289,225"/>
+</map>

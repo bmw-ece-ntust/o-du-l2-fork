@@ -1,0 +1,5 @@
+<map id="rlcUmRecBuf" name="rlcUmRecBuf">
+<area shape="rect" id="node1" title="Structure to hold a UM PDU." alt="" coords="10,184,109,211"/>
+<area shape="rect" id="node2" href="$structrlc_um_seg.html" title="Structure to hold a RLC UM PDU segment." alt="" coords="89,95,168,121"/>
+<area shape="rect" id="node3" href="$structrlc_um_hdr.html" title="Structure to hold an Unacknowledged Mode header." alt="" coords="5,5,81,32"/>
+</map>

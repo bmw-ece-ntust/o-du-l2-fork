@@ -1,0 +1,14 @@
+<map id="schCalcTbSizeFromNPrb" name="schCalcTbSizeFromNPrb">
+<area shape="rect" id="node1" title="calculation of transport block size." alt="" coords="1255,137,1423,163"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#ad101a490cff306f768340d6a61441e64" title="Calculate the Estimated TBS Size based on Spec 38.421 , Sec 5.3.1.2." alt="" coords="993,129,1207,171"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#a543da9f02ebbc22aec244d7471317deb" title="Allocate PRB for each LC with FCFS algorithm (allocate the PRB by demand)" alt="" coords="733,71,924,112"/>
+<area shape="rect" id="node6" href="$sch__slice__based_8c.html#ae9dec559675452caf7bae4a94a965172" title="Allocate PRB for each LC with Round Robin alogrithm (equally allocating PRB)" alt="" coords="712,137,945,163"/>
+<area shape="rect" id="node12" href="$sch__slice__based_8c.html#a438b99079ebd33699e69171075a92fb7" title="Allocate PRB for each LC with WFQ alogrithm (proportionally allocating PRB based on weight)" alt="" coords="735,188,922,229"/>
+<area shape="rect" id="node4" href="$sch__slice__based_8c.html#a8087eb77056f9ade32f504334a21a6c7" title="UL Intra&#45;slice scheduling." alt="" coords="474,5,649,47"/>
+<area shape="rect" id="node5" href="$sch__slice__based_8c.html#aed2f647162ef945d8324263f0173267f" title="UL Intra&#45;slice scheduling for multi&#45;thread feature." alt="" coords="474,71,649,112"/>
+<area shape="rect" id="node7" href="$sch__slice__based_8c.html#a2ee3f762fce1138e20a4ea824aa3a9a1" title="Allocate resource for each UE and LC with RR algorithm (equally allocating PRB)" alt="" coords="459,137,664,163"/>
+<area shape="rect" id="node11" href="$sch__slice__based_8c.html#a015e738f8e0542b8507c1956d329bd58" title="Allocate resource for each UE and LC with WeightFairQueue algorithm (Proportionally allocating resour..." alt="" coords="468,188,655,229"/>
+<area shape="rect" id="node8" href="$sch__slice__based_8c.html#a603087ce3c4049fd61cf3f22cc1d41de" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,125,411,167"/>
+<area shape="rect" id="node9" href="$sch__slice__based_8c.html#a75141ecb8b2f9e00d58f6e5801662312" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,191,411,232"/>
+<area shape="rect" id="node10" href="$sch__slice__based_8c.html#afff659247fd026f2f4f0e970d8378381" title="Handles Slice configuration request." alt="" coords="5,198,188,225"/>
+</map>

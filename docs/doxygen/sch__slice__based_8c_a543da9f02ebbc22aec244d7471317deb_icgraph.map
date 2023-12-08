@@ -1,0 +1,5 @@
+<map id="schSliceBasedPrbAllocUsingRRMPolicy" name="schSliceBasedPrbAllocUsingRRMPolicy">
+<area shape="rect" id="node1" title="Allocate PRB for each LC with FCFS algorithm (allocate the PRB by demand)" alt="" coords="228,39,419,80"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#a8087eb77056f9ade32f504334a21a6c7" title="UL Intra&#45;slice scheduling." alt="" coords="5,5,180,47"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#aed2f647162ef945d8324263f0173267f" title="UL Intra&#45;slice scheduling for multi&#45;thread feature." alt="" coords="5,71,180,112"/>
+</map>

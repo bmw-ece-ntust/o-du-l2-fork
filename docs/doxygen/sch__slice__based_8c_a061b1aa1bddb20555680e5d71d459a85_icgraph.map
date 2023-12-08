@@ -1,0 +1,4 @@
+<map id="schSliceBasedFillLcInfoToSliceCb" name="schSliceBasedFillLcInfoToSliceCb">
+<area shape="rect" id="node1" title="Fill the lcInfo into corresponding slice control block for each UE." alt="" coords="263,5,437,47"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#aeb5b3a8c02c9584edc8bf4281b1f086d" title="Function to handle UE configuration request." alt="" coords="5,13,215,39"/>
+</map>

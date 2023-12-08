@@ -1,0 +1,8 @@
+<map id="SctpGlobalCb" name="SctpGlobalCb">
+<area shape="rect" id="node1" title=" " alt="" coords="56,377,159,404"/>
+<area shape="rect" id="node2" href="$struct_cu_sctp_assoc_cb.html" title=" " alt="" coords="5,288,124,315"/>
+<area shape="rect" id="node3" href="$structcu_sctp_params.html" title=" " alt="" coords="148,288,256,315"/>
+<area shape="rect" id="node4" href="$structsctp_cfg_per_intf.html" title=" " alt="" coords="211,184,313,211"/>
+<area shape="rect" id="node5" href="$structsctp_dest_info.html" title=" " alt="" coords="212,95,307,121"/>
+<area shape="rect" id="node6" href="$structip_addr.html" title=" " alt="" coords="159,5,218,32"/>
+</map>

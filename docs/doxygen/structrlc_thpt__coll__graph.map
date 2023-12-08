@@ -1,0 +1,7 @@
+<map id="rlcThpt" name="rlcThpt">
+<area shape="rect" id="node1" title="Structure to hold information about throughput at RLC." alt="" coords="169,184,230,211"/>
+<area shape="rect" id="node2" href="$structrlc_snssai_tput_info.html" title=" " alt="" coords="5,95,127,121"/>
+<area shape="rect" id="node3" href="$structrlc_ue_tput_info.html" title=" " alt="" coords="151,95,248,121"/>
+<area shape="rect" id="node4" href="$structrlc_thpt_per_ue.html" title=" " alt="" coords="151,5,248,32"/>
+<area shape="rect" id="node5" href="$structrlc_drb_tput_info.html" title=" " alt="" coords="273,95,374,121"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="schSliceBasedRoundRobinAlgoforLc" name="schSliceBasedRoundRobinAlgoforLc">
+<area shape="rect" id="node1" title="Allocate PRB for each LC with Round Robin alogrithm (equally allocating PRB)" alt="" coords="5,13,239,39"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#ad101a490cff306f768340d6a61441e64" title="Calculate the Estimated TBS Size based on Spec 38.421 , Sec 5.3.1.2." alt="" coords="287,5,500,47"/>
+<area shape="rect" id="node3" href="$sch__utils_8c.html#a534dab2c236f1131902ff301fb53ccea" title="calculation of transport block size." alt="" coords="548,13,716,39"/>
+</map>

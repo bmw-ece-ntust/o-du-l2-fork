@@ -1,0 +1,7 @@
+<map id="5gnrmac/rg.h" name="5gnrmac/rg.h">
+<area shape="rect" id="node1" title="This file contains definitons for Mac." alt="" coords="305,5,404,32"/>
+<area shape="rect" id="node2" href="$mac__msg__router_8c.html" title="This file contains the implementation of callback functions registered with SSI during the LTE MAC Ta..." alt="" coords="5,80,189,107"/>
+<area shape="rect" id="node3" href="$rg__lmm_8c.html" title="This file contains the Layer Management interface module implementation. The functions for the config..." alt="" coords="213,80,344,107"/>
+<area shape="rect" id="node4" href="$rg__uim_8c.html" title="This module acts as an interface handler for upper interface and manages Pst and Sap related informat..." alt="" coords="369,80,495,107"/>
+<area shape="rect" id="node5" href="$rg__utl_8c.html" title="This file implements utility functions for LTE MAC." alt="" coords="519,80,638,107"/>
+</map>

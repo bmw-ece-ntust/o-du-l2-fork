@@ -1,0 +1,10 @@
+<map id="schBwpUlCfg" name="schBwpUlCfg">
+<area shape="rect" id="node1" title=" " alt="" coords="323,184,422,211"/>
+<area shape="rect" id="node2" href="$structsch_pusch_cfg_cmn.html" title=" " alt="" coords="51,95,177,121"/>
+<area shape="rect" id="node3" href="$structsch_pusch_time_dom_rsrc_alloc.html" title=" " alt="" coords="5,5,196,32"/>
+<area shape="rect" id="node4" href="$structsch_bwp_params.html" title=" " alt="" coords="208,95,321,121"/>
+<area shape="rect" id="node5" href="$structres_alloc_type1.html" title=" " alt="" coords="221,5,325,32"/>
+<area shape="rect" id="node6" href="$structsch_pucch_cfg_cmn.html" title=" " alt="" coords="345,95,472,121"/>
+<area shape="rect" id="node7" href="$structsch_rach_cfg.html" title=" " alt="" coords="496,95,588,121"/>
+<area shape="rect" id="node8" href="$structsch_rach_cfg_generic.html" title=" " alt="" coords="473,5,611,32"/>
+</map>

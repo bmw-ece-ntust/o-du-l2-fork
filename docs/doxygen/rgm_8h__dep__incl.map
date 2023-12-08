@@ -1,0 +1,5 @@
+<map id="cm/rgm.h" name="cm/rgm.h">
+<area shape="rect" id="node1" title="Defines for RGM interface." alt="" coords="93,5,170,32"/>
+<area shape="rect" id="node2" href="$rg__ptui_8c.html" title="This file contains the definitions for Upper Interface(RGR/CRG/RGU) primitives that are invoked from ..." alt="" coords="5,80,132,107"/>
+<area shape="rect" id="node3" href="$rgm_8c.html" title="This file contains the packing/unpacking code for the RGM interface primitives." alt="" coords="157,80,234,107"/>
+</map>

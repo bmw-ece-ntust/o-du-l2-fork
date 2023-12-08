@@ -1,0 +1,4 @@
+<map id="schSliceBasedcalculateEstimateTBSize" name="schSliceBasedcalculateEstimateTBSize">
+<area shape="rect" id="node1" title="Calculate the Estimated TBS Size based on Spec 38.421 , Sec 5.3.1.2." alt="" coords="5,5,219,47"/>
+<area shape="rect" id="node2" href="$sch__utils_8c.html#a534dab2c236f1131902ff301fb53ccea" title="calculation of transport block size." alt="" coords="267,13,435,39"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="egtpGlobalCb" name="egtpGlobalCb">
+<area shape="rect" id="node1" title=" " alt="" coords="117,288,217,315"/>
+<area shape="rect" id="node2" href="$structegtp_dst_cb.html" title=" " alt="" coords="5,199,88,225"/>
+<area shape="rect" id="node3" href="$structcu_egtp_params.html" title=" " alt="" coords="113,199,221,225"/>
+<area shape="rect" id="node4" href="$structip_addr.html" title=" " alt="" coords="55,5,113,32"/>
+<area shape="rect" id="node5" href="$structegtp_dst_cfg.html" title=" " alt="" coords="129,95,215,121"/>
+<area shape="rect" id="node6" href="$structegtp_config.html" title=" " alt="" coords="245,199,328,225"/>
+<area shape="rect" id="node7" href="$structegtp_ip_addr.html" title=" " alt="" coords="245,95,329,121"/>
+</map>

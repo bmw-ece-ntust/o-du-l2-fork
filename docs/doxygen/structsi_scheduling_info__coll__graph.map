@@ -1,0 +1,12 @@
+<map id="siSchedulingInfo" name="siSchedulingInfo">
+<area shape="rect" id="node1" title=" " alt="" coords="82,377,198,404"/>
+<area shape="rect" id="node2" href="$structscheduling_info_list.html" title=" " alt="" coords="5,273,131,300"/>
+<area shape="rect" id="node3" href="$structscheduling_info.html" title=" " alt="" coords="16,184,120,211"/>
+<area shape="rect" id="node4" href="$structsib_mapping_info.html" title=" " alt="" coords="14,95,122,121"/>
+<area shape="rect" id="node5" href="$structsib_type_info.html" title=" " alt="" coords="25,5,111,32"/>
+<area shape="rect" id="node6" href="$structsi_request_config.html" title=" " alt="" coords="155,273,271,300"/>
+<area shape="rect" id="node7" href="$structsi_request_resource.html" title=" " alt="" coords="145,184,279,211"/>
+<area shape="rect" id="node8" href="$structsi_req_rsrc.html" title=" " alt="" coords="171,95,253,121"/>
+<area shape="rect" id="node9" href="$structrach_occasions_si.html" title=" " alt="" coords="303,184,425,211"/>
+<area shape="rect" id="node10" href="$structrach_cfg_generic.html" title=" " alt="" coords="309,95,419,121"/>
+</map>

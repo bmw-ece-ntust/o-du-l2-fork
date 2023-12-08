@@ -1,0 +1,6 @@
+<map id="schSliceBasedSortUeByWeight" name="schSliceBasedSortUeByWeight">
+<area shape="rect" id="node1" title="Sort the UE according to the weight." alt="" coords="459,46,665,73"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#a603087ce3c4049fd61cf3f22cc1d41de" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,5,411,47"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#a75141ecb8b2f9e00d58f6e5801662312" title="a. Allocate the dedicated resource and prioritized resource for this slice to achieve the resource is..." alt="" coords="236,71,411,112"/>
+<area shape="rect" id="node4" href="$sch__slice__based_8c.html#afff659247fd026f2f4f0e970d8378381" title="Handles Slice configuration request." alt="" coords="5,78,188,105"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="schSliceBasedPrbAllocUsingRRMPolicy" name="schSliceBasedPrbAllocUsingRRMPolicy">
+<area shape="rect" id="node1" title="Allocate PRB for each LC with FCFS algorithm (allocate the PRB by demand)" alt="" coords="5,5,196,47"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#ad101a490cff306f768340d6a61441e64" title="Calculate the Estimated TBS Size based on Spec 38.421 , Sec 5.3.1.2." alt="" coords="244,5,457,47"/>
+<area shape="rect" id="node3" href="$sch__utils_8c.html#a534dab2c236f1131902ff301fb53ccea" title="calculation of transport block size." alt="" coords="505,13,673,39"/>
+</map>

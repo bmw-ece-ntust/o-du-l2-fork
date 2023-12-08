@@ -29,8 +29,8 @@ File:     sch_fcfs.c
 
  **********************************************************************/
 
-/** @file sch_slot_ind.c
-  @brief This module processes slot indications
+/** @file sch_fcfs.c
+  @brief This file process the FCFS scheduler
  */
 #include "common_def.h"
 #include "tfu.h"
@@ -164,6 +164,44 @@ uint8_t SchFcfsAddUeConfigReq(SchUeCb *ueCb)
 void SchFcfsModUeConfigReq(SchUeCb *ueCb)
 {
    /*TBD: No action required for FCFS*/
+   return;
+}
+
+/*******************************************************************
+ *
+ * @brief Handles Slice configuration request
+ *
+ * @details
+ *
+ *    Function : SchFcfsSliceCfgReq
+ *
+ *    Functionality: 
+ *
+ * @params[in] Pointer to Cell control block
+ * @return void
+ *
+ * ****************************************************************/
+void SchFcfsSliceCfgReq(SchCellCb *cellCb)
+{
+   return;
+}
+
+/*******************************************************************
+ *
+ * @brief Handles Slice Reconfiguration request
+ *
+ * @details
+ *
+ *    Function : SchFcfsSliceRecfgReq
+ *
+ *    Functionality: 
+ *
+ * @params[in] Pointer to Cell control block
+ * @return void
+ *
+ * ****************************************************************/
+void SchFcfsSliceRecfgReq(SchCellCb *cellCb)
+{
    return;
 }
 
@@ -1356,6 +1394,8 @@ void schFcfsAllApisInit(SchAllApis *allFcfsApi)
     allFcfsApi->SchDlRlcBoInfo = schFcfsDlRlcBoInfo;
     allFcfsApi->SchSrUciInd = schFcfsSrUciInd;
     allFcfsApi->SchBsr = schFcfsBsr;
+    allFcfsApi->SchSliceCfgReq = SchFcfsSliceCfgReq;
+    allFcfsApi->SchSliceRecfgReq = SchFcfsSliceRecfgReq;
 
     /* Internal API function pointers */
     allFcfsApi->SchAddToDlHqRetxList = schFcfsAddToDlHqRetxList;

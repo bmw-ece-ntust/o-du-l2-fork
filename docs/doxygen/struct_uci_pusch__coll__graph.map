@@ -1,0 +1,6 @@
+<map id="UciPusch" name="UciPusch">
+<area shape="rect" id="node1" title=" " alt="" coords="184,95,263,121"/>
+<area shape="rect" id="node2" href="$struct_pusch_csi_part2_info.html" title=" " alt="" coords="5,5,135,32"/>
+<area shape="rect" id="node3" href="$struct_pusch_csi_part1_info.html" title=" " alt="" coords="159,5,288,32"/>
+<area shape="rect" id="node4" href="$struct_pusch_harq_info.html" title=" " alt="" coords="313,5,419,32"/>
+</map>

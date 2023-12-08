@@ -1,0 +1,9 @@
+<map id="dlCfgCommon" name="dlCfgCommon">
+<area shape="rect" id="node1" title=" " alt="" coords="263,184,366,211"/>
+<area shape="rect" id="node2" href="$structbcch_cfg.html" title=" " alt="" coords="5,95,75,121"/>
+<area shape="rect" id="node3" href="$structpdsch_cfg_common.html" title=" " alt="" coords="99,95,227,121"/>
+<area shape="rect" id="node4" href="$structpdsch_time_domain_rsrc_alloc.html" title=" " alt="" coords="70,5,255,32"/>
+<area shape="rect" id="node5" href="$structpdcch_cfg_common.html" title=" " alt="" coords="251,95,379,121"/>
+<area shape="rect" id="node6" href="$structscs_spec_carrier.html" title=" " alt="" coords="403,95,514,121"/>
+<area shape="rect" id="node7" href="$structpcch_cfg.html" title=" " alt="" coords="539,95,608,121"/>
+</map>

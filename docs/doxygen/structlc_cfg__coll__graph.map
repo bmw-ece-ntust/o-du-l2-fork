@@ -1,0 +1,11 @@
+<map id="lcCfg" name="lcCfg">
+<area shape="rect" id="node1" title=" " alt="" coords="314,184,365,211"/>
+<area shape="rect" id="node2" href="$structdrb_qos.html" title=" " alt="" coords="178,95,242,121"/>
+<area shape="rect" id="node3" href="$structgrb_qos_info.html" title=" " alt="" coords="5,5,89,32"/>
+<area shape="rect" id="node4" href="$structdyn_five_qi.html" title=" " alt="" coords="113,5,192,32"/>
+<area shape="rect" id="node5" href="$structnon_dyn_five_qi.html" title=" " alt="" coords="216,5,319,32"/>
+<area shape="rect" id="node6" href="$structng_ran_alloc_and_ret_pri.html" title=" " alt="" coords="343,5,490,32"/>
+<area shape="rect" id="node7" href="$structsnssai.html" title=" " alt="" coords="267,95,327,121"/>
+<area shape="rect" id="node8" href="$structdl_lc_cfg.html" title=" " alt="" coords="351,95,416,121"/>
+<area shape="rect" id="node9" href="$structul_lc_cfg.html" title=" " alt="" coords="440,95,505,121"/>
+</map>

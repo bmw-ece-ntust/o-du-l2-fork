@@ -1,0 +1,8 @@
+<map id="ulCfgCommon" name="ulCfgCommon">
+<area shape="rect" id="node1" title=" " alt="" coords="271,184,374,211"/>
+<area shape="rect" id="node2" href="$structpusch_cfg_common.html" title=" " alt="" coords="35,95,163,121"/>
+<area shape="rect" id="node3" href="$structpusch_cfg_cmn_time_dom_alloc.html" title=" " alt="" coords="5,5,192,32"/>
+<area shape="rect" id="node4" href="$structpucch_cfg_common.html" title=" " alt="" coords="187,95,315,121"/>
+<area shape="rect" id="node5" href="$structscs_spec_carrier.html" title=" " alt="" coords="339,95,450,121"/>
+<area shape="rect" id="node6" href="$structrach_cfg_common.html" title=" " alt="" coords="474,95,593,121"/>
+</map>

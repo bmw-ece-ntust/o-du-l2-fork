@@ -1,0 +1,5 @@
+<map id="schSliceBasedCalculatePriorLevel" name="schSliceBasedCalculatePriorLevel">
+<area shape="rect" id="node1" title="Get the default priority level according to the 5QI mapping table." alt="" coords="485,5,676,47"/>
+<area shape="rect" id="node2" href="$sch__slice__based_8c.html#a061b1aa1bddb20555680e5d71d459a85" title="Fill the lcInfo into corresponding slice control block for each UE." alt="" coords="263,5,437,47"/>
+<area shape="rect" id="node3" href="$sch__slice__based_8c.html#aeb5b3a8c02c9584edc8bf4281b1f086d" title="Function to handle UE configuration request." alt="" coords="5,13,215,39"/>
+</map>

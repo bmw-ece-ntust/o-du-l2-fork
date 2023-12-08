@@ -1,0 +1,7 @@
+<map id="schDrbQos" name="schDrbQos">
+<area shape="rect" id="node1" title=" " alt="" coords="267,95,354,121"/>
+<area shape="rect" id="node2" href="$structsch_non_dyn_five_qi.html" title=" " alt="" coords="5,5,131,32"/>
+<area shape="rect" id="node3" href="$structsch_grb_qos_flow_info.html" title=" " alt="" coords="155,5,290,32"/>
+<area shape="rect" id="node4" href="$structsch_ng_ran_alloc_and_ret_pri.html" title=" " alt="" coords="315,5,485,32"/>
+<area shape="rect" id="node5" href="$structsch_dyn_five_qi.html" title=" " alt="" coords="510,5,613,32"/>
+</map>

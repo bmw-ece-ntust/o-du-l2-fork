@@ -1,0 +1,7 @@
+<map id="rlcUlActvTsk" name="rlcUlActvTsk">
+<area shape="rect" id="node1" title="Activation Task" alt="" coords="5,81,100,108"/>
+<area shape="rect" id="node2" href="$rlc__layer__mgr_8c.html#abaccd350b1648f1cccec0ebc0b7081c6" title="The layer manager initiates and uses the management&#45;control procedure to control RLC elements...." alt="" coords="151,5,279,32"/>
+<area shape="rect" id="node3" href="$rlc__layer__mgr_8c.html#a330711d68aff91e6e7902d2df9d2996e" title="This function processes solicited status requests received from the layer manager...." alt="" coords="154,56,275,83"/>
+<area shape="rect" id="node4" href="$rlc__layer__mgr_8c.html#acb822e3ee59995b0115cfcfd0bce8493" title="This function processes statistics requests received from the layer manager." alt="" coords="154,107,275,133"/>
+<area shape="rect" id="node5" href="$rlc__layer__mgr_8c.html#a4ce97cdb1391c1f3b615f54ff079f500" title="This function processes configuration requests received from the layer manager." alt="" coords="148,157,281,184"/>
+</map>

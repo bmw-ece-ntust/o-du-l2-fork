@@ -1,0 +1,5 @@
+<map id="schGetUeCb" name="schGetUeCb">
+<area shape="rect" id="node1" title="fetching ueCb from cellCb" alt="" coords="205,31,301,57"/>
+<area shape="rect" id="node2" href="$sch__rach_8c.html#a278ec8af17c996646972d5567a8ea9a3" title="Process RACH resource request for CFRA." alt="" coords="5,5,157,32"/>
+<area shape="rect" id="node3" href="$sch__common_8c.html#ad00228f103df2a72faccab36ecd399ef" title="resource allocation for UL" alt="" coords="28,56,135,83"/>
+</map>

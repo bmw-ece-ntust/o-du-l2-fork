@@ -1,0 +1,9 @@
+<map id="f1FailureIE" name="f1FailureIE">
+<area shape="rect" id="node1" title=" " alt="" coords="247,184,329,211"/>
+<area shape="rect" id="node2" href="$structf1_crit_diagnostic.html" title=" " alt="" coords="167,95,281,121"/>
+<area shape="rect" id="node3" href="$structf1_trigg_msg.html" title=" " alt="" coords="5,5,91,32"/>
+<area shape="rect" id="node4" href="$structf1_crit_dignos_i_e.html" title=" " alt="" coords="115,5,219,32"/>
+<area shape="rect" id="node5" href="$structf1_proc_crit.html" title=" " alt="" coords="243,5,322,32"/>
+<area shape="rect" id="node6" href="$structf1_proc_code.html" title=" " alt="" coords="346,5,435,32"/>
+<area shape="rect" id="node7" href="$structf1_fail_cause.html" title=" " alt="" coords="305,95,396,121"/>
+</map>
