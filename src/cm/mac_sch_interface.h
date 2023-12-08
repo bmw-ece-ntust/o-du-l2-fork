@@ -94,7 +94,7 @@
 #define QPSK_MODULATION 2
 
 #define RAR_PAYLOAD_SIZE 10             /* As per spec 38.321, sections 6.1.5 and 6.2.3, RAR PDU is 8 bytes long and 2 bytes of padding */
-#define TX_PAYLOAD_HDR_LEN 32           /* Intel L1 requires adding a 32 byte header to transmitted payload */
+#define TX_PAYLOAD_HDR_LEN 2          /* Intel L1 requires adding a 32 byte header to transmitted payload */
 #define UL_TX_BUFFER_SIZE 5
 
 #define MAX_NUM_CONFIG_SLOTS 160  /*Max number of slots as per the numerology*/
@@ -884,6 +884,7 @@ typedef struct schCellCfg
    uint16_t        phyCellId;               /* Physical cell id */
    SchPlmnInfoList plmnInfoList[MAX_PLMN];  /* Consits of PlmnId and Snssai list */
    SchDuplexMode   dupMode;                 /* Duplex type: TDD/FDD */
+   uint8_t         numerology;              /* Supported numerology */
    uint8_t         dlBandwidth;             /* Supported B/W */
    uint8_t         ulBandwidth;             /* Supported B/W */
    SchDlCfgCommon  dlCfgCommon;             /*Spec 38.331 DownlinkConfigCommonSIB*/
@@ -898,8 +899,8 @@ typedef struct schCellCfg
    SchSSBPeriod        ssbPeriod;        /* SSB Periodicity in msec */
    uint32_t            ssbFrequency;     /* SB frequency in kHz*/
    uint8_t             dmrsTypeAPos;
-   uint8_t             ssbScs;           /* SSB subcarrier spacing*/
-   SchPdcchConfigSib1  pdcchCfgSib1;     /* Req to configure CORESET#0 and SearchSpace#0*/
+   uint8_t             scsCommon;        /* subcarrier spacing for common [0-3]*/
+   SchPdcchConfigSib1  pdcchCfgSib1;      /* Req to configure CORESET#0 and SearchSpace#0*/
    uint32_t            ssbPbchPwr;       /* SSB block power */
    uint8_t             ssbSubcOffset;    /* Subcarrier Offset(Kssb) */
    uint16_t            sib1PduLen;

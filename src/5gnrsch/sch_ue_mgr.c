@@ -119,14 +119,29 @@ void fillSchDlLcCtxt(SchDlLcCtxt *ueCbLcCfg, SchLcCfg *lcCfg)
 {
    ueCbLcCfg->lcId = lcCfg->lcId;
    ueCbLcCfg->lcp = lcCfg->dlLcCfg.lcp;
-   ueCbLcCfg->lcState = SCH_LC_STATE_ACTIVE;
+   ueCbLcCfg->lcState = SCH_LC_STATE_ACTIVE;  
    ueCbLcCfg->bo = 0;
    if(lcCfg->drbQos)
    {
      ueCbLcCfg->pduSessionId = lcCfg->drbQos->pduSessionId;
+
+     if(lcCfg->drbQos->fiveQiType == SCH_QOS_NON_DYNAMIC) /* Non-Dynamic 5QI */
+     {
+         ueCbLcCfg->fiveQi = lcCfg->drbQos->u.nonDyn5Qi.fiveQi;
+     }
+     else /* Dynamic 5QI */
+     {
+         ueCbLcCfg->fiveQi = lcCfg->drbQos->u.dyn5Qi.fiveQi;
+     }
    }
+   else /* DRB has no 5QI */
+   {
+      ueCbLcCfg->fiveQi = 0;
+   }
+
    if(lcCfg->snssai)
    {
+     //DU_LOG("\nDennis --> Dedicated LC ID: %d", lcCfg->lcId);
      if(ueCbLcCfg->snssai == NULLP)/*In CONFIG_MOD case, no need to allocate SNSSAI memory*/
      {
         SCH_ALLOC(ueCbLcCfg->snssai, sizeof(Snssai));
@@ -321,7 +336,7 @@ uint8_t fillSchUeCbFrmCfgReq(Inst inst, SchUeCb *ueCb, SchUeCfgReq *ueCfg)
                schInitDrxHarqCb(&ueCb->ulHqEnt.procs[idx].ulDrxHarqCb);
             }
             /* convert all the drx configuration recived in ms/subms into number of slots and store into the drxUeCb */
-            schFillDrxUeCb(ueCb->cellCb->numerology, ueCfg->macCellGrpCfg.drxCfg, &ueCb->drxUeCb);
+            schFillDrxUeCb(ueCb->cellCb->cellCfg.numerology, ueCfg->macCellGrpCfg.drxCfg, &ueCb->drxUeCb);
             /* Calculate the onduration timer and short cycle timer (if shortcycle configuration is present) as soon as we 
              * recived ueCfg request */
             schAddUeInOndurationList(ueCb->cellCb, ueCb, 0);
@@ -331,7 +346,7 @@ uint8_t fillSchUeCbFrmCfgReq(Inst inst, SchUeCb *ueCb, SchUeCfgReq *ueCfg)
          {
             /* convert all the drx configuration recived in ms/subms into number
              * of slots and store into the drxUeCb */
-            schFillDrxUeCb(ueCb->cellCb->numerology, ueCfg->macCellGrpCfg.drxCfg, &ueCb->drxUeCb);
+            schFillDrxUeCb(ueCb->cellCb->cellCfg.numerology, ueCfg->macCellGrpCfg.drxCfg, &ueCb->drxUeCb);
 
             /* Recalculate/Restart timer based on their presence */
             schDrxUeReCfgTimer(ueCb->cellCb, ueCb);
@@ -488,7 +503,7 @@ uint8_t fillSchUeCbFrmRecfgReq(Inst inst, SchUeCb *ueCb, SchUeRecfgReq *ueRecfg)
                schInitDrxHarqCb(&ueCb->ulHqEnt.procs[idx].ulDrxHarqCb);
             }
             /* convert all the drx configuration recived in ms/subms into number of slots and store into the drxUeCb */
-            schFillDrxUeCb(ueCb->cellCb->numerology, ueRecfg->macCellGrpRecfg.drxCfg, &ueCb->drxUeCb);
+            schFillDrxUeCb(ueCb->cellCb->cellCfg.numerology, ueRecfg->macCellGrpRecfg.drxCfg, &ueCb->drxUeCb);
             /* Calculate the onduration timer and short cycle timer (if shortcycle configuration is present) as soon as we 
              * recived ueCfg request */
             schAddUeInOndurationList(ueCb->cellCb, ueCb, 0);
@@ -498,7 +513,7 @@ uint8_t fillSchUeCbFrmRecfgReq(Inst inst, SchUeCb *ueCb, SchUeRecfgReq *ueRecfg)
          {
             /* convert all the drx configuration recived in ms/subms into number
              * of slots and store into the drxUeCb */
-            schFillDrxUeCb(ueCb->cellCb->numerology, ueRecfg->macCellGrpRecfg.drxCfg, &ueCb->drxUeCb);
+            schFillDrxUeCb(ueCb->cellCb->cellCfg.numerology, ueRecfg->macCellGrpRecfg.drxCfg, &ueCb->drxUeCb);
 
             /* Recalculate/Restart timer based on their presence */
             schDrxUeReCfgTimer(ueCb->cellCb, ueCb);
@@ -1203,6 +1218,7 @@ uint8_t SchModUeConfigReq(Pst *pst, SchUeRecfgReq *ueRecfg)
          SchSendUeRecfgRspToMac(ueRecfg, inst, RSP_OK, &recfgRsp);
       }
    }
+   cellCb->api->SchModUeConfigReq(ueCb);
    return ret;
 }
 

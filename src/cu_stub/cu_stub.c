@@ -150,16 +150,16 @@ void readCuCfg()
    }
    
    cmInetAddr((S8*)g_cfg.DU_IPV4_Addr, &ipv4_du);
-   cuCb.cuCfgParams.sctpParams.f1SctpInfo.destCb[0].destIpAddr.ipV4Addr = ipv4_du;
-   cuCb.cuCfgParams.sctpParams.f1SctpInfo.destCb[0].destIpAddr.ipV6Pres = false;
+   cuCb.cuCfgParams.sctpParams.destCb[0].destIpAddr.ipV4Addr = ipv4_du;
+   cuCb.cuCfgParams.sctpParams.destCb[0].destIpAddr.ipV6Pres = false;
    
    cmInetAddr((S8*)g_cfg.CU_IPV4_Addr, &ipv4_cu);
    cuCb.cuCfgParams.sctpParams.localIpAddr.ipV4Addr = ipv4_cu;
    cuCb.cuCfgParams.sctpParams.localIpAddr.ipV6Pres = false;
    
-   cuCb.cuCfgParams.sctpParams.f1SctpInfo.destCb[0].destPort = g_cfg.DU_Port;
-   cuCb.cuCfgParams.sctpParams.f1SctpInfo.port = g_cfg.CU_Port; 
-   cuCb.cuCfgParams.sctpParams.f1SctpInfo.numDestNode = 1;
+   cuCb.cuCfgParams.sctpParams.destCb[0].destPort = g_cfg.DU_Port;
+   cuCb.cuCfgParams.sctpParams.f1SctpPort = g_cfg.CU_Port; 
+   cuCb.cuCfgParams.sctpParams.numDestNode = 1;
    
    cuCb.cuCfgParams.egtpParams.localIp.ipV4Pres = TRUE;
    cuCb.cuCfgParams.egtpParams.localIp.ipV4Addr = ipv4_cu;
@@ -286,8 +286,8 @@ void initiateInterDuHandover(uint32_t sourceDuId, uint32_t targetDuId, uint32_t 
    {
       ueCb->state = UE_HANDOVER_IN_PROGRESS;
       ueCb->hoInfo.HOType = Inter_DU_HO;
-      ueCb->hoInfo.srcNodeId = sourceDuId;
-      ueCb->hoInfo.tgtNodeId = targetDuId;
+      ueCb->hoInfo.sourceId = sourceDuId;
+      ueCb->hoInfo.targetId = targetDuId;
 
       BuildAndSendUeContextModificationReq(sourceDuId, ueCb, QUERY_CONFIG);
    }
@@ -316,13 +316,13 @@ void initiateInterDuHandover(uint32_t sourceDuId, uint32_t targetDuId, uint32_t 
  *         RFAILED - failure
  *
  * ****************************************************************/
-void initiateInterCuHandover(uint32_t targetCuId, uint32_t cellId, uint32_t cuUeF1apId)
+void initiateInterCuHandover(uint32_t sourceCuId, uint32_t targetCuId, uint32_t cuUeF1apId)
 {
     uint8_t  duIdx, ueIdx;
     CuUeCb   *ueCb = NULLP;
 
-    DU_LOG("\nINFO  --> CU_STUB: Inter-CU Handover Started for ueId [%d] to CU ID [%d]", \
-          cuUeF1apId, targetCuId);
+    DU_LOG("\nINFO  --> CU_STUB: Inter-CU Handover Started for ueId [%d] from CU ID [%d] to CU ID [%d]", \
+          cuUeF1apId, sourceCuId, targetCuId);
 
     for(duIdx = 0; duIdx < cuCb.numDu; duIdx++)
     {
@@ -343,11 +343,8 @@ void initiateInterCuHandover(uint32_t targetCuId, uint32_t cellId, uint32_t cuUe
     {   
        ueCb->state = UE_HANDOVER_IN_PROGRESS;
        ueCb->hoInfo.HOType = Xn_Based_Inter_CU_HO;
-       ueCb->hoInfo.srcNodeId = cuCb.cuCfgParams.cuId;
-       ueCb->hoInfo.tgtNodeId = targetCuId;
-       ueCb->hoInfo.tgtCellId = cellId;
-       ueCb->hoInfo.cuUeF1apIdSrc = ueCb->gnbCuUeF1apId;
-
+       ueCb->hoInfo.sourceId = sourceCuId;
+       ueCb->hoInfo.targetId = targetCuId;
        BuildAndSendUeContextModificationReq(cuCb.duInfo[duIdx].duId, ueCb, QUERY_CONFIG);
     }   
     else
@@ -378,7 +375,8 @@ uint8_t startDlData()
    uint32_t duId;
    uint8_t ret = ROK;
    uint8_t cnt = 0;
-   int32_t totalNumOfTestFlow = 20; 
+   uint8_t numOfPackets;
+   int32_t totalNumOfTestFlow = 1; 
    EgtpTeIdCb *teidCb = NULLP;
    
    while(totalNumOfTestFlow)
@@ -387,13 +385,26 @@ uint8_t startDlData()
       {
          for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
          {
+            if(teId == 1)
+            {
+               numOfPackets = 1;
+            }
+            else if(teId == 3)
+            {
+               numOfPackets = 1;
+            }
+            else
+            {
+               numOfPackets = 1;
+            }
+
             teidCb = NULLP;
             cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
             if(teidCb)
             {
                cnt =0;
                DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
-               while(cnt < NUM_DL_PACKETS)
+               while(cnt < numOfPackets)
                {
                   ret =  cuEgtpDatReq(duId, teId);      
                   if(ret != ROK)
@@ -403,7 +414,7 @@ uint8_t startDlData()
                   }
                   /* TODO : sleep(1) will be removed later once we will be able to
                    * support the continuous data pack transfer */
-                  sleep(1);
+                  //sleep(1);
                   cnt++;
                }
             }
@@ -416,6 +427,229 @@ uint8_t startDlData()
       totalNumOfTestFlow--;
    }
    
+   return ROK;
+}
+
+/*******************************************************************
+ *
+ * @brief start Dl data for slice testing
+ *
+ * @details
+ *
+ *    Function : startDlDataForExperiment1
+ *
+ *    Functionality: start the downlink data
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+
+uint8_t startDlDataForExperiment13()
+{
+   uint32_t teId = 0;
+   uint32_t tmpTeId = 0;
+   uint32_t duId;
+   uint8_t numOfSlice = 3;
+   uint8_t ret = ROK;
+   uint8_t cnt = 0;
+   uint8_t i = 0;
+   uint8_t timerCnt = 0;
+   uint8_t tnlStage = 1;
+   int32_t totalNumOfTestFlow; 
+   EgtpTeIdCb *teidCb = NULLP;
+   
+   while(timerCnt < 60)
+   {
+      totalNumOfTestFlow = 15;
+      while(totalNumOfTestFlow)
+      {
+         for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
+         {
+            for(teId = 1; teId <= tnlStage; teId++)
+            {
+               for(i = 0; i < 2; i++) /* Assume each slice has 2 tunnels, the tunnel would be tnId and tnId+3*/
+               {
+                  if(i == 1)
+                  {
+                     tmpTeId = teId + numOfSlice;
+                  }
+                  else
+                  {
+                     tmpTeId = teId;
+                  }
+
+                  teidCb = NULLP;
+                  cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(tmpTeId), sizeof(uint32_t), 0, (PTR *)&teidCb);
+                  if(teidCb)
+                  {
+                     cnt =0;
+                     DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, tmpTeId);
+                     while(cnt < NUM_DL_PACKETS)
+                     {
+                        ret =  cuEgtpDatReq(duId, tmpTeId);      
+                        if(ret != ROK)
+                        {
+                           DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",tmpTeId);
+                           break;
+                        }
+                        /* TODO : sleep(1) will be removed later once we will be able to
+                        * support the continuous data pack transfer */
+                        //sleep(1);
+                        cnt++;
+                     }
+                  }
+                  else
+                  {
+                     DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, tmpTeId);
+                  }
+               }
+            }
+         }
+         totalNumOfTestFlow--;
+      }
+      sleep(1);
+      timerCnt++;
+      DU_LOG("\nDEBUG  -->  Timer Count: %d\n", timerCnt);
+      if(timerCnt % 20 == 0)
+      {
+         DU_LOG("\nDEBUG  -->  tnlStage: %d\n", tnlStage);
+         tnlStage++;
+      }
+   }
+   return ROK;
+}
+
+/*******************************************************************
+ *
+ * @brief start Dl data for slice testing
+ *
+ * @details
+ *
+ *    Function : startDlDataForExperiment11
+ *
+ *    Functionality: start the downlink data to generate packet accordingly
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+
+uint8_t startDlDataForExperiment11()
+{
+   uint32_t teId = 0;
+   uint32_t duId;
+   uint8_t numOfSlice = 1;
+   uint8_t numOfPacket;
+   uint8_t ret = ROK;
+   uint8_t cnt = 0;
+   uint8_t i = 0;
+   uint16_t timerCnt = 0;
+   uint8_t tnlStage = 1;
+   int32_t totalNumOfTestFlow; 
+   EgtpTeIdCb *teidCb = NULLP;
+   
+   while(timerCnt < 10000)
+   {
+      for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
+      {
+         for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
+         {
+            numOfPacket = NUM_DL_PACKETS;
+            teidCb = NULLP;
+            cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
+            if(teidCb)
+            {
+               cnt =0;
+               //DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
+               while(cnt < numOfPacket)
+               {
+                  ret =  cuEgtpDatReq(duId, teId);      
+                  if(ret != ROK)
+                  {
+                     DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
+                     break;
+                  }
+                  /* TODO : sleep(1) will be removed later once we will be able to
+                  * support the continuous data pack transfer */
+                  //sleep(1);
+                  cnt++;
+               }
+            }
+            else
+            {
+               DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
+            }            
+         }
+      }
+      usleep(1000); /*JOJO: Smaller value, more traffic.*/
+      timerCnt++;
+   }
+   DU_LOG("\nJOJO  -->  Stop traffic.\n");
+   return ROK;
+}
+
+/*******************************************************************
+ *
+ * @brief Start individual Dl traffics
+ *
+ * @details
+ *
+ *    Function : startDlDataForExperiment12
+ *
+ *    Functionality: Start individual Dl traffics
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t startDlDataForExperiment12()
+{
+   uint32_t teId = 0;
+   uint32_t duId;
+   uint8_t numOfPacket;
+   uint8_t ret = ROK;
+   uint8_t cnt = 0;
+   uint16_t timerCnt = 0;
+   EgtpTeIdCb *teidCb = NULLP;
+   /*JOJO: initialize the interval of transmission.*/
+   uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {1, 1, 1, 1};
+
+   /*JOJO: The experiment runs for ten seconds.*/
+   while(timerCnt < 10000)
+   {
+      for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
+      {
+         for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
+         {
+            numOfPacket = NUM_DL_PACKETS;
+            teidCb = NULLP;
+            cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
+            /*JOJO: Customize the timing of transmission for each traffic based on teId.*/
+            if(teidCb && timerCnt % transmissionInterval[teId-1] == 0)
+            {
+               cnt =0;
+               // DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data (duId: %d, teId: %d)\n", duId, teId);
+               while(cnt < numOfPacket)
+               {
+                  ret =  cuEgtpDatReq(duId, teId);      
+                  if(ret != ROK)
+                  {
+                     DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
+                     break;
+                  }
+                  cnt++;
+               }
+            }           
+         }
+      } 
+      usleep(950); /*JOJO: Minimum of transmission duration.*/
+      timerCnt++;
+   }
+   DU_LOG("\nJOJO  -->  Stop traffic.\n");
    return ROK;
 }
 
@@ -437,7 +671,7 @@ uint8_t startDlData()
 void *cuConsoleHandler(void *args)
 {
    char ch;
-
+   uint16_t cnt = 0;
    while(true) 
    {
       ch = getchar();
@@ -479,7 +713,19 @@ void *cuConsoleHandler(void *args)
           * totalDataPacket = totalNumOfTestFlow * NUM_TUNNEL_TO_PUMP_DATA * NUM_DL_PACKETS 
           * totalDataPacket = [500*9*1] */
          
-         startDlData();
+         // while(true)
+         // {
+         //    if(cnt >= 500)
+         //    {
+         //       cnt = 0;
+         //       break;
+         //    }
+         //    startDlData();
+         //    usleep(80000);
+         //    cnt++;
+         // }
+         // startDlDataForExperiment11();
+         startDlDataForExperiment12();
 #endif
          continue;
       } 
@@ -488,32 +734,32 @@ void *cuConsoleHandler(void *args)
       else if(ch == 'h')
       {
          HandoverType hoType;
-         uint32_t srcNodeId, tgtNodeId, targetCellId, ueId;
+         uint32_t sourceId, targetId, ueId;
 
          DU_LOG("\n\nChoose the type of handover to initiate : \nEnter 1 for Inter-CU Handover over Xn interface\nEnter 2 for Inter-DU Handover\n");
          scanf("%d", &hoType);
 
          if(hoType == Xn_Based_Inter_CU_HO)
          {
+            DU_LOG("\nEnter Source CU ID for Inter-CU Handover : ");
+            scanf("%d", &sourceId);
             DU_LOG("\nEnter Target CU ID for Inter-CU Handover : ");
-            scanf("%d", &tgtNodeId);
-            DU_LOG("\nEnter Target Physical Cell ID for Inter-CU Handover : ");
-            scanf("%d", &targetCellId);
+            scanf("%d", &targetId);
             DU_LOG("\nEnter CU UE F1AP ID to be handed over : ");
             scanf("%d", &ueId);
 
-            initiateInterCuHandover(tgtNodeId, targetCellId, ueId);
+            initiateInterCuHandover(sourceId, targetId, ueId);
          }
          else if(hoType == Inter_DU_HO)
          {
             DU_LOG("\nEnter Source DU ID for Inter-DU Handover : ");
-            scanf("%d", &srcNodeId);
+            scanf("%d", &sourceId);
             DU_LOG("\nEnter Target DU ID for Inter-DU Handover : ");
-            scanf("%d", &tgtNodeId);
+            scanf("%d", &targetId);
             DU_LOG("\nEnter DU UE F1AP ID to be handed over : ");
             scanf("%d", &ueId);
 
-            initiateInterDuHandover(srcNodeId, tgtNodeId, ueId);
+            initiateInterDuHandover(sourceId, targetId, ueId);
          }
       }
       /* Start Idle mode paging when 'p' is received from console input */

@@ -21,8 +21,7 @@
 #define __MACINT_H__
 
 #define NUM_NUMEROLOGY 5  /* Number of numerology */
-#define MAX_SI_MESSAGE 32 /* As per 138 331 V15.3, RRC Multiplicity and type constraint definitions maxSI-Message = 32 */ 
-#define NUM_SIB 32         /* As per 138 331 V15.3, RRC Multiplicity and type constraint definitions  maxSIB = 32 */ 
+
 #define NUM_SSB		1	/* max value is 64 */
 #define SSB_MASK_SIZE	1	/* SSB mask size is 32bit for sub6 */
 #define SIB1_REPETITION_PERIOD   20
@@ -88,7 +87,6 @@
 #define EVENT_MAC_UE_RESET_REQ       225
 #define EVENT_MAC_UE_RESET_RSP       226
 #define EVENT_MAC_UE_SYNC_STATUS_IND 227
-#define EVENT_MAC_DL_BROADCAST_REQ   228
 
 #define BSR_PERIODIC_TIMER_SF_10 10
 #define BSR_RETX_TIMER_SF_320 320
@@ -96,73 +94,6 @@
 
 #define PAGING_SCHED_DELTA  4
 #define MAX_PLMN 2
-
-typedef enum
-{
-   SIB_TYPE2,
-   SIB_TYPE3,
-   SIB_TYPE4,
-   SIB_TYPE5,
-   SIB_TYPE6,
-   SIB_TYPE7,
-   SIB_TYPE8,
-   SIB_TYPE9,
-   SPARE
-}SibType;
-
-typedef enum
-{
-   SSB_PER_RACH_OCCASION_ONE_EIGHTH,
-   SSB_PER_RACH_OCCASION_ONE_FOURTH,
-   SSB_PER_RACH_OCCASION_ONE_HALF,
-   SSB_PER_RACH_OCCASION_ONE,
-   SSB_PER_RACH_OCCASION_TWO,
-   SSB_PER_RACH_OCCASION_FOUR,
-   SSB_PER_RACH_OCCASION_EIGHT,
-   SSB_PER_RACH_OCCASION_SIXTEEN
-}SsbPerRachOccasion;
-
-typedef enum
-{
-   BROADCASTING,
-   NOTBROADCASTING,
-}SiBroadcastStatus;
-
-typedef enum
-{
-   RF8,
-   RF16,
-   RF32,
-   RF64,
-   RF128,
-   RF256,
-   RF512
-}SiPeriodicity;
-
-typedef enum
-{
-   S5,
-   S10,
-   S20, 
-   S40, 
-   S80, 
-   S160, 
-   S320, 
-   S640, 
-   S1280
-}SiWindowLength;
-
-typedef enum
-{
-   SI_REQ_PERIOD_1,
-   SI_REQ_PERIOD_2,
-   SI_REQ_PERIOD_4,
-   SI_REQ_PERIOD_6,
-   SI_REQ_PERIOD_8,
-   SI_REQ_PERIOD_10,
-   SI_REQ_PERIOD_12,
-   SI_REQ_PERIOD_16
-}SiRequestPeriod;
 
 typedef enum
 {
@@ -656,6 +587,62 @@ typedef struct sib1CellCfg
    SchPageCfg       pagingCfg;
 } Sib1CellCfg; 
 
+
+typedef struct cellCfg
+{
+   MacOpState      opState;
+   MacAdminState   adminState;
+   MacCellState    cellState;
+   PlmnInfoList plmnInfoList[MAX_PLMN];   /* Consits of PlmnId and Snssai list */
+   uint32_t     phyCellId;                /* Physical cell id */
+   uint32_t     tac;
+   uint32_t     ssbFreq;
+   uint16_t     subCarrSpacing;
+   DuplexMode   dupType;          /* Duplex type: TDD/FDD */
+   uint8_t      numerology;       /* Supported numerology */
+   Sib1CellCfg  sib1Cfg;          /* SIB1 config */
+}CellCfg;
+
+typedef struct ssbCfg
+{
+   uint32_t    ssbPbchPwr;       /* SSB block power */
+   uint8_t     scsCmn;           /* subcarrier spacing for common */
+   uint16_t    ssbOffsetPointA;  /* SSB subcarrier offset from point A */
+   SSBPeriod   ssbPeriod;        /* SSB Periodicity in msec */
+   uint8_t     ssbScOffset;       /* Subcarrier Offset */
+   uint32_t    ssbMask[SSB_MASK_SIZE];      /* Bitmap for actually transmitted SSB. */
+   uint8_t     beamId[NUM_SSB];
+   BetaPss     betaPss;
+   BchPduOpt   bchPayloadFlag;   /* Options for generation of payload */
+   uint8_t     mibPdu[3];           /* MIB payload */
+   uint8_t     dmrsTypeAPos;     /* DMRS Type A position */
+}SsbCfg;
+
+typedef struct fdmInfo
+{
+   uint16_t   rootSeqIdx;        /* Root sequence index */
+   uint8_t    numRootSeq;        /* Number of root sequences required for FD */
+   uint16_t   k1;                /* Frequency Offset for each FD */
+   uint8_t    zeroCorrZoneCfg;   /* Zero correlation zone cofig */
+}PrachFdmInfo;
+
+typedef struct prachCfg
+{
+   PrachSeqLen   prachSeqLen;         /* RACH Sequence length: Long/short */
+   uint8_t       prachSubcSpacing;    /* Subcarrier spacing of RACH */
+   uint8_t       msg1Fdm;             /* Number of RACH frequency domain occasions/ PRACH FDM (1,2,4,8) */
+   uint8_t       prachCfgIdx;         /* PRACH Cfg Index */
+   PrachFdmInfo  fdm[8];              /* FDM info */
+   RstSetCfg     prachRstSetCfg;      /* PRACH restricted set config */
+   uint8_t       ssbPerRach;          /* SSB per RACH occassion */
+   uint8_t       totalNumRaPreamble;  /* Total number of RA preambles */
+   uint8_t       numCbPreamblePerSsb; /* Number of CB preamble per SSB */
+   uint16_t      msg1FreqStart;       /* Msg1-FrequencyStart */
+   uint8_t       raContResTmr;        /* RA Contention Resoultion Timer */
+   uint8_t       rsrpThreshSsb;       /* RSRP Threshold SSB */
+   uint8_t       raRspWindow;         /* RA Response Window */
+}PrachCfg;
+
 typedef struct bwpParams
 {
    uint16_t firstPrb;
@@ -721,6 +708,7 @@ typedef struct puschTimeDomRsrcAlloc
    uint8_t             startSymbolAndLength;
 }PuschTimeDomRsrcAlloc;
 
+
 typedef struct puschConfigCommon
 {
    /* PUSCH-TimeDomainResourceAllocation info */
@@ -742,63 +730,6 @@ typedef struct bwpUlConfig
    PucchConfigCommon pucchCommon;
    PuschConfigCommon puschCommon;
 }BwpUlConfig;
-
-
-typedef struct cellCfg
-{
-   MacOpState      opState;
-   MacAdminState   adminState;
-   MacCellState    cellState;
-   PlmnInfoList plmnInfoList[MAX_PLMN];   /* Consits of PlmnId and Snssai list */
-   uint32_t     phyCellId;                /* Physical cell id */
-   uint32_t     tac;
-   uint32_t     ssbFreq;
-   uint16_t     subCarrSpacing;
-   DuplexMode   dupType;          /* Duplex type: TDD/FDD */
-   Sib1CellCfg  sib1Cfg;          /* SIB1 config */
-   BwpDlConfig  initialDlBwp;     /* Initial DL BWP */
-   BwpUlConfig  initialUlBwp;     /* Initial UL BWP */
-}CellCfg;
-
-typedef struct ssbCfg
-{
-   uint32_t    ssbPbchPwr;       /* SSB block power */
-   uint8_t     scsCmn;           /* subcarrier spacing for common */
-   uint16_t    ssbOffsetPointA;  /* SSB subcarrier offset from point A */
-   SSBPeriod   ssbPeriod;        /* SSB Periodicity in msec */
-   uint8_t     ssbScOffset;       /* Subcarrier Offset */
-   uint32_t    ssbMask[SSB_MASK_SIZE];      /* Bitmap for actually transmitted SSB. */
-   uint8_t     beamId[NUM_SSB];
-   BetaPss     betaPss;
-   BchPduOpt   bchPayloadFlag;   /* Options for generation of payload */
-   uint8_t     mibPdu[3];           /* MIB payload */
-   uint8_t     dmrsTypeAPos;     /* DMRS Type A position */
-}SsbCfg;
-
-typedef struct fdmInfo
-{
-   uint16_t   rootSeqIdx;        /* Root sequence index */
-   uint8_t    numRootSeq;        /* Number of root sequences required for FD */
-   uint16_t   k1;                /* Frequency Offset for each FD */
-   uint8_t    zeroCorrZoneCfg;   /* Zero correlation zone cofig */
-}PrachFdmInfo;
-
-typedef struct prachCfg
-{
-   PrachSeqLen   prachSeqLen;         /* RACH Sequence length: Long/short */
-   uint8_t       prachSubcSpacing;    /* Subcarrier spacing of RACH */
-   uint8_t       msg1Fdm;             /* Number of RACH frequency domain occasions/ PRACH FDM (1,2,4,8) */
-   uint8_t       prachCfgIdx;         /* PRACH Cfg Index */
-   PrachFdmInfo  fdm[8];              /* FDM info */
-   RstSetCfg     prachRstSetCfg;      /* PRACH restricted set config */
-   uint8_t       ssbPerRach;          /* SSB per RACH occassion */
-   uint8_t       totalNumRaPreamble;  /* Total number of RA preambles */
-   uint8_t       numCbPreamblePerSsb; /* Number of CB preamble per SSB */
-   uint16_t      msg1FreqStart;       /* Msg1-FrequencyStart */
-   uint8_t       raContResTmr;        /* RA Contention Resoultion Timer */
-   uint8_t       rsrpThreshSsb;       /* RSRP Threshold SSB */
-   uint8_t       raRspWindow;         /* RA Response Window */
-}PrachCfg;
 
 #ifdef NR_DRX
 /* The following list of structures is taken from the DRX-Config section of specification 33.331. */
@@ -860,31 +791,18 @@ typedef struct beamformingConf
    uint32_t digitalAzimuth;    
 }BeamformingConf;
 
-typedef struct csiRsCfg
-{
-   uint8_t   *csiFreqDomainAlloc;
-   uint8_t    csiNrofPorts;
-   uint8_t    csirsfirstOFDMSymbolInTimeDomain;
-   uint8_t    csirsfirstOFDMSymbolInTimeDomain2;
-   uint8_t    csirscdmType;
-   uint8_t    csirsdensity;
-   uint8_t    csirsdensitydot5;
-   uint8_t    powerControlOffset;
-   uint8_t    powerControlOffsetSS;
-   uint16_t   periodicityAndOffset;
-}CsiRsCfg;
-
 typedef struct macCellCfg
 {
    uint16_t         cellId;           /* Cell Id */
    CarrierCfg       carrCfg;          /* Carrier configuration */
    CellCfg          cellCfg;          /* Cell Configuration*/
    SsbCfg           ssbCfg;           /* SSB configuration */          
-   CsiRsCfg         csiRsCfg;         /*Reference: 38.331 CSI-MeasConfig*/
    PrachCfg         prachCfg;         /* PRACH Configuration */
 #ifdef NR_TDD
    TDDCfg           tddCfg;           /* TDD periodicity and slot configuration */
 #endif
+   BwpDlConfig      initialDlBwp;     /* Initial DL BWP */
+   BwpUlConfig      initialUlBwp;     /* Initial UL BWP */
    PrecodingConf    precodingConf;
    BeamformingConf  beamCfg;
 }MacCellCfg;
@@ -1540,11 +1458,11 @@ typedef struct modulationInfo
    McsTable    mcsTable;    /* MCS table */
 }ModulationInfo;
 
-typedef struct macUeCreateReq
+typedef struct macUeCfg
 {
    uint16_t               cellId;
    uint8_t                ueId;
-   uint8_t                beamIdx;
+   uint8_t                beamIdx; 
    uint16_t               crnti;
    bool                   macCellGrpCfgPres;
    MacCellGrpCfg          macCellGrpCfg;
@@ -1557,7 +1475,7 @@ typedef struct macUeCreateReq
    ModulationInfo         ulModInfo;    /* UL modulation info */
    uint8_t                numLcs;
    LcCfg                  lcCfgList[MAX_NUM_LC];
-}MacUeCreateReq;
+}MacUeCfg;
 
 /* UE Re-configuration */
 typedef struct macUeRecfg
@@ -1611,7 +1529,7 @@ typedef struct sCellFailInfo
    FailureCause  cause;
 }SCellFailInfo;
 
-typedef struct macUeCreateRsp
+typedef struct ueCfgRsp
 {
    uint16_t       cellId;
    uint16_t       ueId;
@@ -1624,9 +1542,9 @@ typedef struct macUeCreateRsp
    SCellFailInfo  *failedSCellList;
    uint8_t        numDRBModFailed;   /* valid values : 0 to MAX_NUM_DRB */
    DRBFailInfo    *failedDRBModlist;
-}MacUeCreateRsp;
+}MacUeCfgRsp;
 
-typedef struct macUeCreateRsp MacUeRecfgRsp;
+typedef struct ueCfgRsp MacUeRecfgRsp;
 
 typedef struct rachRsrcReq
 {
@@ -1727,7 +1645,6 @@ typedef struct macSliceCfgReq
 typedef struct macSliceCfgReq MacSliceRecfgReq;
 typedef struct macSliceCfgRsp MacSliceRecfgRsp;
 
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.17 DL PCCH Indication */
 typedef struct dlPcchInd
 {
    uint16_t  cellId;
@@ -1737,8 +1654,6 @@ typedef struct dlPcchInd
    uint8_t  *pcchPdu;
 }DlPcchInd;
 
-
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.1 Cell Start */
 typedef struct cellInfo
 {
     SlotTimingInfo slotInfo;
@@ -1748,14 +1663,12 @@ typedef struct cellInfo
 typedef struct cellInfo CellStartInfo;
 typedef struct cellInfo CellStopInfo;
 
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.12 UE Reset Request */
 typedef struct ueReset
 {
     uint16_t cellId;
     uint8_t  ueId;
 }MacUeResetReq;
 
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.13 UE Reset Response */
 typedef struct ueResetRsp
 {
    uint16_t cellId;
@@ -1763,88 +1676,12 @@ typedef struct ueResetRsp
    CauseOfResult  status;
 }MacUeResetRsp;
 
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.14 UE Sync Status Indication */
 typedef struct ueSyncStatusInd
 {
    uint16_t   cellId;
    uint8_t    ueId;
    SyncStatus status;
 }MacUeSyncStatusInd;
-
-/* The following list of structures is taken from the SI-SchedulingInfo section of specification 33.331. */
-typedef struct sibTypeInfo
-{
-   SibType sibType;
-   uint8_t valueTag;
-   bool    areaScope;
-}SibTypeInfo;
-
-typedef struct sibMappingInfo
-{
-   uint8_t      numSibTypeInfo;
-   SibTypeInfo  sibTypeInfo[NUM_SIB];
-}SibMappingInfo;
-
-typedef struct schedulingInfo 
-{
-   SiBroadcastStatus siBroadcastStatus;
-   SiPeriodicity     siPeriodicity;
-   SibMappingInfo    sibMappingInfo;
-}SchedulingInfo;
-
-typedef struct rachOccasionsSi
-{
-   RachCfgGeneric     rachConfigSi;
-   SsbPerRachOccasion ssbPerRachOccasion;
-}RachOccasionsSi;
-
-typedef struct siReqRsrc 
-{
-   uint8_t raPreambleStartIndex;
-   uint8_t raAssociationPeriodIndex;
-   uint8_t raSsbOccasionMaskIndex; 
-}SiReqRsrc;
-
-typedef struct siRequestResource
-{
-   uint8_t    numOfSiReqRsrc;
-   SiReqRsrc  siReqRsrc[MAX_SI_MESSAGE];
-}SiRequestResource;
-
-typedef struct siRequestConfig
-{
-   RachOccasionsSi    rachOccasionsSi;
-   SiRequestPeriod    siRequestPeriod;
-   SiRequestResource  siRequestResource;
-}SiRequestConfig;
-
-typedef struct schedulingInfoList
-{
-   uint8_t        numSchInfo;
-   SchedulingInfo schedulingInfo[MAX_SI_MESSAGE];
-}SchedulingInfoList;
-
-typedef struct siSchedulingInfo
-{
-   SchedulingInfoList schInfoList;
-   SiWindowLength     siWindowLength;
-   SiRequestConfig    siRequestConfig;
-   SiRequestConfig    siRequestConfigSUL;
-   uint8_t            *siAreaID;
-}SiSchedulingInfo;
-
-/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.18 DL Broadcast Request  */
-typedef struct macDlBroadcastReq
-{
-    uint16_t         cellId;
-    uint8_t          numSiBlock;
-    SiSchedulingInfo **siSchedulingInfo;
-}MacDlBroadcastReq;
-
-/* DL broadcast req from DU APP to MAC*/
-typedef uint8_t (*DuMacDlBroadcastReq) ARGS((
-         Pst           *pst,
-         MacDlBroadcastReq *dlBroadcast));
 
 /* Functions for CellUp Ind from MAC to DU APP*/
 typedef uint8_t (*DuMacCellUpInd) ARGS((
@@ -1901,12 +1738,12 @@ typedef uint8_t (*DuMacDlCcchInd) ARGS((
 /* UE create Request from DU APP to MAC*/
 typedef uint8_t (*DuMacUeCreateReq) ARGS((
 	 Pst           *pst,
-	 MacUeCreateReq      *ueCfg ));
+	 MacUeCfg      *ueCfg ));
 
 /* UE create Response from MAC to DU APP */
-typedef uint8_t (*MacDuUeCreateRspFunc) ARGS((
+typedef uint8_t (*MacDuUeCfgRspFunc) ARGS((
 	 Pst           *pst, 
-	 MacUeCreateRsp   *cfgRsp));
+	 MacUeCfgRsp   *cfgRsp));
 
 /* UE Reconfig Request from DU APP to MAC */
 typedef uint8_t (*DuMacUeReconfigReq) ARGS((
@@ -2019,13 +1856,13 @@ uint8_t duHandleUlCcchInd(Pst *pst, UlCcchIndInfo *ulCcchIndInfo);
 uint8_t packMacDlCcchInd(Pst *pst, DlCcchIndInfo *dlCcchIndInfo);
 uint8_t unpackMacDlCcchInd(DuMacDlCcchInd func, Pst *pst, Buffer *mBuf);
 uint8_t MacProcDlCcchInd(Pst *pst, DlCcchIndInfo *dlCcchIndInfo);
-uint8_t packDuMacUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg);
+uint8_t packDuMacUeCreateReq(Pst *pst, MacUeCfg *ueCfg);
 uint8_t unpackMacUeCreateReq(DuMacUeCreateReq func, Pst *pst, Buffer *mBuf);
-uint8_t MacProcUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg);
+uint8_t MacProcUeCreateReq(Pst *pst, MacUeCfg *ueCfg);
 uint8_t sendStopIndMacToDuApp(uint16_t cellId);
-uint8_t packDuMacUeCreateRsp(Pst *pst, MacUeCreateRsp *cfgRsp);
-uint8_t unpackDuMacUeCreateRsp(MacDuUeCreateRspFunc func, Pst *pst, Buffer *mBuf);
-uint8_t DuProcMacUeCreateRsp(Pst *pst, MacUeCreateRsp *cfgRsp);
+uint8_t packDuMacUeCfgRsp(Pst *pst, MacUeCfgRsp *cfgRsp);
+uint8_t unpackDuMacUeCfgRsp(MacDuUeCfgRspFunc func, Pst *pst, Buffer *mBuf);
+uint8_t DuProcMacUeCfgRsp(Pst *pst, MacUeCfgRsp *cfgRsp);
 uint8_t packDuMacUeReconfigReq(Pst *pst, MacUeRecfg *ueRecfg);
 uint8_t unpackMacUeReconfigReq(DuMacUeReconfigReq func, Pst *pst, Buffer *mBuf);
 uint8_t MacProcUeReconfigReq(Pst *pst, MacUeRecfg *ueRecfg);
@@ -2082,9 +1919,6 @@ uint8_t unpackDuMacUeResetRsp(MacDuUeResetRspFunc func, Pst *pst, Buffer *mBuf);
 uint8_t packDuMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t DuProcMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t unpackDuMacUeSyncStatusInd(MacDuUeSyncStatusIndFunc func, Pst *pst, Buffer *mBuf);
-uint8_t packDuMacDlBroadcastReq(Pst *pst, MacDlBroadcastReq *dlBroadcastReq);
-uint8_t MacProcDlBroadcastReq(Pst *pst,  MacDlBroadcastReq *dlBroadcastReq);
-uint8_t unpackMacDlBroadcastReq(DuMacDlBroadcastReq func, Pst *pst, Buffer *mBuf);
 #endif
 
 

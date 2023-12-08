@@ -74,7 +74,7 @@ bool schCheckPrachOcc(SchCellCb *cell, SlotTimingInfo prachOccasionTimingInfo)
 
    if((prachOccasionTimingInfo.sfn%x) == y)
    {
-      subFrame = prachOccasionTimingInfo.slot/pow(2, cell->numerology);
+      subFrame = prachOccasionTimingInfo.slot/pow(2, cell->cellCfg.numerology);
 
       /* check for subFrame number */
       if ((1 << subFrame) & prachSubframe)
@@ -555,15 +555,15 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
    RaRspWindowStatus    windowStatus=0;
    
 #ifdef NR_TDD
-   totalCfgSlot = calculateSlotPatternLength(cell->cellCfg.ssbScs, cell->cellCfg.tddCfg.tddPeriod);
+   totalCfgSlot = calculateSlotPatternLength(cell->cellCfg.scsCommon, cell->cellCfg.tddCfg.tddPeriod);
 #endif
    k0K1InfoTbl    = &cell->k0K1InfoTbl;
    if(cell->raReq[ueId-1]->isCFRA == false)
    {
       msg3K2InfoTbl  = &cell->msg3K2InfoTbl;
-      puschMu        = cell->numerology;
+      puschMu        = cell->cellCfg.numerology;
       msg3Delta      = puschDeltaTable[puschMu];
-      msg3MinSchTime = minMsg3SchTime[cell->numerology];
+      msg3MinSchTime = minMsg3SchTime[cell->cellCfg.numerology];
    }
 
    /* Calculating time frame to send DCI for RAR */
@@ -574,9 +574,9 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
    if(schGetSlotSymbFrmt(dciSlot, cell->slotFrmtBitMap) == DL_SLOT)
 #endif
    {
-      /* If PDCCH is already scheduled on this slot, cannot schedule PDSCH for another UE here. */
-      if(cell->schDlSlotInfo[dciSlot]->pdcchUe != 0)
-         return false;
+      /* JOJO: Scheduler should be able to schedule PDSCH for multiple UEs here. */
+      // if(cell->schDlSlotInfo[dciSlot]->pdcchUe != 0)
+      //    return false;
 
       /* Check if this slot is within RA response window */
       windowStatus = isInRaRspWindow(cell->raReq[ueId-1], dciTime, cell->numSlots);
@@ -596,8 +596,9 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
             rarSlot = rarTime.slot;
             
             /* If PDSCH is already scheduled on this slot, cannot schedule PDSCH for another UE here. */
-            if(cell->schDlSlotInfo[rarSlot]->pdschUe != 0)
-               continue;
+            /* JOJO: Scheduler should be able to schedule PDSCH for multiple UEs here. */
+            // if(cell->schDlSlotInfo[rarSlot]->pdschUe != 0)
+            //    continue;
 
             /* If Contention-FREE RA is in progress, allocate resources for
              * PUCCH for next UL message */
@@ -622,8 +623,9 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
                   if(schGetSlotSymbFrmt(pucchTime.slot, cell->slotFrmtBitMap) == DL_SLOT)
                      continue;
 #endif
-                  if(cell->schUlSlotInfo[pucchTime.slot]->pucchUe != 0)
-                     continue;
+                  /* JOJO: Scheduler should be able to schedule PDSCH for multiple UEs here. */
+                  // if(cell->schUlSlotInfo[pucchTime.slot]->pucchUe != 0)
+                  //    continue;
                   k1Found = true;
                   break;
                }
@@ -647,8 +649,9 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
 #endif
                      /* If PUSCH is already scheduled on this slot, another PUSCH
                       * pdu cannot be scheduled here */
-                     if(cell->schUlSlotInfo[msg3Time.slot]->puschUe != 0)
-                        continue;
+                     /* JOJO: Scheduler should be able to schedule PUSCH for multiple UEs here. */
+                     // if(cell->schUlSlotInfo[msg3Time.slot]->puschUe != 0)
+                     //    continue;
 
                      k2Found = true;
                      break;
@@ -782,10 +785,11 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cell, SlotTimingInfo currTime, uin
          }
       }
 
-      cell->schDlSlotInfo[dciSlot]->pdcchUe = ueId;
-      cell->schDlSlotInfo[rarSlot]->pdschUe = ueId;
+      /* JOJO: Store UE id into specific element in UE list.*/
+      cell->schDlSlotInfo[dciSlot]->pdcchUe[ueId-1] = ueId;
+      cell->schDlSlotInfo[rarSlot]->pdschUe[ueId-1] = ueId;
       if(cell->raReq[ueId-1]->isCFRA)
-         cell->schUlSlotInfo[pucchTime.slot]->pucchUe = ueId;
+         cell->schUlSlotInfo[pucchTime.slot]->pucchUe[ueId-1] = ueId;
       else
          cell->schUlSlotInfo[msg3Time.slot]->puschUe = ueId;
 
@@ -861,7 +865,7 @@ uint8_t SchProcRachInd(Pst *pst, RachIndInfo *rachInd)
    raReq->winStartTime.slot = rachInd->timingInfo.slot;
   
    /* Converting window size from ms to number of slots */
-   slotDuration = (1 / pow(2, cell->numerology));
+   slotDuration = (1 / pow(2, cell->cellCfg.numerology));
    winNumSlots = (float)cell->cellCfg.ulCfgCommon.schInitialUlBwp.schRachCfg.prachCfgGeneric.raRspWindow / slotDuration;
    
    /* Adding window size to window start time to get window end time */
