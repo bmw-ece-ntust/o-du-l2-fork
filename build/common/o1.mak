@@ -29,7 +29,6 @@ ifeq ($(NODE),TEST_STUB)
 PLTFRM_FLAGS+=-DODU_TEST_STUB
 endif
 
-#lib: $(LIB_DIR)/libo1.a
 lib: $(LIB_DIR)/libo1.a $(LIB_DIR)/libsysrepo_extend.so
 include $(COM_BUILD_DIR)/compile.mak
 

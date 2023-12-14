@@ -292,6 +292,7 @@ typedef struct slicePm
   SliceIdentifier networkSliceIdentifier;
   double ThpDl;
   double ThpUl;
+  double mcsIndex;
 }SlicePm;
 
 typedef struct slicePmList
@@ -299,6 +300,14 @@ typedef struct slicePmList
    uint8_t numSlice;
    SlicePm *sliceRecord;
 }SlicePmList;
+
+typedef struct rrcDeliveryReportInfo
+{
+   uint16_t  cellId;
+   uint16_t  ueId;
+   uint8_t   srbId;
+   RrcDeliveryStatus  rrcDeliveryStatus;
+}RrcDeliveryReport;
 
 /*Cell Metric for NW Slicing from RLC to DUAPP*/
 typedef struct cellPm
@@ -399,6 +408,16 @@ typedef uint8_t (*RlcSlicePmToDuFunc) ARGS((
    Pst           *pst,
    SlicePmList *sliceStats));
 
+/* UE Re-establishment Request from DU APP to RLC */
+typedef uint8_t (*DuRlcUeReestablishReq) ARGS((
+   Pst           *pst,
+   RlcUeReestablishReq   *ueReestablishReq));
+
+/* UE Re-establishment Response from RLC to DU APP*/
+typedef uint8_t (*RlcDuUeReestablishRsp) ARGS((
+   Pst          *pst,
+   RlcUeReestablishRsp  *ueDelRsp));
+
 /* Cell Metrics from RLC to DU APP */
 typedef uint8_t (*RlcCellPmToDuFunc) ARGS((
    Pst           *pst,
@@ -429,6 +448,11 @@ uint8_t packRlcDuUeDeleteRsp(Pst *pst, RlcUeDeleteRsp *ueDeleteRsp);
 uint8_t unpackRlcUeDeleteRsp(RlcDuUeDeleteRsp func, Pst *pst, Buffer *mBuf);
 uint8_t packRlcDuSlicePm(Pst *pst, SlicePmList *sliceStats);
 uint8_t unpackRlcSlicePm(RlcSlicePmToDuFunc func, Pst *pst, Buffer *mBuf);
+uint8_t packDuRlcUeReestablishReq(Pst *pst, RlcUeReestablishReq *ueReestablish);
+uint8_t unpackRlcUeReestablishReq(DuRlcUeReestablishReq func, Pst *pst, Buffer *mBuf);
+uint8_t packRlcDuUeReestablishRsp(Pst *pst, RlcUeReestablishRsp *ueReestablishRsp);
+uint8_t unpackRlcUeReestablishRsp(RlcDuUeReestablishRsp func, Pst *pst, Buffer *mBuf);
+
 uint8_t packRlcDuCellPm(Pst *pst, CellPmList *cellStats);
 uint8_t unpackRlcCellPm(RlcCellPmToDuFunc func, Pst *pst, Buffer *mBuf);
 
@@ -445,6 +469,9 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo);
 uint8_t RlcProcUeDeleteReq(Pst *pst, RlcUeDelete *ueDelete);
 uint8_t DuProcRlcUeDeleteRsp(Pst *pst, RlcUeDeleteRsp *delRsp);
 uint8_t DuProcRlcSliceMetrics(Pst *pst, SlicePmList *sliceStats);
+uint8_t RlcProcUeReestablishReq(Pst *pst, RlcUeReestablishReq *ueReestablish);
+uint8_t DuProcRlcUeReestablishRsp(Pst *pst, RlcUeReestablishRsp *delRsp);
+
 uint8_t DuProcRlcCellMetrics(Pst *pst, CellPmList *cellStats);
 #endif /* RLC_INF_H */
 

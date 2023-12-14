@@ -90,6 +90,7 @@ std::string SliceMeasurementEventStdDef::getMeasPath(string str, int sd, int sst
    os<<"/"<<YANG_NAME<<":network-function/distributed-unit-functions[id='"\ 
 	   << ODU_HIGH <<"']/cell[id='"<<cellParams.cellLocalId <<\ 
 	   "']/supported-measurements[performance-measurement-type='"\ 
+	   "']/supported-measurements[performance-measurement-type='"\ 
 	   <<str<<"']/supported-snssai-subcounter-instances[slice-differentiator='"\ 
 	   <<sd<<"'][slice-service-type='"<<sst<<"']" ;
    return os.str();
@@ -207,11 +208,15 @@ bool SliceMeasurementEventStdDef::prepareEventFields(const Message* msg)
                str = "slice-level-average-prb-downlink";
                value = cJSON_CreateNumber(sliceList[i].DRB_PrbUsedDl_SNSSAI);
             }
+            // {
+            //    str = "user-equipment-average-throughput-uplink";
+            //    value = cJSON_CreateNumber(sliceList[i].DRB_UEThpUl_SNSSAI);
+            // }
 
             if(JsonHelper::addNodeToObject(arr, MEAS_REF, getMeasPath(str,\
 					    sliceList[i].networkSliceIdentifier.sd,\
 					    sliceList[i].networkSliceIdentifier.sst).c_str()) == 0)
-	    {
+	         {
                ret = false;
             }
 

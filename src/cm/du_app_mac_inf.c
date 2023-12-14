@@ -2314,6 +2314,80 @@ uint8_t unpackDuMacPrbPm(MacDuPrbPmFunc func, Pst *pst, Buffer *mBuf)
    return RFAILED;
 }
 
+/*******************************************************************
+ *
+ * @brief Pack and send UE MCS Index Report from MAC to DU APP
+ *
+ * @details
+ *
+ *    Function : packDuMacUeMcsIdxRpt
+ *
+ *    Functionality:
+ *       Pack and send UE MCS Index Report from MAC to DU APP
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t packDuMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt)
+{
+   Buffer *mBuf = NULLP;
+
+   if(pst->selector == ODU_SELECTOR_LWLC)
+   {
+      if (ODU_GET_MSG_BUF(pst->region, pst->pool, &mBuf) != ROK)
+      {
+         DU_LOG("\nERROR  --> MAC : Memory allocation failed at packDuMacUeMcsIdxRpt");
+         return RFAILED;
+      }
+      /* pack the address of the structure */
+      CMCHKPK(oduPackPointer,(PTR)MacMcsIdxRpt, mBuf);
+   }
+   else
+   {
+      DU_LOG("\nERROR  -->  MAC: Only LWLC supported for packDuMacUeMcsIdxRpt");
+      return RFAILED;
+   }
+
+   return ODU_POST_TASK(pst,mBuf);
+}
+
+/*******************************************************************
+ *
+ * @brief Unpack MCS Index Rpt from MAC to DU APP
+ *
+ * @details
+ *
+ *    Function :unpackDuMacUeMcsIdxRpt 
+ *
+ *    Functionality: Unpack MCS Index Rpt from MAC to DU APP
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t unpackDuMacUeMcsIdxRpt(MacDuMcsIdxRptFunc func, Pst *pst, Buffer *mBuf)
+{
+   if(pst->selector == ODU_SELECTOR_LWLC)
+   {
+      MacUeMcsIndexRpt *MacMcsIdxRpt = NULLP;
+
+      /* unpack the address of the structure */
+      CMCHKUNPK(oduUnpackPointer, (PTR *)&MacMcsIdxRpt, mBuf);
+      ODU_PUT_MSG_BUF(mBuf);
+      return (*func)(pst, MacMcsIdxRpt);
+   }
+   else{
+      /* Nothing to do for other selectors */
+       DU_LOG("\nERROR  -->  MAC: Only LWLC supported for PRB Metrics ");
+       ODU_PUT_MSG_BUF(mBuf);
+   }
+
+   return RFAILED;
+}
+
 /**********************************************************************
   End of file
  **********************************************************************/

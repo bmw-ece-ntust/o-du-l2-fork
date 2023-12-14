@@ -152,11 +152,11 @@ void readCuCfg()
    cmInetAddr((S8*)g_cfg.DU_IPV4_Addr, &ipv4_du);
    cuCb.cuCfgParams.sctpParams.f1SctpInfo.destCb[0].destIpAddr.ipV4Addr = ipv4_du;
    cuCb.cuCfgParams.sctpParams.f1SctpInfo.destCb[0].destIpAddr.ipV6Pres = false;
-   
+
    cmInetAddr((S8*)g_cfg.CU_IPV4_Addr, &ipv4_cu);
    cuCb.cuCfgParams.sctpParams.localIpAddr.ipV4Addr = ipv4_cu;
    cuCb.cuCfgParams.sctpParams.localIpAddr.ipV6Pres = false;
-   
+
    cuCb.cuCfgParams.sctpParams.f1SctpInfo.destCb[0].destPort = g_cfg.DU_Port;
    cuCb.cuCfgParams.sctpParams.f1SctpInfo.port = g_cfg.CU_Port; 
    cuCb.cuCfgParams.sctpParams.f1SctpInfo.numDestNode = 1;
@@ -599,6 +599,77 @@ uint8_t startDlDataForExperiment11()
       timerCnt++;
    }
    DU_LOG("\nJOJO  -->  Stop traffic.\n");
+   return ROK;
+}
+
+/*******************************************************************
+ *
+ * @brief start Dl data
+ *
+ * @details
+ *
+ *    Function : startDlDataExperiment
+ *
+ *    Functionality: start the downlink data for CQI experiment
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+
+uint8_t startDlDataExperiment()
+{
+   uint32_t teId = 0;
+   uint32_t duId;
+   uint8_t ret = ROK;
+   uint8_t cnt = 0;
+   int32_t totalNumOfTestFlow = 1;
+   uint32_t timerCnt = 0; 
+   EgtpTeIdCb *teidCb = NULLP;
+   
+   while(timerCnt < 20000){
+      totalNumOfTestFlow = 1;
+      while(totalNumOfTestFlow)
+      {
+         for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
+         {
+            for(teId = 1; teId <= NUM_TUNNEL_TO_PUMP_DATA; teId++)
+            {
+               teidCb = NULLP;
+               cmHashListFind(&(egtpCb.dstCb[duId-1].teIdLst), (uint8_t *)&(teId), sizeof(uint32_t), 0, (PTR *)&teidCb);
+               if(teidCb)
+               {
+                  cnt =0;
+                  DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data(duId %d, teId:%d)\n", duId, teId);
+                  while(cnt < 5)
+                  {
+                     ret =  cuEgtpDatReq(duId, teId);      
+                     if(ret != ROK)
+                     {
+                        DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);
+                        break;
+                     }
+                     /* TODO : sleep(1) will be removed later once we will be able to
+                     * support the continuous data pack transfer */
+                     // sleep(1);
+                     cnt++;
+                  }
+               }
+               else
+               {
+                  DU_LOG("\nDEBUG  -->  EGTP: TunnelId Not Found for (duId %d, teId:%d)\n", duId, teId);
+               }
+            }
+         }
+         totalNumOfTestFlow--;
+      }
+      usleep(6000);
+      timerCnt++;
+      DU_LOG("\nDEBUG  -->  Timer Count: %d\n", timerCnt);   
+   }
+   
+   
    return ROK;
 }
 

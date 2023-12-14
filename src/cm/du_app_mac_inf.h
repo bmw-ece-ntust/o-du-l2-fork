@@ -88,6 +88,7 @@
 #define EVENT_MAC_UE_RESET_RSP       226
 #define EVENT_MAC_UE_SYNC_STATUS_IND 227
 #define EVENT_MAC_PRB_METRIC_TO_DU   228
+#define EVENT_MAC_UE_MCS_IDX_REPORT  229
 
 #define BSR_PERIODIC_TIMER_SF_10 10
 #define BSR_RETX_TIMER_SF_320 320
@@ -95,6 +96,223 @@
 
 #define PAGING_SCHED_DELTA  4
 #define MAX_PLMN 2
+/* Macro For CSI-Meas */
+#define MAX_NUM_NZP_CSI_RS_RESOURCE 1
+#define MAX_NUM_NZP_CSI_RS_RESOURCE_SET 1
+#define MAX_NUM_CSI_RESOURCE_CONFIG 1
+#define MAX_NUM_CSI_REPORT_CONFIG 1
+
+/* Macro for CSI Configuration */
+#define NZP_CSI_CDM_TYPE NO_CDM
+#define NZP_CSI_BIT_STRING 0b0001
+#define NZP_CSI_DENSITY THREE_DENSITY
+#define NZP_CSI_EVEN_ODD_DENSITY 0 //not required since the density is three
+#define NZP_CSI_FIRST_SYMBOL_IN_TIME_DOMAIN 2
+#define NZP_CSI_FREQ_DOMAIN_ALLOC ROW1
+#define NZP_CSI_NUM_OF_PORTS 1
+
+/* MCS Index Buffer */
+/* Added by Akmal to track MCS Index Metrics */
+typedef struct mcsIndexBuffer{
+   uint16_t sum;
+   uint16_t count;
+}McsIndexBuffer;
+
+/* Message to send MCS Index */
+typedef struct ueMcsIndexRpt
+{
+   uint16_t cellId;
+   uint8_t  ueId;
+   uint8_t mcsIndex;
+}MacUeMcsIndexRpt;
+
+/* CSI-RS Configuration */
+/* CSI-RS density --> TS38.331 v17.2.0 Page 573*/
+typedef enum
+{
+   DOT5_DENSITY_EVEN,
+   DOT5_DENSITY_ODD,
+   ONE_DENSITY,
+   THREE_DENSITY
+}csiRsDensity;
+
+/* CSI-RS cdm Type --> TS38.331 v17.2.0 Page 573*/
+typedef enum
+{
+   NO_CDM,
+   FD_CDM2,
+   CDM4_FD2_TD2,
+   CDM8_FD2_TD4
+}csiRsCdmType;
+
+/* CSI nrOfPorts --> TS38.331 v17.2.0 Page 572*/
+typedef enum
+{
+   P1,
+   P2,
+   P4,
+   P8,
+   P12,
+   P16,
+   P24,
+   P32
+}csiRsNrAntPortsType;
+
+/* CSI Freq Domain Allocation --> TS38.331 v17.2.0 Page 572*/
+typedef enum
+{
+   ROW1,
+   ROW2,
+   ROW4,
+   OTHER
+}freqDomainAlloc;
+
+/* CSI Resource Power Control Offset SS --> TS38.331 v17.2.0 Page 580*/
+typedef enum
+{
+   DBMIN3,
+   DB0,
+   DB3,
+   DB6
+}powerControlOffsetSSType;
+
+/* CSI Resource Periodicity and Offset --> TS38.331 v17.2.0 Page 569*/
+typedef enum
+{
+   SLOTS4,
+   SLOTS5,
+   SLOTS8,
+   SLOTS10,
+   SLOTS16,
+   SLOTS20,
+   SLOTS32,
+   SLOTS40,
+   SLOTS64,
+   SLOTS80,
+   SLOTS160,
+   SLOTS320,
+   SLOTS640
+}ResourcePeriodicityAndOffsetChoice;
+
+/* CSI Report Periodicity and Offset --> TS38.331 v17.2.0 Page 562*/
+typedef enum{
+   SLOT4,
+   SLOT5,
+   SLOT8,
+   SLOT10,
+   SLOT16,
+   SLOT20,
+   SLOT40,
+   SLOT80,
+   SLOT160,
+   SLOT320
+}ReportPeriodicityAndOffsetChoice;
+
+/* Report Resource Config Choice --> TS38.331 v17.2.0 Page 567*/
+typedef enum
+{
+   APERIODIC,
+   SEMIPERSISTENT,
+   PERIODIC
+}CsiResourceType;
+
+/* ReportQuantity Choice --> TS38.331 v17.2.0 Page 560*/
+typedef enum{
+   NONE_REPORT,
+   CRI_RI_PMI_CQI,
+   CRI_RI_I1,
+   CRI_RI_I1_CQI,
+   CRI_RI_CQI,
+   CRI_RSRP,
+   SSB_INDEX_RSRP,
+   RI_CRI_LI_PMI_CQI
+}ReportQuantity;
+
+/* moreThanTwo Choice --> TS38.331 v17.2.0 Page 530*/
+typedef enum{
+   TWO_ONE,
+   TWO_TWO,
+   FOUR_ONE,
+   THREE_TWO,
+   SIX_ONE,
+   FOUR_TWO,
+   EIGHT_ONE,
+   FOUR_THREE,
+   SIX_TWO,
+   TWELVE_ONE,
+   FOUR_GFOUR,
+   EIGHT_TWO,
+   SIXTEEN_ONE
+}MoreThanTwoOptions;
+
+/* End of CSI-RS Configuration */
+
+typedef enum
+{
+   SIB_TYPE2,
+   SIB_TYPE3,
+   SIB_TYPE4,
+   SIB_TYPE5,
+   SIB_TYPE6,
+   SIB_TYPE7,
+   SIB_TYPE8,
+   SIB_TYPE9,
+   SPARE
+}SibType;
+
+typedef enum
+{
+   SSB_PER_RACH_OCCASION_ONE_EIGHTH,
+   SSB_PER_RACH_OCCASION_ONE_FOURTH,
+   SSB_PER_RACH_OCCASION_ONE_HALF,
+   SSB_PER_RACH_OCCASION_ONE,
+   SSB_PER_RACH_OCCASION_TWO,
+   SSB_PER_RACH_OCCASION_FOUR,
+   SSB_PER_RACH_OCCASION_EIGHT,
+   SSB_PER_RACH_OCCASION_SIXTEEN
+}SsbPerRachOccasion;
+
+typedef enum
+{
+   BROADCASTING,
+   NOTBROADCASTING,
+}SiBroadcastStatus;
+
+typedef enum
+{
+   RF8,
+   RF16,
+   RF32,
+   RF64,
+   RF128,
+   RF256,
+   RF512
+}SiPeriodicity;
+
+typedef enum
+{
+   S5,
+   S10,
+   S20, 
+   S40, 
+   S80, 
+   S160, 
+   S320, 
+   S640, 
+   S1280
+}SiWindowLength;
+
+typedef enum
+{
+   SI_REQ_PERIOD_1,
+   SI_REQ_PERIOD_2,
+   SI_REQ_PERIOD_4,
+   SI_REQ_PERIOD_6,
+   SI_REQ_PERIOD_8,
+   SI_REQ_PERIOD_10,
+   SI_REQ_PERIOD_12,
+   SI_REQ_PERIOD_16
+}SiRequestPeriod;
 
 typedef enum
 {
@@ -1316,6 +1534,189 @@ typedef struct beamFailRecoveryCfg
    uint8_t             msg1SubcSpacing;
 }BeamFailRecoveryCfg;
 
+/* CSI-RS Configuration */
+/* CSI Frequency Occupation --> TS38.331 v17.2.0 Page 555*/
+typedef struct freqOccupation
+{
+   uint8_t  startingRB;
+   uint8_t  numberOfRBs;
+}freqOccupation;
+
+/* CSI Resource Mapping --> TS38.331 v17.2.0 Page 572*/
+typedef struct csiRsResourceMapping
+{
+   freqDomainAlloc                  freqDomainAllocation;
+   uint16_t                         bitString;
+   csiRsNrAntPortsType              nrOfPorts;
+   uint8_t                          firstOFDMSymbolInTimeDomain;
+   uint8_t                          firstOFDMSymbolInTimeDomain2;
+   csiRsCdmType                     cdmType;
+   csiRsDensity                     density;
+   freqOccupation                   freqBand;
+}CsiRsResourceMapping;
+
+/* CSI Periodicity and Offset --> TS38.331 v17.2.0 Page 569*/
+typedef struct csiResourcePeriodicityAndOffset
+{
+   ResourcePeriodicityAndOffsetChoice choice;
+   uint8_t                            offset;
+}CsiResourcePeriodicityAndOffset;
+
+/* NZP Csi Rs Resource --> TS38.331 v17.2.0 Page 680*/
+typedef struct nzpCsiRsResource
+{
+   uint8_t                          nzpCsiRsResourceId;
+   CsiRsResourceMapping             resourceMapping;
+   int                              powerControlOffset;
+   powerControlOffsetSSType         powerControlOffsetSS;
+   uint8_t                          scramblingId;
+   CsiResourcePeriodicityAndOffset  periodicityAndOffset;
+}NzpCsiRsResource;
+
+/* CSI Measurement Config --> TS38.331 v17.2.0 Page 558*/
+typedef struct nzpCsiRsResourceSet
+{
+   uint8_t  nzpCsiRsRsrcSetId;
+   uint8_t  nzpCsiRsRsrcIdList[MAX_NUM_NZP_CSI_RS_RESOURCE];
+}NzpCsiRsResourceSet;
+
+/* CSI Resource Config --> TS38.331 v17.2.0 Page 567*/
+typedef struct nzpCsiRsSsb
+{
+   uint8_t  nzpCsiRsRsrcSetIdList[MAX_NUM_NZP_CSI_RS_RESOURCE_SET];
+   /*FUTURE WORKS*/
+   /*CSI SSB RESOURCE SET LIST*/
+}NzpCsiRsSsb;
+
+/* CSI Resource Config --> TS38.331 v17.2.0 Page 567*/
+typedef struct csiResourceSetList
+{
+   NzpCsiRsSsb    nzpCsiRsSsbResourceSetList;
+   /*FUTURE WORKS*/
+   /*CSI-IM ResourceSetList*/
+}CsiResourceSetList;
+
+/* CSI Resource Config --> TS38.331 v17.2.0 Page 567*/
+typedef struct csiResourceConfig
+{
+   uint8_t              csiResourceConfigId;
+   CsiResourceSetList   resourceSetList;
+   CsiResourceType      resourceType;
+   uint8_t              bwpId;
+}CsiResourceConfig;
+
+
+/* CSI Report Config --> TS38.331 v17.2.0 Page 559*/
+typedef struct pucchCsiResource
+{
+   uint8_t  bwpId;
+   uint8_t  rsrcId;
+}PucchCsiResource;
+
+/* CSI Report Config --> TS38.331 v17.2.0 Page 559*/
+typedef struct periodicCsiReportConfig
+{
+   ReportPeriodicityAndOffsetChoice    choice;
+   uint8_t                             offset;
+   PucchCsiResource                    pucchCsiRsrcList[MAX_NUM_PUCCH_RESRC];
+}PeriodicCsiReportConfig;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct twoPorts{
+   
+}TwoPorts;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct moreThanTwoPorts{
+   MoreThanTwoOptions      antennaConfig;
+}MoreThanTwoPorts;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct singlePanel{
+   union{
+      bool              isTwoPort;
+      TwoPorts          twoPort;
+      bool              isMoreThanTwoPort;
+      MoreThanTwoPorts  moreThanTwoPort;
+   }nrOfAntennaPorts;
+   uint8_t     ri_restriction_bit;
+}SinglePanel;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct codebookType1{
+   union{
+      //Currently only support single panel
+      bool        isSinglePanel;
+      SinglePanel singlePanel;
+   }subType;
+   uint8_t        codebook_mode;
+}CodebookType1;
+
+/* Codebook Config --> TS38.331 v17.2.0 Page 530 */
+typedef struct codebookConfig{
+   union{
+      // Currently only support codebook type 1
+      bool           isType1;
+      CodebookType1  type1;
+   }codebookType;
+}CodebookConfig;
+
+typedef struct csiReportContent{
+   uint8_t     cri_bitlen;
+   uint8_t     ri_bitlen;
+   uint8_t     pmi_x1_bitlen[8];
+   uint8_t     pmi_x2_bitlen[8];
+   uint8_t     cqi_bitlen[8];
+   uint8_t     ri_restriction_bit;  
+}CsiReportContent;
+
+typedef struct cri_ri_li_pmi_cqi{
+   uint16_t cri;
+   uint16_t ri;
+   uint16_t li;
+   uint16_t pmi_x1;
+   uint16_t pmi_x2;
+   uint16_t wb_cqi_1tb;
+   uint16_t wb_cqi_2tb;
+   uint16_t cqi_table;
+   uint16_t csi_report_id;
+}CRI_RI_LI_PMI_CQI;
+
+typedef struct csiReportResult{
+   CRI_RI_LI_PMI_CQI cri_ri_li_pmi_cqi_report;
+}CsiReportResult;
+
+/* CSI Report Config --> TS38.331 v17.2.0 Page 559*/
+typedef struct csiReportConfig
+{
+   uint8_t                 reportConfigId;
+   CsiResourceType         reportConfigType;
+   // Currently, only periodic reporting is supported
+   union{
+      PeriodicCsiReportConfig periodicReportInfo;
+      /*TODO : Add other reporting type*/
+   }reportConfig;
+   
+   ReportQuantity          reportQuantity;
+   CodebookConfig          codebookConfig;
+   CsiReportContent        reportContent;
+   
+   // Storing report result and config
+   CsiReportResult         reportResult;
+   uint8_t                 codebook_mode;
+   uint8_t                 N1;
+   uint8_t                 N2;
+}CsiReportConfig;
+
+/* CSI Measurement Config --> TS38.331 v17.2.0 Page 558*/
+typedef struct csiMeasConfig
+{
+   NzpCsiRsResource     nzpCsiRsRsrcToAddModList[MAX_NUM_NZP_CSI_RS_RESOURCE];
+   NzpCsiRsResourceSet  nzpCsiRsRsrcSetToAddModList[MAX_NUM_NZP_CSI_RS_RESOURCE_SET];
+   CsiResourceConfig    csiRsrcCfgToAddModList[MAX_NUM_CSI_RESOURCE_CONFIG];
+   CsiReportConfig      csiRprtCfgToAddModList[MAX_NUM_CSI_REPORT_CONFIG];
+}CsiMeasConfig;
+
 /* Serving cell configuration */
 typedef struct servCellCfgInfo
 {
@@ -1328,6 +1729,7 @@ typedef struct servCellCfgInfo
    uint8_t              *bwpInactivityTmr;
    PdschServCellCfg     pdschServCellCfg;
    InitialUlBwp         initUlBwp;
+   CsiMeasConfig        csiMeasCfg;
    BeamFailRecoveryCfg  beamFailureRecoveryCfg;
    uint8_t              numUlBwpToAdd;
    UlBwpInfo            ulBwpToAddList[MAX_NUM_BWP];
@@ -1360,6 +1762,7 @@ typedef struct servCellRecfgInfo
    uint8_t            *bwpInactivityTmr;
    PdschServCellCfg   pdschServCellCfg;
    InitialUlBwp       initUlBwp;
+   CsiMeasConfig      csiMeasCfg;
    uint8_t            numUlBwpToAddOrMod;
    UlBwpInfo          ulBwpToAddOrModList[MAX_NUM_BWP];
    uint8_t            numUlBwpToRel;
@@ -1849,6 +2252,11 @@ typedef uint8_t (*MacDuPrbPmFunc) ARGS((
 	 Pst           *pst, 
 	 MacPrbPm      *macPrbPm));
 
+/* MCS Index Report from MAC to DU APP */
+typedef uint8_t (*MacDuMcsIdxRptFunc) ARGS((
+	 Pst           *pst, 
+	 MacUeMcsIndexRpt      *MacMcsIdxRpt));
+
 uint64_t ueBitMapPerCell[MAX_NUM_CELL]; /* Bit Map to store used/free UE-IDX per Cell */
 
 uint8_t packMacCellUpInd(Pst *pst, OduCellId *cellId);
@@ -1941,6 +2349,11 @@ uint8_t unpackDuMacUeResetRsp(MacDuUeResetRspFunc func, Pst *pst, Buffer *mBuf);
 uint8_t packDuMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t DuProcMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t unpackDuMacUeSyncStatusInd(MacDuUeSyncStatusIndFunc func, Pst *pst, Buffer *mBuf);
+uint8_t packDuMacDlBroadcastReq(Pst *pst, MacDlBroadcastReq *dlBroadcastReq);
+uint8_t MacProcDlBroadcastReq(Pst *pst,  MacDlBroadcastReq *dlBroadcastReq);
+uint8_t unpackMacDlBroadcastReq(DuMacDlBroadcastReq func, Pst *pst, Buffer *mBuf);
+uint8_t packDuMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt);
+uint8_t DuProcMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt);
 #endif
 
 

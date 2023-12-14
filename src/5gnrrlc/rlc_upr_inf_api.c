@@ -196,6 +196,27 @@ uint8_t rlcSendSlicePmToDu(Pst *pst, SlicePmList *sliceStats)
 
 /*******************************************************************
  *
+ * @brief Sends Ue Reestablishment Rsp to DU APP
+ *
+ * @details
+ *
+ *    Function : rlcSendUeReestablishRspToDu 
+ *
+ *    Functionality:  Sends Ue Reestablishment Rsp to DU APP
+ *
+ * @params[in] Pst *pst, RlcUeReestablishRsp *ueReestablishRsp 
+ *             
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t rlcSendUeReestablishRspToDu(Pst *pst, RlcUeReestablishRsp *ueReestablishRsp)
+{
+    return (*rlcUeReestablishRspOpts[pst->selector])(pst, ueReestablishRsp);
+}
+
+/*******************************************************************
+ *
  * @brief Sends Cell Performance Metrics to DU APP
  *
  * @details

@@ -926,16 +926,19 @@ void deleteSchCellCb(SchCellCb *cellCb)
    {
       for(slotIdx=0; slotIdx<cellCb->numSlots; slotIdx++)
       {
-         list = &cellCb->schDlSlotInfo[slotIdx]->prbAlloc.freePrbBlockList;
-         node = list->first;
-         while(node)
+         for(int symbolIndex=0;symbolIndex<MAX_SYMB_PER_SLOT;symbolIndex++)
          {
-            next = node->next;
-            SCH_FREE(node->node, sizeof(FreePrbBlock));
-            deleteNodeFromLList(list, node);
-            node = next;
+            list = &cellCb->schDlSlotInfo[slotIdx]->prbAlloc.freePrbBlockList[symbolIndex];
+            node = list->first;
+            while(node)
+            {
+               next = node->next;
+               SCH_FREE(node->node, sizeof(FreePrbBlock));
+               deleteNodeFromLList(list, node);
+               node = next;
+            }
+            SCH_FREE(cellCb->schDlSlotInfo[slotIdx], sizeof(SchDlSlotInfo));
          }
-         SCH_FREE(cellCb->schDlSlotInfo[slotIdx], sizeof(SchDlSlotInfo));
       }
       SCH_FREE(cellCb->schDlSlotInfo, cellCb->numSlots *sizeof(SchDlSlotInfo*));
    }
@@ -944,16 +947,19 @@ void deleteSchCellCb(SchCellCb *cellCb)
    {
       for(slotIdx=0; slotIdx<cellCb->numSlots; slotIdx++)
       {
-         list = &cellCb->schUlSlotInfo[slotIdx]->prbAlloc.freePrbBlockList;
-         node = list->first;
-         while(node)
+         for(int symbolIndex=0;symbolIndex<MAX_SYMB_PER_SLOT;symbolIndex++)
          {
-            next = node->next;
-            SCH_FREE(node->node, sizeof(FreePrbBlock));
-            deleteNodeFromLList(list, node);
-            node = next;
-         }
-         SCH_FREE(cellCb->schUlSlotInfo[slotIdx], sizeof(SchUlSlotInfo));  
+            list = &cellCb->schDlSlotInfo[slotIdx]->prbAlloc.freePrbBlockList[symbolIndex];
+            node = list->first;
+            while(node)
+            {
+               next = node->next;
+               SCH_FREE(node->node, sizeof(FreePrbBlock));
+               deleteNodeFromLList(list, node);
+               node = next;
+            }
+            SCH_FREE(cellCb->schDlSlotInfo[slotIdx], sizeof(SchDlSlotInfo));
+         }  
       }
       SCH_FREE(cellCb->schUlSlotInfo,  cellCb->numSlots * sizeof(SchUlSlotInfo*));
    }
@@ -1355,7 +1361,7 @@ uint8_t allocatePrbDl(SchCellCb *cell, SlotTimingInfo slotTime, \
       }
 
       /* Iterate through all free PRB blocks */
-      freePrbNode = prbAlloc->freePrbBlockList.first; 
+      freePrbNode = prbAlloc->freePrbBlockList[startSymbol].first; 
       while(freePrbNode)
       {
          freePrbBlock = (FreePrbBlock *)freePrbNode->node; 
@@ -1407,16 +1413,22 @@ uint8_t allocatePrbDl(SchCellCb *cell, SlotTimingInfo slotTime, \
       /* If no free block can be used to allocated request number of RBs */
       if(*startPrb == MAX_NUM_RB)
          return RFAILED;
+
+      removeAllocatedPrbFromFreePrbList(&prbAlloc->freePrbBlockList[startSymbol], freePrbNode, *startPrb, numPrb);
    }
 
    /* If startPrb is known already, check if requested PRBs are available for allocation */
    else
    {
-      freePrbNode = isPrbAvailable(&prbAlloc->freePrbBlockList, *startPrb, numPrb);
-      if(!freePrbNode)
+      for(int symbolIndex=startSymbol; symbolIndex < (startSymbol+symbolLength); symbolIndex++)
       {
-         DU_LOG("\nERROR  -->  SCH: Requested DL PRB unavailable");
-         return RFAILED;
+         freePrbNode = isPrbAvailable(&prbAlloc->freePrbBlockList[symbolIndex], *startPrb, numPrb);
+         if(!freePrbNode)
+         {
+            DU_LOG("\nERROR  -->  SCH: Requested DL PRB unavailable");
+            return RFAILED;
+         }
+         removeAllocatedPrbFromFreePrbList(&prbAlloc->freePrbBlockList[symbolIndex], freePrbNode, *startPrb, numPrb);
       }
    }
 
@@ -1431,7 +1443,7 @@ uint8_t allocatePrbDl(SchCellCb *cell, SlotTimingInfo slotTime, \
    }
 
    /* Update the remaining number for free PRBs */
-   removeAllocatedPrbFromFreePrbList(&prbAlloc->freePrbBlockList, freePrbNode, *startPrb, numPrb);
+   // removeAllocatedPrbFromFreePrbList(&prbAlloc->freePrbBlockList, freePrbNode, *startPrb, numPrb);
 
    return ROK;
 }
@@ -1489,7 +1501,7 @@ uint8_t allocatePrbUl(SchCellCb *cell, SlotTimingInfo slotTime, \
       }
 
       /* Iterate through all free PRB blocks */
-      freePrbNode = prbAlloc->freePrbBlockList.first; 
+      freePrbNode = prbAlloc->freePrbBlockList[startSymbol].first; 
       while(freePrbNode)
       {
          freePrbBlock = (FreePrbBlock *)freePrbNode->node; 
@@ -1541,15 +1553,20 @@ uint8_t allocatePrbUl(SchCellCb *cell, SlotTimingInfo slotTime, \
       /* If no free block can be used to allocated requested number of RBs */
       if(*startPrb == MAX_NUM_RB)
          return RFAILED;
+      removeAllocatedPrbFromFreePrbList(&prbAlloc->freePrbBlockList[startSymbol], freePrbNode, *startPrb, numPrb);
    }
    else
    {
       /* If startPrb is known already, check if requested PRBs are available for allocation */
-      freePrbNode = isPrbAvailable(&prbAlloc->freePrbBlockList, *startPrb, numPrb);
-      if(!freePrbNode)
+      for(int symbolIndex=startSymbol; symbolIndex < (startSymbol+symbolLength); symbolIndex++)
       {
-         DU_LOG("\nERROR  -->  SCH: Requested UL PRB unavailable");
-         return RFAILED;
+         freePrbNode = isPrbAvailable(&prbAlloc->freePrbBlockList[symbolIndex], *startPrb, numPrb);
+         if(!freePrbNode)
+         {
+            DU_LOG("\nERROR  -->  SCH: Requested UL PRB unavailable");
+            return RFAILED;
+         }
+         removeAllocatedPrbFromFreePrbList(&prbAlloc->freePrbBlockList[symbolIndex], freePrbNode, *startPrb, numPrb);
       }
    }
 
@@ -1564,7 +1581,7 @@ uint8_t allocatePrbUl(SchCellCb *cell, SlotTimingInfo slotTime, \
    }
 
    /* Update the remaining number for free PRBs */
-   removeAllocatedPrbFromFreePrbList(&prbAlloc->freePrbBlockList, freePrbNode, *startPrb, numPrb);
+   // removeAllocatedPrbFromFreePrbList(&prbAlloc->freePrbBlockList, freePrbNode, *startPrb, numPrb);
 
    return ROK;
 }
@@ -1654,7 +1671,7 @@ uint16_t searchLargestFreeBlock(SchCellCb *cell, SlotTimingInfo slotTime,uint16_
       return (maxFreePRB);
    }
 
-   freePrbNode = prbAlloc->freePrbBlockList.first; 
+   freePrbNode = prbAlloc->freePrbBlockList[0].first; 
    while(freePrbNode)
    {
       freePrbBlock = (FreePrbBlock *)freePrbNode->node;
@@ -2384,7 +2401,9 @@ uint8_t SchProcDlCqiInd(Pst *pst, SchDlCqiInd *dlCqiInd)
    uint16_t ueId = 0, cellIdx = 0;
    SchUeCb *ueCb = NULLP;
    SchCellCb *cell = NULLP;
-   Inst  inst = pst->dstInst-SCH_INST_START;   
+   Inst  inst = pst->dstInst-SCH_INST_START;
+   uint8_t mcsMappingTable[] = {0,0,0,2,4,6,8,11,13,15,18,20,22,24,26,28};
+   // DU_LOG("\nINFO  -->  SCH : Received DL CQI Ind Value %d, MCS Value %d",dlCqiInd->dlCqiRpt.cqi,mcsMappingTable[dlCqiInd->dlCqiRpt.cqi-1]);   
 
    if(!dlCqiInd)
    {
@@ -2414,6 +2433,10 @@ uint8_t SchProcDlCqiInd(Pst *pst, SchDlCqiInd *dlCqiInd)
             else
             {
                /*TODO: complete the processing of DL CQI Ind*/ 
+               // DU_LOG("\nINFO   -->   SCH : Processing DL CQI Ind. CQI Value = %d, Updated MCS = %d",dlCqiInd->dlCqiRpt.cqi,mcsMappingTable[dlCqiInd->dlCqiRpt.cqi-1]);   
+               //Updating MCS value
+               ueCb->ueCfg.dlModInfo.mcsIndex = mcsMappingTable[dlCqiInd->dlCqiRpt.cqi-1];
+               // ueCb->ueCfg.dlModInfo.mcsIndex = 4;
             }
          }
          else

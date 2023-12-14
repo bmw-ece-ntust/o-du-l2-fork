@@ -48,7 +48,7 @@
 #define DMRS_ADDITIONAL_POS 0
 #define SCH_DEFAULT_K1 1
 #define SCH_TQ_SIZE 10
-#define SSB_IDX_SUPPORTED 1
+#define SSB_IDX_SUPPORTED 8
 
 #define CRC_FAILED 0
 #define CRC_PASSED 1
@@ -302,7 +302,7 @@ typedef struct freePrbBlock
  */
 typedef struct schPrbAlloc
 {
-   CmLListCp freePrbBlockList;           /*!< List of continuous blocks for available PRB */
+   CmLListCp freePrbBlockList[MAX_SYMB_PER_SLOT];           /*!< List of continuous blocks for available PRB */
    uint64_t  prbBitMap[ MAX_SYMB_PER_SLOT][PRB_BITMAP_MAX_IDX];  /*!< BitMap to store the allocated PRBs */
 }SchPrbAlloc;
 
@@ -329,6 +329,7 @@ typedef struct schDlSlotInfo
    RarAlloc     *rarAlloc[MAX_NUM_UE];    /*!< RAR allocation per UE*/
    DciInfo      *ulGrant;
    DlMsgSchInfo *dlMsgAlloc[MAX_NUM_UE];  /*!< Dl msg allocation per UE*/
+   // DlMsgSchInfo *csiRsAlloc[MAX_NUM_UE];  /*!< CSI-RS Allocation Per UE*/
 }SchDlSlotInfo;
 
 typedef struct schRaCb
@@ -361,7 +362,7 @@ typedef struct schUlSlotInfo
    SchPuschInfo *schPuschInfo;    /*!< PUSCH info */
    bool         pucchPres;        /*!< PUCCH presence field */
    /* JOJO: Store PUCCH scheduling info. of multiple UEs.*/
-   SchPucchInfo schPucchInfo[MAX_NUM_UE];  
+   SchPucchInfo schPucchInfo[2*MAX_NUM_UE];  
    /* JOJO: Extend list of UEs will be scheduled for PDSCH to multiple UEs.*/   
    uint8_t      pucchUe[MAX_NUM_UE];          
    uint8_t      puschUe;          /*!< Store UE id for which PUSCH is scheduled */

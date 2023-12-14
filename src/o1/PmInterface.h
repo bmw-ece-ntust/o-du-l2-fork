@@ -40,6 +40,7 @@ typedef struct {
    double DRB_UEThpDl_SNSSAI;
    double DRB_UEThpUl_SNSSAI;
    double DRB_PrbUsedDl_SNSSAI;
+   double mcsIndex;
 }SliceMetricRecord;
 
 typedef struct {

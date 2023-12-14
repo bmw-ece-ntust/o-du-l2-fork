@@ -28,14 +28,21 @@
 #include "du_utils.h"
 #include "GlobalE2node-gNB-ID.h"
 #include <ProtocolIE-FieldE2.h>
+#include "E2setupRequest.h"
 #include "InitiatingMessageE2.h"
 #include "SuccessfulOutcomeE2.h"
-#include "UnsuccessfulOutcomeE2.h"
 #include "E2AP-PDU.h"
 #include "du_e2ap_msg_hdl.h"
 #include "odu_common_codec.h"
 #include "E2nodeComponentInterfaceF1.h"
 #include "E2setupRequest.h"
+#include "du_e2_conversions.h"
+#include "E2SM-KPM-RANfunction-Description.h"
+#include "RANfunction-Name.h"
+#include "RIC-EventTriggerStyle-Item.h"
+#include "RIC-ReportStyle-Item.h"
+#include "MeasurementInfo-Action-Item.h"
+
 #include "du_e2sm_manager.h"
 
 uint8_t BuildAndSendRicIndication(RICindicationHeader_t *ricIndicationHeader, RICindicationMessage_t *ricIndicationMessage);
@@ -61,10 +68,10 @@ uint8_t BuildGlobalgNBId(GlobalE2node_gNB_ID_t *gNbId)
 {
    uint8_t unused = 0;
    uint8_t byteSize = 4;
-   uint8_t gnbId = 10;
+   uint8_t gnbId = 1;
    uint8_t ret = ROK;
 
-   /* Allocate Buffer size */
+   /* fill Global gNB ID Id */
    gNbId->global_gNB_ID.plmn_id.size = 3 * sizeof(uint8_t);
    gNbId->global_gNB_ID.plmn_id.buf = NULLP;
    DU_ALLOC(gNbId->global_gNB_ID.plmn_id.buf , gNbId->global_gNB_ID.plmn_id.size);
@@ -77,6 +84,7 @@ uint8_t BuildGlobalgNBId(GlobalE2node_gNB_ID_t *gNbId)
    {
       buildPlmnId(duCfgParam.srvdCellLst[0].duCellInfo.cellInfo.nrCgi.plmn, \
             gNbId->global_gNB_ID.plmn_id.buf);
+      /* fill gND Id */
       /* fill gND Id */
       gNbId->global_gNB_ID.gnb_id.present = GNB_ID_Choice_PR_gnb_ID;
       /* Allocate Buffer size */
@@ -508,7 +516,9 @@ uint8_t BuildAndSendE2SetupReq()
       break;
    }while(true);
 
-
+   duCb.e2apDb.e2TransInfo.onGoingTransaction[transId].transactionId = transId;
+   duCb.e2apDb.e2TransInfo.onGoingTransaction[transId].procedureCode = e2apMsg->choice.initiatingMessage->procedureCode;
+   
    FreeE2SetupReq(e2apMsg);
    return ret;
 }/* End of BuildAndSendE2SetupReq */
@@ -1216,6 +1226,7 @@ uint8_t procRicSubsReq(E2AP_PDU_t *e2apMsg)
    uint8_t idx; 
    uint8_t ied; 
    uint8_t ret = ROK;
+   CmLList  *ricSubscriptionNode = NULLP;
    uint8_t decapActionDefinitionRet = ROK;
    uint32_t recvBufLen;             
    RICsubscriptionRequest_t *ricSubsReq;
