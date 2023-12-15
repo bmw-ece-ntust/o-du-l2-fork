@@ -18,6 +18,7 @@
 /* File : du_mgr_msg_router.c */
 /* This file contains message handling functionality for DU APP */
 #include "common_def.h"
+#include "du_tmr.h"
 #include "lrg.h"
 #include "legtp.h"
 #include "lsctp.h"
@@ -29,6 +30,7 @@
 #include "kwu.x"
 #include "du_app_mac_inf.h"
 #include "du_app_rlc_inf.h"
+#include "du_e2ap_mgr.h"
 #include "du_cfg.h"
 #include "du_mgr.h"
 #include "E2AP-PDU.h"

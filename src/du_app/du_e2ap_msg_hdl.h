@@ -23,6 +23,8 @@
 
 #define ENCODE_FAIL -1
 
+#include "du_cfg.h"
+
 uint8_t sctpSend(Buffer *mBuf, uint8_t itfType);
 uint8_t setRrmPolicy(RrmPolicyList rrmPolicy[], uint8_t policyNum);
 

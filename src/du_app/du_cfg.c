@@ -18,12 +18,14 @@
 
 /* This file contains all utility functions */
 #include "common_def.h"
+#include "du_tmr.h"
 #include "legtp.h"
 #include "lrg.h"
 #include "lkw.x"
 #include "lrg.x"
 #include "du_app_mac_inf.h"
 #include "du_app_rlc_inf.h"
+#include "du_e2ap_mgr.h"
 #include "du_cfg.h"
 #include "du_mgr.h"
 #include "du_utils.h"
@@ -1101,7 +1103,19 @@ uint8_t duReadCfg()
    pst.selector = ODU_SELECTOR_TC;
    pst.pool= DU_POOL;
 
+   /* Initialize the timer blocks */
+   cmInitTimers(&(duCb.e2apDb.e2TimersInfo.e2Timers.e2SetupTimer), 1);
 
+   /* Initialzie the timer queue */   
+   memset(&(duCb.duTimersInfo.tmrTq), 0, sizeof(CmTqType) * DU_TQ_SIZE);
+   
+   /* Initialize the timer control point */
+   memset(&(duCb.duTimersInfo.tmrTqCp), 0, sizeof(CmTqCp));
+   duCb.duTimersInfo.tmrTqCp.tmrLen = DU_TQ_SIZE;
+   
+   /* Initialize the timer resolution */
+   duCb.duTimersInfo.tmrRes = DU_TIMER_RESOLUTION;
+   
    if(ODU_GET_MSG_BUF(DFLT_REGION, DU_POOL, &mBuf) != ROK)
    {
       DU_LOG("\nERROR  -->  DU_APP : Memory allocation failed in duReadCfg");

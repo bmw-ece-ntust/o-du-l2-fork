@@ -16,6 +16,7 @@
 ################################################################################
 *******************************************************************************/
 #include "common_def.h"
+#include "du_tmr.h"
 #include "lrg.h"
 #include "lkw.x"
 #include "lrg.x"
@@ -31,6 +32,7 @@
 #include "E2setupRequest.h"
 #include "InitiatingMessageE2.h"
 #include "SuccessfulOutcomeE2.h"
+#include "UnsuccessfulOutcomeE2.h"
 #include "E2AP-PDU.h"
 #include "du_e2ap_msg_hdl.h"
 #include "odu_common_codec.h"
@@ -452,7 +454,9 @@ void FreeE2SetupReq(E2AP_PDU_t *e2apMsg)
 uint8_t BuildAndSendE2SetupReq()
 {
    uint8_t idx = 0;
-   uint8_t ret = ROK;
+   uint8_t arrIdx = 0, elementCnt=0;
+   uint8_t transId = 0, ret = ROK;
+   bool memAllocFailed;
    E2AP_PDU_t        *e2apMsg = NULLP;
    E2setupRequest_t  *e2SetupReq = NULLP;
    asn_enc_rval_t     encRetVal;       /* Encoder return value */

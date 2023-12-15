@@ -309,6 +309,24 @@ typedef struct rrcDeliveryReportInfo
    RrcDeliveryStatus  rrcDeliveryStatus;
 }RrcDeliveryReport;
 
+/*Ref: ORAN_WG8.V7.0.0 Sec 11.2.5.11 UE RLC Re-establishment Req */
+
+typedef struct rlcUeReestablishReq
+{  
+   uint16_t   cellId;         
+   uint16_t   ueId;           
+   uint8_t    numLcsToReestablish;
+   uint8_t    lcToReestablish[MAX_NUM_LC];  
+}RlcUeReestablishReq;
+
+/*Ref: ORAN_WG8.V7.0.0 Sec 11.2.5.12 UE RLC Re-establishment Rsp */
+typedef struct rlcUeReestablishRsp 
+{
+   uint16_t       cellId;
+   uint16_t        ueId;
+   CauseOfResult  status;
+}RlcUeReestablishRsp;
+
 /*Cell Metric for NW Slicing from RLC to DUAPP*/
 typedef struct cellPm
 {
@@ -328,14 +346,6 @@ typedef struct cellPmList
    UePm *ueRecord;
 }CellPmList;
 
-
-typedef struct rrcDeliveryReportInfo
-{
-   uint16_t  cellId;
-   uint16_t  ueId;
-   uint8_t   srbId;
-   RrcDeliveryStatus  rrcDeliveryStatus;
-}RrcDeliveryReport;
 
 /* DL Data Message from DU APP to RLC */
 typedef struct dlDataMsgInfo

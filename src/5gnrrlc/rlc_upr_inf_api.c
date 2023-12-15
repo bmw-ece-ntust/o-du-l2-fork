@@ -69,6 +69,14 @@ RlcCellPmToDuFunc rlcCellPmOpts[] =
    DuProcRlcCellMetrics,     /* 1 - tightly coupled */
    packRlcDuCellPm           /* 2 - LWLC loosely coupled */
 };
+
+RlcDuUeReestablishRsp rlcUeReestablishRspOpts[] =
+{
+   packRlcDuUeReestablishRsp,     /* 0 - loosely coupled */
+   DuProcRlcUeReestablishRsp,     /* 1 - tightly coupled */
+   packRlcDuUeReestablishRsp     /* 2 - LWLC loosely coupled */
+};
+
 /*******************************************************************
  *
  * @brief Sends UL RRC Message Info to DU APP

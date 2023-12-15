@@ -21,7 +21,8 @@
 #define __MACINT_H__
 
 #define NUM_NUMEROLOGY 5  /* Number of numerology */
-
+#define MAX_SI_MESSAGE 32 /* As per 138 331 V15.3, RRC Multiplicity and type constraint definitions maxSI-Message = 32 */ 
+#define NUM_SIB 32         /* As per 138 331 V15.3, RRC Multiplicity and type constraint definitions  maxSIB = 32 */ 
 #define NUM_SSB		1	/* max value is 64 */
 #define SSB_MASK_SIZE	1	/* SSB mask size is 32bit for sub6 */
 #define SIB1_REPETITION_PERIOD   20
@@ -2099,6 +2100,82 @@ typedef struct ueSyncStatusInd
    uint8_t    ueId;
    SyncStatus status;
 }MacUeSyncStatusInd;
+
+/* The following list of structures is taken from the SI-SchedulingInfo section of specification 33.331. */
+typedef struct sibTypeInfo
+{
+   SibType sibType;
+   uint8_t valueTag;
+   bool    areaScope;
+}SibTypeInfo;
+
+typedef struct sibMappingInfo
+{
+   uint8_t      numSibTypeInfo;
+   SibTypeInfo  sibTypeInfo[NUM_SIB];
+}SibMappingInfo;
+
+typedef struct schedulingInfo 
+{
+   SiBroadcastStatus siBroadcastStatus;
+   SiPeriodicity     siPeriodicity;
+   SibMappingInfo    sibMappingInfo;
+}SchedulingInfo;
+
+typedef struct rachOccasionsSi
+{
+   RachCfgGeneric     rachConfigSi;
+   SsbPerRachOccasion ssbPerRachOccasion;
+}RachOccasionsSi;
+
+typedef struct siReqRsrc 
+{
+   uint8_t raPreambleStartIndex;
+   uint8_t raAssociationPeriodIndex;
+   uint8_t raSsbOccasionMaskIndex; 
+}SiReqRsrc;
+
+typedef struct siRequestResource
+{
+   uint8_t    numOfSiReqRsrc;
+   SiReqRsrc  siReqRsrc[MAX_SI_MESSAGE];
+}SiRequestResource;
+
+typedef struct siRequestConfig
+{
+   RachOccasionsSi    rachOccasionsSi;
+   SiRequestPeriod    siRequestPeriod;
+   SiRequestResource  siRequestResource;
+}SiRequestConfig;
+
+typedef struct schedulingInfoList
+{
+   uint8_t        numSchInfo;
+   SchedulingInfo schedulingInfo[MAX_SI_MESSAGE];
+}SchedulingInfoList;
+
+typedef struct siSchedulingInfo
+{
+   SchedulingInfoList schInfoList;
+   SiWindowLength     siWindowLength;
+   SiRequestConfig    siRequestConfig;
+   SiRequestConfig    siRequestConfigSUL;
+   uint8_t            *siAreaID;
+}SiSchedulingInfo;
+
+/*  Ref: ORAN_WG8.V7.0.0 Sec 1.1.1.18 DL Broadcast Request  */
+typedef struct macDlBroadcastReq
+{
+    uint16_t         cellId;
+    uint8_t          numSiBlock;
+    SiSchedulingInfo **siSchedulingInfo;
+}MacDlBroadcastReq;
+
+/* DL broadcast req from DU APP to MAC*/
+typedef uint8_t (*DuMacDlBroadcastReq) ARGS((
+         Pst           *pst,
+         MacDlBroadcastReq *dlBroadcast));
+
 
 /* Functions for CellUp Ind from MAC to DU APP*/
 typedef uint8_t (*DuMacCellUpInd) ARGS((
