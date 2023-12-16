@@ -2367,6 +2367,29 @@ RgMngmt       *cfm
  *         RFAILED - failure
  *
  * ****************************************************************/
+uint8_t get_mcs_from_cqi(uint16_t cqi){
+   // Define MCS Lookup Table
+   uint8_t mcsMappingTable[] = {0,0,0,2,4,6,8,11,13,15,18,20,22,24,26,28};
+
+   return mcsMappingTable[cqi-1];
+}
+
+/*******************************************************************
+ *
+ * @brief Processes DL CQI ind from MAC
+ *
+ * @details
+ *
+ *    Function : SchProcDlCqiInd
+ *
+ *    Functionality:
+ *       Processes DL CQI ind from MAC
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
 uint8_t SchProcDlCqiInd(Pst *pst, SchDlCqiInd *dlCqiInd)
 {
    uint8_t  ret = ROK;
@@ -2374,8 +2397,6 @@ uint8_t SchProcDlCqiInd(Pst *pst, SchDlCqiInd *dlCqiInd)
    SchUeCb *ueCb = NULLP;
    SchCellCb *cell = NULLP;
    Inst  inst = pst->dstInst-SCH_INST_START;
-   uint8_t mcsMappingTable[] = {0,0,0,2,4,6,8,11,13,15,18,20,22,24,26,28};
-   // DU_LOG("\nINFO  -->  SCH : Received DL CQI Ind Value %d, MCS Value %d",dlCqiInd->dlCqiRpt.cqi,mcsMappingTable[dlCqiInd->dlCqiRpt.cqi-1]);   
 
    if(!dlCqiInd)
    {
@@ -2405,9 +2426,8 @@ uint8_t SchProcDlCqiInd(Pst *pst, SchDlCqiInd *dlCqiInd)
             else
             {
                /*TODO: complete the processing of DL CQI Ind*/ 
-               // DU_LOG("\nINFO   -->   SCH : Processing DL CQI Ind. CQI Value = %d, Updated MCS = %d",dlCqiInd->dlCqiRpt.cqi,mcsMappingTable[dlCqiInd->dlCqiRpt.cqi-1]);   
                //Updating MCS value
-               ueCb->ueCfg.dlModInfo.mcsIndex = mcsMappingTable[dlCqiInd->dlCqiRpt.cqi-1];
+               ueCb->ueCfg.dlModInfo.mcsIndex = get_mcs_from_cqi(dlCqiInd->dlCqiRpt.cqi);
                // ueCb->ueCfg.dlModInfo.mcsIndex = 4;
             }
          }
