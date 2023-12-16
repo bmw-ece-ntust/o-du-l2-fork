@@ -2353,18 +2353,17 @@ RgMngmt       *cfm
 
 /*******************************************************************
  *
- * @brief Processes DL CQI ind from MAC
+ * @brief Choose MCS index based on CQI feedback
  *
  * @details
  *
- *    Function : SchProcDlCqiInd
+ *    Function : get_mcs_from_cqi
  *
  *    Functionality:
- *       Processes DL CQI ind from MAC
+ *       Choose MCS index based on CQI feedback
  *
  * @params[in] 
- * @return ROK     - success
- *         RFAILED - failure
+ * @return MCS Index
  *
  * ****************************************************************/
 uint8_t get_mcs_from_cqi(uint16_t cqi){
