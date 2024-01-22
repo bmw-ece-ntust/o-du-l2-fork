@@ -831,6 +831,30 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo)
    datReqInfo->lcType       = LCH_DTCH;
    datReqInfo->sduId        = ++(rlcCb[pst->dstInst]->dlSduId);
    mBuf = dlDataMsgInfo->dlMsg;
+
+   /* Avoid RLC BO overflow*/
+   RlcDlRbCb     *rbCb;
+   RlcCb         *tRlcCb;
+   tRlcCb = RLC_GET_RLCCB(pst->dstInst);
+   rlcDbmFetchDlRbCbByRbId(tRlcCb, &datReqInfo->rlcId, &rbCb);
+
+   if(rbCb)
+   {
+      DU_LOG("\nINFO  -->  Jacky: The BO size is: %d", rbCb->m.umDl.bo);
+      if(rbCb->m.umDl.bo>150000)
+      {
+         RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_DL, RLC_POOL, datReqInfo, sizeof(RlcDatReqInfo));
+         ODU_PUT_MSG_BUF(dlDataMsgInfo->dlMsg);
+         RLC_SHRABL_STATIC_BUF_FREE(pst->region, pst->pool, dlDataMsgInfo, sizeof(RlcDlUserDataInfo));
+         --rlcCb[pst->dstInst]->dlSduId;
+         return ROK;
+      }
+   }
+   else
+   {
+      DU_LOG("\nINFO  -->  Jacky: Empty allocate for rbCb->m.umDl.bo");
+   }
+
    if(rlcProcDlData(pst, datReqInfo, mBuf) != ROK)
    {
       return RFAILED;

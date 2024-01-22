@@ -10189,6 +10189,10 @@ void extractQosInfo(DrbQosInfo *qosToAdd, QoSFlowLevelQoSParameters_t *qosFlowCf
             qosFlowCfg->gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.buf, \
             qosFlowCfg->gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.size);
    }
+
+   qosToAdd->u.nonDyn5Qi.avgWindow = 1000;
+    qosToAdd->grbQosInfo.guarFlowBitRateDl = 20000;
+    qosToAdd->grbQosInfo.maxFlowBitRateDl = 60000;
    /*Extracting PDU_SESSION_ID*/
    qosIeExt = (ProtocolExtensionContainer_4624P74_t *)qosFlowCfg->iE_Extensions;
    if(qosIeExt)
