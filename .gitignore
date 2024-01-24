@@ -10,5 +10,9 @@ bin/odu/odu
 bin/cu_stub/cu_stub
 bin/ric_stub/ric_stub
 
-# Except build_run_odu_xterm.sh
-!build_run_odu_xterm.sh
+bin
+libs
+build/odu/obj
+build/odu/lib
+build/odu/bin
+.vscode
