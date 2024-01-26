@@ -3888,7 +3888,7 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
          {
             if(lcNode->reqBO != 0 || lcNode->allocBO != 0)
             {
-               DU_LOG("\nINFO   -->  SCH : LcID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
+               DU_LOG("\nINFO 1   -->  SCH : LcID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
                   lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);            
                if(dlMsgAlloc != NULLP)
                {
@@ -3942,7 +3942,7 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
          {
             if(lcNode->reqBO != 0 || lcNode->allocBO != 0)
             {
-               DU_LOG("\nINFO   -->  SCH : LcID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
+               DU_LOG("\nINFO 2  -->  SCH : LcID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
                   lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);            
                if(dlMsgAlloc != NULLP)
                {
