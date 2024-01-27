@@ -87,6 +87,7 @@
 #define EVENT_MAC_UE_RESET_REQ       225
 #define EVENT_MAC_UE_RESET_RSP       226
 #define EVENT_MAC_UE_SYNC_STATUS_IND 227
+#define EVENT_MAC_DRB_INFO_TO_DU   230
 
 #define BSR_PERIODIC_TIMER_SF_10 10
 #define BSR_RETX_TIMER_SF_320 320
@@ -669,6 +670,21 @@ typedef struct searchSpaceCfg
    uint16_t monitoringSymbol;
    CandidatesInfo candidate;
 }SearchSpaceCfg;
+
+typedef struct macDrbInfoList
+{
+   uint8_t           fiveQI;
+   uint16_t          ueId;
+   uint16_t          lcId;
+   uint32_t          gfbr;
+   uint32_t          mfbr;
+}MacDrbInfoList;
+
+typedef struct macdrbInfo
+{
+   uint8_t           drbNum[MAX_NUM_UE];
+   MacDrbInfoList*   listOfDrbInfo[MAX_NUM_UE];
+}MacDrbInfo;
 
 typedef struct pdcchConfigCommon
 {
@@ -1830,6 +1846,11 @@ typedef uint8_t (*MacDuUeSyncStatusIndFunc) ARGS((
         Pst            *pst,
         MacUeSyncStatusInd *syncStatusInd));
 
+/* DRB Info. from MAC to DU APP */
+typedef uint8_t (*MacDuDrbInfoFunc) ARGS((
+	 Pst           *pst, 
+	 MacDrbInfo    *macDrbInfo));
+
 uint64_t ueBitMapPerCell[MAX_NUM_CELL]; /* Bit Map to store used/free UE-IDX per Cell */
 
 uint8_t packMacCellUpInd(Pst *pst, OduCellId *cellId);
@@ -1919,6 +1940,9 @@ uint8_t unpackDuMacUeResetRsp(MacDuUeResetRspFunc func, Pst *pst, Buffer *mBuf);
 uint8_t packDuMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t DuProcMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t unpackDuMacUeSyncStatusInd(MacDuUeSyncStatusIndFunc func, Pst *pst, Buffer *mBuf);
+uint8_t DuProcMacDrbInfo(Pst *pst, MacDrbInfo *macDrbInfo);
+uint8_t packDuMacDrbInfo(Pst *pst, MacDrbInfo *macDrbInfo);
+uint8_t unpackDuMacDrbInfo(MacDuDrbInfoFunc func, Pst *pst, Buffer *mBuf);
 #endif
 
 

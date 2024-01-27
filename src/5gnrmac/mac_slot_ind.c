@@ -177,6 +177,36 @@ uint8_t MacProcDlAlloc(Pst *pst, DlSchedInfo *dlSchedInfo)
          currDlSlot = &macCb.macCell[cellIdx]->dlSlot[dlSchedInfo->schSlotValue.ulDciTime.slot];
          currDlSlot->dlInfo.ulGrant = dlSchedInfo->ulGrant;
       }
+      
+      /*Forward DRB Info. to DU App.*/
+      MacDrbInfo      *macDrbInfo = NULLP;
+      MAC_ALLOC_SHRABL_BUF(macDrbInfo, sizeof(MacDrbInfo));
+      if(macDrbInfo == NULLP)
+      {
+          DU_LOG("\nERROR  -->  MAC : Failed to allocate memory in MacProcSchSliceRecfgRsp");
+          return RFAILED;
+      }
+      if(dlSchedInfo){
+         for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+         {
+            macDrbInfo->drbNum[ueIdx] = dlSchedInfo->drbInfo.drbNum[ueIdx];
+            if(macDrbInfo->drbNum[ueIdx] > 0){
+               MAC_ALLOC_SHRABL_BUF(macDrbInfo->listOfDrbInfo[ueIdx], macDrbInfo->drbNum[ueIdx] * sizeof(MacDrbInfoList));
+               if(dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx]){
+                  for(int drb_cnt = 0; drb_cnt<macDrbInfo->drbNum[ueIdx]; drb_cnt++){
+                     macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].fiveQI = dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx][drb_cnt].fiveQI;
+                     macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].ueId = dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx][drb_cnt].ueId;
+                     macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].lcId = dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx][drb_cnt].lcId;
+                     macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].gfbr = dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx][drb_cnt].gfbr;
+                     macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].mfbr = dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx][drb_cnt].mfbr;
+                     // DU_LOG("\nJOJO  -->  MAC : Received 5QI: %d.", macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].fiveQI);
+                     // DU_LOG("\nJOJO  -->  MAC : Received GFBR: %d.", macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].gfbr);
+                  }
+               }
+            }
+         }
+      }
+      MacSendDrbInfoToDu(macDrbInfo);
    }
    return ROK;
 }

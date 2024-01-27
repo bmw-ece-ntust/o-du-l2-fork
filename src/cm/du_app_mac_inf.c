@@ -2180,6 +2180,80 @@ uint8_t unpackDuMacUeSyncStatusInd(MacDuUeSyncStatusIndFunc func, Pst *pst, Buff
 
 /*******************************************************************
  *
+ * @brief Pack and send DRB Info. from MAC to DU APP
+ *
+ * @details
+ *
+ *    Function : packDuMacDRBInfo
+ *
+ *    Functionality:
+ *       Pack and send DRB Info. from MAC to DU APP
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t packDuMacDrbInfo(Pst *pst, MacDrbInfo *macDrbInfo)
+{
+   Buffer *mBuf = NULLP;
+
+   if(pst->selector == ODU_SELECTOR_LWLC)
+   {
+      if (ODU_GET_MSG_BUF(pst->region, pst->pool, &mBuf) != ROK)
+      {
+         DU_LOG("\nERROR  --> MAC : Memory allocation failed at packDuMacDRBInfo");
+         return RFAILED;
+      }
+      /* pack the address of the structure */
+      CMCHKPK(oduPackPointer,(PTR)macDrbInfo, mBuf);
+   }
+   else
+   {
+      DU_LOG("\nERROR  -->  MAC: Only LWLC supported for packDuMacDRBInfo");
+      return RFAILED;
+   }
+
+   return ODU_POST_TASK(pst,mBuf);
+}
+
+/*******************************************************************
+ *
+ * @brief Unpack DRB Info. from MAC to DU APP
+ *
+ * @details
+ *
+ *    Function :unpackDuMacDrbInfo
+ *
+ *    Functionality: Unpack PRB measurement from MAC to DU APP
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t unpackDuMacDrbInfo(MacDuDrbInfoFunc func, Pst *pst, Buffer *mBuf)
+{
+   if(pst->selector == ODU_SELECTOR_LWLC)
+   {
+      MacDrbInfo *macDrbInfo = NULLP;
+
+      /* unpack the address of the structure */
+      CMCHKUNPK(oduUnpackPointer, (PTR *)&macDrbInfo, mBuf);
+      ODU_PUT_MSG_BUF(mBuf);
+      return (*func)(pst, macDrbInfo);
+   }
+   else{
+      /* Nothing to do for other selectors */
+       DU_LOG("\nERROR  -->  MAC: Only LWLC supported for DRB Info.");
+       ODU_PUT_MSG_BUF(mBuf);
+   }
+
+   return RFAILED;
+}
+
+/*******************************************************************
+ *
  * @brief Searches for first unset bit in ueBitMap
  *
  * @details

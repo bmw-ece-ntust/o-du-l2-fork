@@ -3016,7 +3016,7 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       if(ueId == 1 && drbSetItem->dRBID == 1)
       {
       fiveQI = 1;
-      avgWindow = 2000;
+      avgWindow = 500;
       GFBR = 10000;
       MFBR = 30000;
 
@@ -3024,28 +3024,28 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       else if(ueId == 2 && drbSetItem->dRBID == 1)
       {
       fiveQI = 2;
-      avgWindow = 2000;
+      avgWindow = 500;
       GFBR = 10000;
       MFBR = 20000;
       }
       else if(ueId == 3 && drbSetItem->dRBID == 1)
       {
       fiveQI = 6;
-      avgWindow = 2000;
+      avgWindow = 500;
       GFBR = 0;
       MFBR = 50000;
       }
       else if(ueId == 4 && drbSetItem->dRBID == 1)
       {
       fiveQI = 7;
-      avgWindow = 2000;
+      avgWindow = 500;
       GFBR = 0;
       MFBR = 40000;
       }
       else
       {
       fiveQI = 7;
-      avgWindow = 2000;
+      avgWindow = 500;
       GFBR = 0;
       MFBR = 10000;
       }

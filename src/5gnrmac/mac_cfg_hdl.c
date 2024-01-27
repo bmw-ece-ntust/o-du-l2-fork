@@ -63,6 +63,13 @@ MacDuSliceRecfgRspFunc macDuSliceRecfgRspOpts[] =
    packDuMacSliceRecfgRsp    /* packing for light weight loosly coupled */
 };
 
+MacDuDrbInfoFunc MacDuDrbInfoOpts[] =
+{
+   packDuMacDrbInfo,   /* packing for loosely coupled */
+   DuProcMacDrbInfo,   /* packing for tightly coupled */
+   packDuMacDrbInfo   /* packing for light weight loosly coupled */
+};
+
 /**
  * @brief Layer Manager  Configuration request handler for Scheduler
  *
@@ -961,6 +968,31 @@ uint8_t MacProcDlPcchInd(Pst *pst, DlPcchInd *pcchInd)
    }
    return ret;
 }
+
+/**
+ * @brief Send DRB info to duapp.
+ *
+ * @details
+ *
+ *     Function : MacSendDrbInfoToDu
+ *
+ *   Sends DRB info to duapp
+ *
+ *  @param[in] MacDrbInfo* macDrbInfo
+ *  @return  int
+ *      -# ROK
+ **/
+uint8_t MacSendDrbInfoToDu(MacDrbInfo *macDrbInfo)
+{
+    Pst  rspPst;
+    
+    memset(&rspPst, 0, sizeof(Pst));
+    FILL_PST_MAC_TO_DUAPP(rspPst, EVENT_MAC_DRB_INFO_TO_DU);
+
+    return (*MacDuDrbInfoOpts[rspPst.selector])(&rspPst, macDrbInfo);
+
+}
+
 /**********************************************************************
   End of file
  **********************************************************************/

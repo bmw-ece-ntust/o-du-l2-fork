@@ -1163,6 +1163,36 @@ typedef struct dciInfo
    DlDCI          dciInfo;        /* DlDCI */
 }DciInfo;
 
+/*Append DRB info for E2 report and O1 report.*/
+typedef struct schDrbInfoList
+{
+   uint8_t           fiveQI;
+   uint16_t          ueId;
+   uint16_t          lcId;
+   uint32_t          gfbr;
+   uint32_t          mfbr;
+}SchDrbInfoList;
+
+typedef struct drbInfo
+{
+   uint8_t           drbNum[MAX_NUM_UE];
+   SchDrbInfoList*   listOfDrbInfo[MAX_NUM_UE];
+}DrbInfo;
+
+/*Append for E2 interface report*/
+typedef struct schSlicePrbPmList
+{
+   uint8_t           usedPrb;
+}SchSlicePrbPmList;
+
+/*Append for E2 interface report*/
+typedef struct prbMertic
+{
+   uint8_t             usedPrb;
+   uint8_t             totalPrb;
+   uint8_t             sliceNum;
+   SchSlicePrbPmList   *listOfSlicePm;
+}PrbMetric;
 
 /* Reference -> O-RAN.WG8.AAD.0-v07.00, Section 11.2.4.3.8 DL Scheduling Information */
 typedef struct dlSchedInfo
@@ -1183,6 +1213,8 @@ typedef struct dlSchedInfo
    /* Allocation from dedicated DL msg */
    DlMsgSchInfo *dlMsgAlloc[MAX_NUM_UE];
 
+   PrbMetric prbMetric;
+   DrbInfo drbInfo;
 }DlSchedInfo;
 
 /*Reference: O-RAN.WG8.AAD.v7.0.0, Sec 11.2.4.3.13 Downlink Paging Allocation*/

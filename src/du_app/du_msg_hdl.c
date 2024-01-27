@@ -2066,6 +2066,48 @@ uint8_t DuProcRlcSliceMetrics(Pst *pst, SlicePmList *sliceStats)
    return ROK;
 }
 
+/*******************************************************************
+ *
+ * @brief process the DRB Info. received from MAC
+ *
+ * @details
+ *
+ *    Function : DuProcMacDrbInfo
+ *
+ *    Functionality: process the mac DRB Info. received from MAC
+ *
+ * @params[in] Post structure, MacDrbInfo  *macDrbInfo
+ *             
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ **********************************************************************/
+uint8_t DuProcMacDrbInfo(Pst *pst,  MacDrbInfo *macDrbInfo)
+{
+   uint8_t ueIdx;
+
+   if(macDrbInfo != NULLP)
+   {
+      DU_LOG("\nJOJO  -->  DU_APP : MAC DRB Info. received successfully.");
+
+      // kpmStoreDrbInfo(macDrbInfo);
+      for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+      {
+         if(macDrbInfo->listOfDrbInfo[ueIdx]){
+            // DU_LOG("\nJOJO  -->  DU_APP : FiveQI: %d, MFBR: %d", macDrbInfo->listOfDrbInfo[ueIdx][0].fiveQI, macDrbInfo->listOfDrbInfo[ueIdx][0].mfbr);
+            DU_FREE_SHRABL_BUF(pst->region, pst->pool, macDrbInfo->listOfDrbInfo[ueIdx], macDrbInfo->drbNum[ueIdx] * sizeof(MacDrbInfoList));
+         }
+      }
+      
+      DU_FREE_SHRABL_BUF(pst->region, pst->pool, macDrbInfo, sizeof(MacDrbInfo));
+   }
+   else{
+      DU_LOG("\nERROR  -->  DU APP : DuProcMacDrbInfo, Empty DRB Info.");
+   }
+
+   return ROK;
+}
+
 /**********************************************************************
   End of file
  **********************************************************************/

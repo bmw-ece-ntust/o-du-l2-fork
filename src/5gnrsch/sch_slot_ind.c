@@ -752,12 +752,98 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
       cell->schDlSlotInfo[slot]->ulGrant = NULLP;
    }
 
+   SchSliceBasedSliceCb *sliceCb = NULLP;
+   SchSliceBasedCellCb  *schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
+   CmLList *sliceCbNode = schSpcCell->sliceCbList.first;
+   int slice_cnt = 0;
+   dlSchedInfo.prbMetric.usedPrb = 0;
+
+   /* For forwarding DRB info.*/
+    CmLList *lcNode;
+    SchSliceBasedLcInfo *lcInfoNode = NULLP;
+    uint8_t drb_cnt = 0;
+
+   // printf("\nJacky --> SCH : Slice Number = %d", schSpcCell->sliceCbList.count);
+
+   dlSchedInfo.prbMetric.sliceNum = schSpcCell->sliceCbList.count;
+   if(dlSchedInfo.prbMetric.sliceNum > 0){
+      if(dlSchedInfo.prbMetric.listOfSlicePm == NULLP){
+         SCH_ALLOC(dlSchedInfo.prbMetric.listOfSlicePm, dlSchedInfo.prbMetric.sliceNum * sizeof(SchSlicePrbPmList));
+      }  
+      slice_cnt = 0;
+      while(sliceCbNode)
+      {
+         sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
+         if(slice_cnt < dlSchedInfo.prbMetric.sliceNum){
+               if(dlSchedInfo.prbMetric.listOfSlicePm){
+                  dlSchedInfo.prbMetric.listOfSlicePm[slice_cnt].usedPrb = sliceCb->allocatedPrb;
+               }
+               
+               dlSchedInfo.prbMetric.usedPrb += sliceCb->allocatedPrb;
+               if(sliceCb->allocatedPrb)
+                  printf("\nJacky --> SCH : Slice # %d : Used Prb = %d", slice_cnt, sliceCb->allocatedPrb);
+               slice_cnt = slice_cnt + 1;
+               /*JOJO: Fill out DRB info.*/
+               for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+               {
+                  if(sliceCb->lcInfoList[ueIdx].count)
+                  {
+                     if(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx] == NULLP)
+                     {
+                        dlSchedInfo.drbInfo.drbNum[ueIdx] = sliceCb->lcInfoList[ueIdx].count;
+                        SCH_ALLOC(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx], dlSchedInfo.drbInfo.drbNum[ueIdx] * sizeof(SchDrbInfoList));
+                     }
+                     lcNode = sliceCb->lcInfoList[ueIdx].first;
+                     drb_cnt = 0;
+                     while(lcNode)
+                     {
+                        lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
+                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].lcId = lcInfoNode->lcId;
+                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].ueId = lcInfoNode->ueCb->ueId;
+                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].fiveQI = lcInfoNode->fiveQI;
+                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].gfbr = lcInfoNode->gfbr;
+                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].mfbr = lcInfoNode->mfbr;
+                        /*Reset accumulated BO when average window comes.*/
+                        lcInfoNode->avgWindowCnt += 1;
+                        if(lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow)
+                        {
+                           lcInfoNode->avgWindowCnt = 0;
+                           lcInfoNode->accumulatedBO = 0;
+                        }
+                        drb_cnt += 1;
+                        lcNode = lcNode->next;
+                     }       
+                  } 
+               }
+         }
+         else{
+            DU_LOG("\nJacky  -->  SCH SliceCB is oversize");
+         }
+         sliceCbNode = sliceCbNode->next;
+      }
+   }
+
    /* Send msg to MAC */
    ret = sendDlAllocToMac(&dlSchedInfo, schInst);
    if(ret != ROK)
    {
       DU_LOG("\nERROR  -->  SCH : Sending DL Broadcast allocation from SCH to MAC failed");
       return (ret);
+   }
+
+   if(dlSchedInfo.prbMetric.listOfSlicePm){
+      SCH_FREE(dlSchedInfo.prbMetric.listOfSlicePm, dlSchedInfo.prbMetric.sliceNum * sizeof(SchSlicePrbPmList));
+      dlSchedInfo.prbMetric.listOfSlicePm = NULLP;
+   }
+
+   /*JOJO: Release DRB info.*/
+   for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+   {
+      if(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx])
+      {
+         SCH_FREE(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx], dlSchedInfo.drbInfo.drbNum[ueIdx] * sizeof(SchDrbInfoList));
+         dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx] = NULLP;
+      } 
    }
 
    schInitDlSlot(cell->schDlSlotInfo[slot]);

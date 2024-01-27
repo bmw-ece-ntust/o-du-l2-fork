@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "*.x": "c",
-        "quantityconfignr.h": "c"
+        "quantityconfignr.h": "c",
+        "du_app_mac_inf.h": "c",
+        "du_cfg.h": "c"
     }
 }
