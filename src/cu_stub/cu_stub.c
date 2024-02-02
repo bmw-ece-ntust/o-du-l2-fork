@@ -442,7 +442,7 @@ uint8_t startDlDataExperiment()
    uint32_t timerCnt = 0; 
    EgtpTeIdCb *teidCb = NULLP;
    
-   while(timerCnt < 20000){
+   while(timerCnt < 2000){
       totalNumOfTestFlow = 1;
       while(totalNumOfTestFlow)
       {
@@ -478,7 +478,7 @@ uint8_t startDlDataExperiment()
          }
          totalNumOfTestFlow--;
       }
-      usleep(6000);
+      usleep(50000);
       timerCnt++;
       DU_LOG("\nDEBUG  -->  Timer Count: %d\n", timerCnt);   
    }
