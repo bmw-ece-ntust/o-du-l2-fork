@@ -19,7 +19,6 @@
 /* This file contains message handling functionality for DU APP */
 #include "common_def.h"
 #include "lrg.h"
-#include "du_tmr.h"
 #include "legtp.h"
 #include "lkw.h"
 #include "kwu.h"
@@ -28,7 +27,6 @@
 #include "kwu.x"
 #include "du_app_mac_inf.h"
 #include "du_app_rlc_inf.h"
-#include "du_e2ap_mgr.h"
 #include "du_cfg.h"
 #include "du_app_rlc_inf.h"
 #include "du_mgr.h"
@@ -55,6 +53,8 @@ uint8_t rlcUlCfg = 0;
 uint8_t numRlcMacSaps = 0;
 uint8_t macCfg = 0;
 uint8_t macCfgInst = 0;
+
+McsIndexBuffer mcsBuff1 = {.count=0, .sum=0};
 
 DuCfgParams duCfgParam;
 uint8_t packRlcConfigReq(Pst *pst, RlcMngmt *cfg);
@@ -2041,6 +2041,9 @@ uint8_t DuProcMacSliceRecfgRsp(Pst *pst,  MacSliceRecfgRsp *recfgRsp)
 uint8_t DuProcRlcSliceMetrics(Pst *pst, SlicePmList *sliceStats)
 {
     uint8_t sliceRecord = 0;
+    double mcsIndex = mcsBuff1.count != 0 ? (double)mcsBuff1.sum/(double)mcsBuff1.count : 0;
+    mcsBuff1.count = 0;
+    mcsBuff1.sum = 0;
 
     DU_LOG("\nDEBUG  -->  DU APP : Received Slice Metrics");
     if(sliceStats == NULLP)
@@ -2051,9 +2054,11 @@ uint8_t DuProcRlcSliceMetrics(Pst *pst, SlicePmList *sliceStats)
     
     for(sliceRecord = 0; sliceRecord < sliceStats->numSlice; sliceRecord++)
     {
+      sliceStats->sliceRecord[sliceRecord].mcsIndex = mcsIndex;
        DU_LOG("\nINFO   -->  DU_APP: SliceId[SST-SD]:%d-%d, DlTput %.5lf, UlTput:%.5lf", sliceStats->sliceRecord[sliceRecord].networkSliceIdentifier.sst,\
                         sliceStats->sliceRecord[sliceRecord].networkSliceIdentifier.sd,sliceStats->sliceRecord[sliceRecord].ThpDl,\
                         sliceStats->sliceRecord[sliceRecord].ThpUl);
+      DU_LOG("\nINFO --> MCS Index = %.3lf",sliceStats->sliceRecord[sliceRecord].mcsIndex);                  
     }
 #ifdef O1_ENABLE
     if(sliceStats)
@@ -2065,6 +2070,34 @@ uint8_t DuProcRlcSliceMetrics(Pst *pst, SlicePmList *sliceStats)
    DU_FREE_SHRABL_BUF(pst->region, pst->pool,sliceStats->sliceRecord, (sliceStats->numSlice) * (sizeof(SlicePm)));
    DU_FREE_SHRABL_BUF(pst->region, pst->pool,sliceStats, sizeof(SlicePmList));
 
+   return ROK;
+}
+
+/*******************************************************************
+ *
+ * @brief process the MCS Index report received from MAC
+ *
+ * @details
+ *
+ *    Function : DuProcMacUeMcsIdxRpt
+ *
+ *    Functionality: process the MCS Index report received from MAC
+ *
+ * @params[in] Post structure, MacUeMcsIndexRpt  *MacMcsIdxRpt
+ *             
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ **********************************************************************/
+uint8_t DuProcMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt)
+{
+   if(MacMcsIdxRpt)
+   {
+      mcsBuff1.sum += MacMcsIdxRpt->mcsIndex;
+      mcsBuff1.count++;
+
+      DU_FREE_SHRABL_BUF(pst->region, pst->pool, MacMcsIdxRpt, sizeof(MacUeMcsIndexRpt));
+   }
    return ROK;
 }
 

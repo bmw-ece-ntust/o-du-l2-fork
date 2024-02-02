@@ -48,7 +48,7 @@
 #define DMRS_ADDITIONAL_POS 0
 #define SCH_DEFAULT_K1 1
 #define SCH_TQ_SIZE 10
-#define SSB_IDX_SUPPORTED 1
+#define SSB_IDX_SUPPORTED 8
 
 #define CRC_FAILED 0
 #define CRC_PASSED 1
@@ -302,7 +302,7 @@ typedef struct freePrbBlock
  */
 typedef struct schPrbAlloc
 {
-   CmLListCp freePrbBlockList;           /*!< List of continuous blocks for available PRB */
+   CmLListCp freePrbBlockList[MAX_SYMB_PER_SLOT];           /*!< List of continuous blocks for available PRB */
    uint64_t  prbBitMap[ MAX_SYMB_PER_SLOT][PRB_BITMAP_MAX_IDX];  /*!< BitMap to store the allocated PRBs */
 }SchPrbAlloc;
 
@@ -322,6 +322,7 @@ typedef struct schDlSlotInfo
    RarAlloc     *rarAlloc[MAX_NUM_UE];    /*!< RAR allocation per UE*/
    DciInfo      *ulGrant;
    DlMsgSchInfo *dlMsgAlloc[MAX_NUM_UE];  /*!< Dl msg allocation per UE*/
+   // DlMsgSchInfo *csiRsAlloc[MAX_NUM_UE];  /*!< CSI-RS Allocation Per UE*/
 }SchDlSlotInfo;
 
 typedef struct schRaCb
@@ -348,7 +349,7 @@ typedef struct schUlSlotInfo
    bool         puschPres;        /*!< PUSCH presence field */
    SchPuschInfo *schPuschInfo;    /*!< PUSCH info */
    bool         pucchPres;        /*!< PUCCH presence field */
-   SchPucchInfo schPucchInfo;     /*!< PUCCH info */
+   SchPucchInfo schPucchInfo[2];  /*!< PUCCH info */ /* Hardcode support 2 PUCCH Cfg for HARQ, SR & CQI */
    uint8_t      pucchUe;          /*!< Store UE id for which PUCCH is scheduled */
    uint8_t      puschUe;          /*!< Store UE id for which PUSCH is scheduled */
 }SchUlSlotInfo;
@@ -618,7 +619,6 @@ typedef struct schCellCb
    SchDlSlotInfo **schDlSlotInfo;                   /*!< SCH resource allocations in DL */
    SchUlSlotInfo **schUlSlotInfo;                   /*!< SCH resource allocations in UL */
    SchCellCfg    cellCfg;                           /*!< Cell ocnfiguration */
-   uint8_t       numerology;
    bool          firstSsbTransmitted;
    bool          firstSib1Transmitted;
    uint8_t       ssbStartSymbArr[SCH_MAX_SSB_BEAM]; /*!< start symbol per SSB beam */
@@ -720,7 +720,7 @@ uint8_t schDlRsrcAllocMsg4(SchCellCb *cell, SlotTimingInfo msg4Time, uint8_t ueI
 uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, bool isRetx, SchDlHqProcCb *hqP);
 uint8_t allocatePrbDl(SchCellCb *cell, SlotTimingInfo slotTime, uint8_t startSymbol, uint8_t symbolLength, \
    uint16_t *startPrb, uint16_t numPrb);
-void fillDlMsgInfo(DlMsgSchInfo *dlMsgInfo, uint16_t crnti, bool isRetx, SchDlHqProcCb* hqP); /*AS per 38.473 V15.3.0, Section 9.3.1.32 crnti value range is b/w 0..65535*/
+void fillDlMsgInfo(DlMsgSchInfo *dlMsgInfo, uint8_t crnti, bool isRetx, SchDlHqProcCb* hqP);
 bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool dedMsg, uint8_t *pdschStartSymbol,\
 uint8_t *pdschSymblLen, SlotTimingInfo *pdcchTime,  SlotTimingInfo *pdschTime, SlotTimingInfo *pucchTime, bool isRetx, SchDlHqProcCb *hqP);
 RaRspWindowStatus isInRaRspWindow(SchRaReq *raReq, SlotTimingInfo frameToCheck, uint16_t numSlotsPerSystemFrame);

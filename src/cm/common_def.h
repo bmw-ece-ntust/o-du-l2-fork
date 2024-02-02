@@ -127,9 +127,6 @@
 
 #define MAX_SFN   1024
 
-/*First SCS in kHz as per 3gpp spec 38.211 Table 4.2-1 */
-#define BASE_SCS 15
-
 /* Defining macros for common utility functions */
 #define ODU_GET_MSG_BUF SGetMsg
 #define ODU_PUT_MSG_BUF SPutMsg
@@ -149,7 +146,6 @@
 #define ODU_PRINT_MSG SPrntMsg
 #define ODU_REM_PRE_MSG SRemPreMsg
 #define ODU_REM_PRE_MSG_MULT SRemPreMsgMult
-#define ODU_REM_POST_MSG_MULT SRemPstMsgMult
 #define ODU_REG_TMR_MT SRegTmrMt
 #define ODU_SEGMENT_MSG SSegMsg
 #define ODU_CAT_MSG SCatMsg
@@ -251,8 +247,7 @@ typedef enum
    CONFIG_UNKNOWN,
    CONFIG_ADD,
    CONFIG_MOD,
-   CONFIG_DEL,
-   CONFIG_REESTABLISH
+   CONFIG_DEL
 }ConfigType;
 
 #ifdef NR_TDD
@@ -280,13 +275,13 @@ typedef enum
 
 typedef enum
 {
-   SSB_5MS,
-   SSB_10MS,
-   SSB_20MS,
-   SSB_40MS,
-   SSB_80MS,
-   SSB_160MS
-}SSBPeriodicity;
+   SCS_5MS,
+   SCS_10MS,
+   SCS_20MS,
+   SCS_40MS,
+   SCS_80MS,
+   SCS_160MS
+}ScsPeriodicity;
 
 typedef enum
 {
@@ -356,7 +351,7 @@ void oduCpyFixBufToMsg(uint8_t *fixBuf, Buffer *mBuf, uint16_t len);
 uint8_t buildPlmnId(Plmn plmn, uint8_t *buf);
 uint16_t convertScsEnumValToScsVal(uint8_t scsEnumValue);
 uint8_t convertScsValToScsEnum(uint32_t num);
-uint8_t convertSSBPeriodicityToEnum(uint32_t num);
+uint8_t convertScsPeriodicityToEnum(uint32_t num);
 
 uint8_t SGetSBufNewForDebug(char *file, const char *func, int line, Region region, Pool pool, Data **ptr, Size size);
 uint8_t SPutSBufNewForDebug(char *file, const char *func, int line, Region region, Pool pool, Data *ptr, Size size);

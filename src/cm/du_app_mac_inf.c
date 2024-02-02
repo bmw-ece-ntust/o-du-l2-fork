@@ -687,12 +687,12 @@ uint8_t unpackMacDlCcchInd(DuMacDlCcchInd func, Pst *pst, Buffer *mBuf)
  *
  *
  * @params[in] Post structure pointer
- *             MacUeCreateReq pointer              
+ *             MacUeCfg pointer              
  * @return ROK     - success
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t packDuMacUeCreateReq(Pst *pst, MacUeCreateReq *ueCfg)
+uint8_t packDuMacUeCreateReq(Pst *pst, MacUeCfg *ueCfg)
 {
    Buffer *mBuf = NULLP;
 
@@ -737,7 +737,7 @@ uint8_t unpackMacUeCreateReq(DuMacUeCreateReq func, Pst *pst, Buffer *mBuf)
 {
    if(pst->selector == ODU_SELECTOR_LWLC)
    {
-      MacUeCreateReq *ueCfg;
+      MacUeCfg *ueCfg;
 
       /* unpack the address of the structure */
       CMCHKUNPK(oduUnpackPointer, (PTR *)&ueCfg, mBuf);
@@ -756,21 +756,21 @@ uint8_t unpackMacUeCreateReq(DuMacUeCreateReq func, Pst *pst, Buffer *mBuf)
 
 /*******************************************************************
  *
- * @brief Pack and send UE create response from MAC to DU APP
+ * @brief Pack and send UE config response from MAC to DU APP
  *
  * @details
  *
- *    Function : packDuMacUeCreateRsp
+ *    Function : packDuMacUeCfgRsp
  *
  *    Functionality:
- *       Pack and send UE create response from MAC to DU APP
+ *       Pack and send UE config response from MAC to DU APP
  *
  * @params[in] 
  * @return ROK     - success
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t packDuMacUeCreateRsp(Pst *pst, MacUeCreateRsp *cfgRsp)
+uint8_t packDuMacUeCfgRsp(Pst *pst, MacUeCfgRsp *cfgRsp)
 {
    Buffer *mBuf = NULLP;
 
@@ -778,7 +778,7 @@ uint8_t packDuMacUeCreateRsp(Pst *pst, MacUeCreateRsp *cfgRsp)
    {
       if (ODU_GET_MSG_BUF(pst->region, pst->pool, &mBuf) != ROK)
       {
-	 DU_LOG("\nERROR  --> MAC : Memory allocation failed at packDuMacUeCreateRsp");
+	 DU_LOG("\nERROR  --> MAC : Memory allocation failed at packDuMacUeCfgRsp");
 	 return RFAILED;
       }
       /* pack the address of the structure */
@@ -786,7 +786,7 @@ uint8_t packDuMacUeCreateRsp(Pst *pst, MacUeCreateRsp *cfgRsp)
    }
    else
    {
-      DU_LOG("\nERROR  -->  MAC: Only LWLC supported for packDuMacUeCreateRsp");
+      DU_LOG("\nERROR  -->  MAC: Only LWLC supported for packDuMacUeCfgRsp");
       return RFAILED;
    }
 
@@ -794,24 +794,24 @@ uint8_t packDuMacUeCreateRsp(Pst *pst, MacUeCreateRsp *cfgRsp)
 }
 /*******************************************************************
  *
- * @brief Unpack UE Create Response from MAC to DU APP
+ * @brief Unpack UE Config Response from MAC to DU APP
  *
  * @details
  *
- *    Function :unpackDuMacUeCreateRsp 
+ *    Function :unpackDuMacUeCfgRsp 
  *
- *    Functionality: Unpack UE Create Response from MAC to DU APP
+ *    Functionality: Unpack UE Config Response from MAC to DU APP
  *
  * @params[in] 
  * @return ROK     - success
  *         RFAILED - failure
  *
  * ****************************************************************/
-uint8_t unpackDuMacUeCreateRsp(MacDuUeCreateRspFunc func, Pst *pst, Buffer *mBuf)
+uint8_t unpackDuMacUeCfgRsp(MacDuUeCfgRspFunc func, Pst *pst, Buffer *mBuf)
 {
    if(pst->selector == ODU_SELECTOR_LWLC)
    {
-      MacUeCreateRsp *cfgRsp = NULLP;
+      MacUeCfgRsp *cfgRsp = NULLP;
 
       /* unpack the address of the structure */
       CMCHKUNPK(oduUnpackPointer, (PTR *)&cfgRsp, mBuf);
@@ -836,7 +836,7 @@ uint8_t unpackDuMacUeCreateRsp(MacDuUeCreateRspFunc func, Pst *pst, Buffer *mBuf
  *
  *
  * @params[in] Post structure pointer
- *             MacUeRecfg pointer              
+ *             MacUeCfg pointer              
  * @return ROK     - success
  *         RFAILED - failure
  *
@@ -2179,84 +2179,6 @@ uint8_t unpackDuMacUeSyncStatusInd(MacDuUeSyncStatusIndFunc func, Pst *pst, Buff
 }
 
 /*******************************************************************
-*
-* @brief Packs and Sends Dl Broadcast Request from DUAPP to MAC
-*
-* @details
-*
-*    Function : packDuMacDlBroadcastReq
-*
-*    Functionality:
-*       Packs and Sends Dl Broadcast Request from DUAPP to MAC
-*
-*
-* @params[in] Post structure pointer
-*             MacDlBroadcastReq pointer
-* @return ROK     - success
-*         RFAILED - failure
-*
-* ****************************************************************/
-uint8_t packDuMacDlBroadcastReq(Pst *pst, MacDlBroadcastReq *ueDel)
-{
-    Buffer *mBuf = NULLP;
-
-    if(pst->selector == ODU_SELECTOR_LWLC)
-    {
-       if (ODU_GET_MSG_BUF(pst->region, pst->pool, &mBuf) != ROK)
-       {
-          DU_LOG("\nERROR  --> MAC : Memory allocation failed at packDuMacDlBroadcastReq");
-          return RFAILED;
-       }
-       /* pack the address of the structure */
-       CMCHKPK(oduPackPointer,(PTR)ueDel, mBuf);
-    }
-    else
-    {
-       DU_LOG("\nERROR  -->  MAC: Only LWLC supported for packDuMacDlBroadcastReq");
-       return RFAILED;
-    }
-    return ODU_POST_TASK(pst,mBuf);
-}
-
-/*******************************************************************
-*
-* @brief Unpacks Dl Broadcast Request received from DU APP
-*
-* @details
-*
-*    Function : unpackMacDlBroadcastReq 
-*
-*    Functionality:
-*         Unpacks Dl Broadcast Request received from DU APP
-*
-* @params[in] Pointer to Handler
-*             Post structure pointer
-*             Message Buffer
-* @return ROK     - success
-*         RFAILED - failure
-*
-* ****************************************************************/
-uint8_t unpackMacDlBroadcastReq(DuMacDlBroadcastReq func, Pst *pst, Buffer *mBuf)
-{
-    if(pst->selector == ODU_SELECTOR_LWLC)
-    {
-       MacDlBroadcastReq *dlBroadcast;
-
-       /* unpack the address of the structure */
-       CMCHKUNPK(oduUnpackPointer, (PTR *)&dlBroadcast, mBuf);
-       ODU_PUT_MSG_BUF(mBuf);
-       return (*func)(pst, dlBroadcast);
-    }
-    else
-    {
-       /* Nothing to do for other selectors */
-       DU_LOG("\nERROR  -->  DU APP : Only LWLC supported for Dl Broadcast Request ");
-       ODU_PUT_MSG_BUF(mBuf);
-    }
-
-    return RFAILED;
-}
-/*******************************************************************
  *
  * @brief Searches for first unset bit in ueBitMap
  *
@@ -2316,6 +2238,80 @@ void unsetBitInUeBitMap(uint16_t cellId, uint8_t bitPos)
 
    GET_CELL_IDX(cellId, cellIdx);
    UNSET_ONE_BIT(bitPos, ueBitMapPerCell[cellIdx]);
+}
+
+/*******************************************************************
+ *
+ * @brief Pack and send UE MCS Index Report from MAC to DU APP
+ *
+ * @details
+ *
+ *    Function : packDuMacUeMcsIdxRpt
+ *
+ *    Functionality:
+ *       Pack and send UE MCS Index Report from MAC to DU APP
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t packDuMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt)
+{
+   Buffer *mBuf = NULLP;
+
+   if(pst->selector == ODU_SELECTOR_LWLC)
+   {
+      if (ODU_GET_MSG_BUF(pst->region, pst->pool, &mBuf) != ROK)
+      {
+         DU_LOG("\nERROR  --> MAC : Memory allocation failed at packDuMacUeMcsIdxRpt");
+         return RFAILED;
+      }
+      /* pack the address of the structure */
+      CMCHKPK(oduPackPointer,(PTR)MacMcsIdxRpt, mBuf);
+   }
+   else
+   {
+      DU_LOG("\nERROR  -->  MAC: Only LWLC supported for packDuMacUeMcsIdxRpt");
+      return RFAILED;
+   }
+
+   return ODU_POST_TASK(pst,mBuf);
+}
+
+/*******************************************************************
+ *
+ * @brief Unpack MCS Index Rpt from MAC to DU APP
+ *
+ * @details
+ *
+ *    Function :unpackDuMacUeMcsIdxRpt 
+ *
+ *    Functionality: Unpack MCS Index Rpt from MAC to DU APP
+ *
+ * @params[in] 
+ * @return ROK     - success
+ *         RFAILED - failure
+ *
+ * ****************************************************************/
+uint8_t unpackDuMacUeMcsIdxRpt(MacDuMcsIdxRptFunc func, Pst *pst, Buffer *mBuf)
+{
+   if(pst->selector == ODU_SELECTOR_LWLC)
+   {
+      MacUeMcsIndexRpt *MacMcsIdxRpt = NULLP;
+
+      /* unpack the address of the structure */
+      CMCHKUNPK(oduUnpackPointer, (PTR *)&MacMcsIdxRpt, mBuf);
+      ODU_PUT_MSG_BUF(mBuf);
+      return (*func)(pst, MacMcsIdxRpt);
+   }
+   else{
+      /* Nothing to do for other selectors */
+       DU_LOG("\nERROR  -->  MAC: Only LWLC supported for PRB Metrics ");
+       ODU_PUT_MSG_BUF(mBuf);
+   }
+
+   return RFAILED;
 }
 
 /**********************************************************************
