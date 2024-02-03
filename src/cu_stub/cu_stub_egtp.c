@@ -736,25 +736,25 @@ S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg)
    
    if (teId == 1) 
    {
-      // data = (char *)malloc(200 * sizeof(char));
-      // strncpy(data,
-      //    "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
-      //    "aaaaaaaaaaaaaaaaaaaa"
-      //    "aaaaaaaaaaaaaaaaaaaa"
-      //    "aaaaaaaaaaaaaaaaaaaa"
-      //    "aaaaaaaaaaaaaaaaaaaa"
-      //    "aaaaaaaaaaaaaaaaaaaa"
-      //    "aaaaaaaaaaaaaaaaaaaa"
-      //    "aaaaaaaaaaaaaaaaaaaa"
-      //    "aaaaaaaaaaaaaaaaaaaa"
-      //    "aaaaaaaaaaaaaaaaaaaa",
-      //    200);
-      // datSize = 200;
-      data = (char *)malloc(10 * sizeof(char));
+      data = (char *)malloc(200 * sizeof(char));
       strncpy(data,
-         "aaaaaaaaaa", // 10 elements per line
-         10);
-      datSize = 10;
+         "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaa",
+         200);
+      datSize = 200;
+      // data = (char *)malloc(10 * sizeof(char));
+      // strncpy(data,
+      //    "aaaaaaaaaa", // 10 elements per line
+      //    10);
+      // datSize = 10;
    } 
    else if (teId == 2) 
    {

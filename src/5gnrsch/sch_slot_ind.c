@@ -809,6 +809,7 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                         {
                            lcInfoNode->avgWindowCnt = 0;
                            lcInfoNode->accumulatedBO = 0;
+                           DU_LOG("\nJOJO  -->  Accumulated BO is reset.");
                         }
                         drb_cnt += 1;
                         lcNode = lcNode->next;

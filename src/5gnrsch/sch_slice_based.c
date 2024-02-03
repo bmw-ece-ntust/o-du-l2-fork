@@ -4776,6 +4776,10 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
             {
                DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into GBR LC list.");
             }
+            else
+            {
+               DU_LOG("\nJOJO  --> Add UE: %d, LC: %d.", ueId, lcInfoNode->lcId);
+            }
          }
 
          if(addNodeToLList(&MFBRLcList, lcNode->node, NULLP) != ROK)
@@ -4904,6 +4908,7 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
                      lcInfoNode->lcId);
                allocBO = schGFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
                      *availablePrb, &estPrb, lcInfoNode->gfbr, lcInfoNode->accumulatedBO);
+               // schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
                allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
                lcInfoNode->allocBO += allocBO;
                lcInfoNode->accumulatedBO += allocBO;
@@ -4916,6 +4921,7 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
                lcInfoNode->reqBO += UL_GRANT_SIZE;
                allocBO = schGFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
                      &estPrb, lcInfoNode->gfbr, lcInfoNode->accumulatedBO);
+               // allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
                lcInfoNode->allocBO += allocBO;
                lcInfoNode->accumulatedBO += allocBO;
             }
@@ -4923,6 +4929,7 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
             {
                allocBO = schGFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
                      &estPrb, lcInfoNode->gfbr, lcInfoNode->accumulatedBO);
+               // allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
                lcInfoNode->allocBO += allocBO;
                lcInfoNode->accumulatedBO += allocBO;
             }
@@ -4973,6 +4980,7 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
             {
                allocBO = schGFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
                         &estPrb, lcInfoNode->gfbr, lcInfoNode->accumulatedBO);
+               // allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
                lcInfoNode->allocBO += allocBO;
                lcInfoNode->accumulatedBO += allocBO;
 
@@ -5050,9 +5058,9 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
    {
       lcInfoNode = (SchSliceBasedLcInfo *)node->node;
       DU_LOG("\nJOJO  -->  MFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
-                  Priority Level: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d",\
+                  Priority Level: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
          lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, \
-         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr);
+         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
       node = node->next; 
    }
 
@@ -5085,6 +5093,7 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
                      lcInfoNode->lcId);
                allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
                         *availablePrb, &estPrb, lcInfoNode->mfbr, lcInfoNode->allocBO);
+               // allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
                allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
                lcInfoNode->allocBO += allocBO;
                lcInfoNode->accumulatedBO += allocBO;
@@ -5097,6 +5106,7 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
                lcInfoNode->reqBO += UL_GRANT_SIZE;
                allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
                         &estPrb, lcInfoNode->mfbr, lcInfoNode->allocBO);
+               // allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
                lcInfoNode->allocBO += allocBO;
                lcInfoNode->accumulatedBO += allocBO;
             }
@@ -5104,6 +5114,7 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
             {
                allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
                         &estPrb, lcInfoNode->mfbr, lcInfoNode->allocBO);
+               // allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, quantum, &estPrb);
                lcInfoNode->allocBO += allocBO;
                lcInfoNode->accumulatedBO += allocBO;
             }
@@ -5154,6 +5165,7 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
             {
                allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
                         &estPrb, lcInfoNode->mfbr, lcInfoNode->allocBO);
+               // allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
                lcInfoNode->allocBO += allocBO;
                lcInfoNode->accumulatedBO += allocBO;
 
