@@ -45,6 +45,8 @@ typedef struct schSliceBasedLcInfo
    uint32_t mfbr;  /* JOJO: MFBR which is associated with this LC */
    uint16_t   avgWindow; /* JOJO: Average window which is associated with this LC */
    uint16_t   avgWindowCnt; /* JOJO: The counter for average window */
+   bool isGFBRAchieved;
+   bool isMFBRAchieved;
    uint32_t accumulatedBO; /* JOJO: Accumated BO within an average window */
    uint8_t fiveQI; /* JOJO: 5QI which is associated with this LC */
    float_t avgTpt; /* JOJO: average throughput which is associated with this LC */

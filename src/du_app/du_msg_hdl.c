@@ -2088,7 +2088,7 @@ uint8_t DuProcMacDrbInfo(Pst *pst,  MacDrbInfo *macDrbInfo)
 
    if(macDrbInfo != NULLP)
    {
-      DU_LOG("\nJOJO  -->  DU_APP : MAC DRB Info. received successfully.");
+      // DU_LOG("\nJOJO  -->  DU_APP : MAC DRB Info. received successfully.");
 
       // kpmStoreDrbInfo(macDrbInfo);
       for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
