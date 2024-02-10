@@ -3017,22 +3017,22 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       {
       fiveQI = 1;
       avgWindow = 1000;
-      GFBR = 5000;
-      MFBR = 10000;
+      GFBR = 10000;
+      MFBR = 20000;
 
       }
       else if(ueId == 2 && drbSetItem->dRBID == 1)
       {
       fiveQI = 2;
       avgWindow = 1000;
-      GFBR = 5000;
-      MFBR = 10000;
+      GFBR = 10000;
+      MFBR = 20000;
       }
       else if(ueId == 3 && drbSetItem->dRBID == 1)
       {
-      fiveQI = 6;
+      fiveQI = 65;
       avgWindow = 1000;
-      GFBR = 0;
+      GFBR = 10000;
       MFBR = 20000;
       }
       else if(ueId == 4 && drbSetItem->dRBID == 1)
@@ -3040,14 +3040,14 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       fiveQI = 7;
       avgWindow = 1000;
       GFBR = 0;
-      MFBR = 20000;
+      MFBR = 0;
       }
       else
       {
       fiveQI = 7;
       avgWindow = 1000;
       GFBR = 0;
-      MFBR = 10000;
+      MFBR = 0;
       }
 
       /*JOJO: Create GFBR & MFBR QoS info.*/
@@ -10687,7 +10687,7 @@ uint8_t BuildDrbToBeSetupList(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetupMod_Lis
 uint8_t FillDrbToBeModItem(uint32_t duId, CuUeCb *ueCb, uint8_t arrIdx, DRBs_ToBeModified_Item_t *drbItem)
 {
    uint8_t ret = ROK;
-   uint drbIdx=0;
+   uint8_t drbIdx=0;
    DrbInfo *drbToBeMod;
 
    /*Drb Id */
