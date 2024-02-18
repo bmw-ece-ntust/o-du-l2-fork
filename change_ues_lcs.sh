@@ -8,12 +8,13 @@ file_path3="$ODU_PATH/src/cu_stub/cu_stub_egtp.h"
 file_path4="$ODU_PATH/src/cm/rgu.h"
 
 # New values for experiment
-new_max_num_ue=4  # New value for max number of UEs
-new_lc_each_ue=1  # New value for the number of logical channels for each UE
+new_max_num_ue=1  # New value for max number of UEs
+new_lc_each_ue=4  # New value for the number of logical channels for each UE
 new_total_lc_traffic=4  # New value for total number of logical channels for traffic
 new_total_lc_rlc=4  # New value for total number of logical channels in RLC layer
 
 # Find the line containing the MAX_NUM_UE macro and replace the value
+
 if grep -q -E "^#define[[:space:]]+MAX_NUM_UE[[:space:]]+[0-9]+" "$file_path1"; then
     old_max_num_ue=$(grep -E "^#define[[:space:]]+MAX_NUM_UE[[:space:]]+[0-9]+" "$file_path1" | awk '{print $3}')
     sed -i "s/^#define[[:space:]]\+MAX_NUM_UE[[:space:]]\+[0-9]\+/#define MAX_NUM_UE $new_max_num_ue/" "$file_path1"

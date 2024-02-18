@@ -3013,6 +3013,8 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       long fiveQI = 0, avgWindow = 0;
       uint32_t GFBR = 0, MFBR = 0;
 
+      DU_LOG("\nJOJO  --> UE ID: %d, DRB ID: %d.", ueId, drbSetItem->dRBID);
+
       if(ueId == 1 && drbSetItem->dRBID == 1)
       {
       fiveQI = 1;
@@ -3021,31 +3023,31 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       MFBR = 20000;
 
       }
-      else if(ueId == 2 && drbSetItem->dRBID == 1)
+      else if(ueId == 1 && drbSetItem->dRBID == 2)
       {
       fiveQI = 2;
       avgWindow = 1000;
       GFBR = 10000;
       MFBR = 20000;
       }
-      else if(ueId == 3 && drbSetItem->dRBID == 1)
+      else if(ueId == 1 && drbSetItem->dRBID == 3)
       {
       fiveQI = 65;
       avgWindow = 1000;
       GFBR = 10000;
       MFBR = 20000;
       }
-      else if(ueId == 4 && drbSetItem->dRBID == 1)
+      else if(ueId == 1 && drbSetItem->dRBID == 4)
       {
       fiveQI = 7;
-      avgWindow = 1000;
+      avgWindow = 0;
       GFBR = 0;
       MFBR = 0;
       }
       else
       {
       fiveQI = 7;
-      avgWindow = 1000;
+      avgWindow = 0;
       GFBR = 0;
       MFBR = 0;
       }

@@ -21,8 +21,8 @@ declare -A gfbr_array
 # run the odu command and continuously monitor its output
 while IFS= read -r line; do
     # check if the line contains "DL Tpt"
-    if [[ $line == *"DL Throughput Per UE"* ]]; then
-        second=$(bc <<< "$second + 0.5")
+    if [[ $line == *"DRB throughput display"* ]]; then
+        second=$(bc <<< "$second + 1")
     fi
     # check if the line contains "()"
     if [[ $line =~ $LC_setup_pattern ]]; then

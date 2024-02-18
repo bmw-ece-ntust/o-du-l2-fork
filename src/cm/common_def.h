@@ -57,7 +57,7 @@
 /* MAX values */
 #define MAX_NUM_CELL 2 /* Changed to 2 to support cell Id 2 even if there is only one cell in DU */
 #define MAX_NUM_MU   5
-#define MAX_NUM_UE 4
+#define MAX_NUM_UE 1
 #define MAX_NUM_UE_PER_TTI 1
 #define MAX_NUM_LC   MAX_DRB_LCID + 1   /*Spec 38.331: Sec 6.4: maxLC-ID Keyword*/
 #define MAX_NUM_SRB  3    /* Max. no of Srbs */
@@ -115,7 +115,7 @@
 
 #define ODU_UE_THROUGHPUT_PRINT_TIME_INTERVAL      500     /* in milliseconds */
 #define ODU_SNSSAI_THROUGHPUT_PRINT_TIME_INTERVAL  500 /* in milliseconds */
-#define ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL     500 /* in milliseconds */
+#define ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL     1000 /* in milliseconds */
 
 /*Spec 38.331 Sec 6.4: Maximum number of paging occasion per paging frame*/
 #define MAX_PO_PER_PF 4

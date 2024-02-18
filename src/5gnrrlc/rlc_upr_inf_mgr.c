@@ -1327,16 +1327,19 @@ uint8_t rlcCalculateTputPerDrb(CmLListCp *drbList, Direction dir)
       return(drbCnt);
    }
    /*Traversing the LC LinkList*/
+   DU_LOG("\nJOJO --> DRB throughput display.");
+
    while(node)
    {
       drbNode = (RlcTptPerDrb *)node->node;
+      DU_LOG("\nData volume of DRB: %d", drbNode->dataVol);
       drbNode->tpt =  (double)(drbNode->dataVol * 8)/(double)(ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL);
      
       if(dir == DIR_DL)
       {
          DU_LOG("\nDEBUG  -->  Tput per DRB: UE ID: %d, LC ID: %d, SNSSAI(sst:%d,sd [%d,%d,%d]), DL Tpt : %.5lf (kbps)", \
          drbNode->ueId, drbNode->lcId, drbNode->snssai->sst, drbNode->snssai->sd[0], drbNode->snssai->sd[1], \
-         drbNode->snssai->sd[2] , drbNode->tpt);
+         drbNode->snssai->sd[2], drbNode->tpt);
       }
 
       drbNode->dataVol = 0;
