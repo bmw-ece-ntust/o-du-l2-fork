@@ -128,7 +128,7 @@ bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
       if(!dciSlotAlloc)
       {
-         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+         DU_LOG("\nERROR4  -->  SCH : Memory Allocation failed for ded DL msg alloc");
          return false;
       }
       cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
@@ -805,13 +805,14 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                         dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].mfbr = lcInfoNode->mfbr;
                         /*Reset accumulated BO when average window comes.*/
                         lcInfoNode->avgWindowCnt += 1;
-                        if(lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow)
+                        if(lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow && lcInfoNode->avgWindow != 0)
                         {
                            lcInfoNode->avgWindowCnt = 0;
                            lcInfoNode->accumulatedBO = 0;
                            lcInfoNode->isGFBRAchieved = false;
                            lcInfoNode->isMFBRAchieved = false;
-                           DU_LOG("\nJOJO  -->  Accumulated BO is reset.");
+                           DU_LOG("\nJOJO  --> LC %d average window %d  Accumulated BO is reset at slot %d",\
+                              lcInfoNode->lcId, lcInfoNode->avgWindow, slot);
                         }
                         drb_cnt += 1;
                         lcNode = lcNode->next;
