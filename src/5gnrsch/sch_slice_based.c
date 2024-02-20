@@ -5044,8 +5044,6 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
 
    uint16_t estPrb = 0;
    uint32_t allocBO = 0;
-   uint16_t quantum = 0;
-   uint32_t quantumSize = 0;
    uint8_t remainingLc = 0;
    uint16_t mcsIdx;
    uint16_t totalAvaiPrb = *availablePrb;
@@ -5102,14 +5100,15 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
             
             if(resourceType == 0 || resourceType == 2)
             {
-               allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
-                        *availablePrb, &estPrb, lcInfoNode->mfbr + TX_PAYLOAD_HDR_LEN, lcInfoNode->accumulatedBO);
-               
-               /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
-               if(allocBO == 0)
+               if(lcInfoNode->isMFBRAchieved)
                {
-                  DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcInfoNode->lcId);
-                  lcInfoNode->isMFBRAchieved = true;
+                  allocBO = schSliceBasedcalculateEstimateTBSize(TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
+                        *availablePrb, &estPrb);
+               }
+               else
+               {
+                  allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
+                        *availablePrb, &estPrb, lcInfoNode->mfbr + TX_PAYLOAD_HDR_LEN, lcInfoNode->accumulatedBO);
                }
             }
             else
@@ -5129,13 +5128,14 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
             lcInfoNode->reqBO += UL_GRANT_SIZE;
             if(resourceType == 0 || resourceType == 2)
             {
-               allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
-                        &estPrb, lcInfoNode->mfbr + UL_GRANT_SIZE, lcInfoNode->accumulatedBO);
-               /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
-               if(allocBO == 0)
+               if(lcInfoNode->isMFBRAchieved)
                {
-                  DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcInfoNode->lcId);
-                  lcInfoNode->isMFBRAchieved = true;
+                  allocBO = schSliceBasedcalculateEstimateTBSize(UL_GRANT_SIZE, mcsIdx, numSymbols, *availablePrb, &estPrb);
+               }
+               else
+               {
+                  allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
+                        &estPrb, lcInfoNode->mfbr + UL_GRANT_SIZE, lcInfoNode->accumulatedBO);
                }
             }
             else
@@ -5149,13 +5149,15 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
          {
             if(resourceType == 0 || resourceType == 2)
             {
-               allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
-                        &estPrb, lcInfoNode->mfbr, lcInfoNode->accumulatedBO);
-               /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
-               if(allocBO == 0)
+               if(lcInfoNode->isMFBRAchieved)
                {
-                  DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcInfoNode->lcId);
-                  lcInfoNode->isMFBRAchieved = true;
+                  allocBO = 0;
+                  estPrb = 0;
+               }
+               else
+               {
+                  allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
+                        &estPrb, lcInfoNode->mfbr, lcInfoNode->accumulatedBO);
                }
             }
             else
@@ -5164,6 +5166,13 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
             }
             lcInfoNode->allocBO += allocBO;
             lcInfoNode->accumulatedBO += allocBO;
+         }
+
+         /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
+         if(lcInfoNode->accumulatedBO >= lcInfoNode->mfbr && (resourceType == 0 || resourceType == 2))
+         {
+            DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcInfoNode->lcId);
+            lcInfoNode->isMFBRAchieved = true;
          }
 
          /*JOJO: calculate the availablePrb Count based on estimated PRB allocated*/
@@ -5211,13 +5220,15 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
          {
             if(resourceType == 0 || resourceType == 2)
             {
-               allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
-                        &estPrb, lcInfoNode->mfbr, lcInfoNode->accumulatedBO);
-               /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
-               if(allocBO == 0)
+               if(lcInfoNode->isMFBRAchieved)
                {
-                  DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcInfoNode->lcId);
-                  lcInfoNode->isMFBRAchieved = true;
+                  allocBO = 0;
+                  estPrb = 0;
+               }
+               else
+               {
+                  allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
+                        &estPrb, lcInfoNode->mfbr, lcInfoNode->accumulatedBO);
                }
             }
             else
@@ -5234,6 +5245,13 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
             lcInfoNode->allocPRB += estPrb;
          }
          
+         /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
+         if(lcInfoNode->accumulatedBO >= lcInfoNode->mfbr && (resourceType == 0 || resourceType == 2))
+         {
+            DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcInfoNode->lcId);
+            lcInfoNode->isMFBRAchieved = true;
+         }
+
          /*JOJO: the scheduling result of each LC*/
          DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: MFBR, Priority Level: %d, lcId: %d, allocBO: %d, allocPRB: %d, MFBR: %d]",\
             lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->allocBO, estPrb, lcInfoNode->mfbr);
@@ -5431,12 +5449,12 @@ uint32_t schMFBRBasedcalculateEstimateTBSize(uint32_t reqBO, uint16_t mcsIdx, ui
    uint32_t tbs = 0, effecBO = 0;
    uint32_t requiredBO = 0;
 
-   /* JOJO: Check if it achieved MFBR or not.*/
-   if(mfbr - accumulatedBO == 0)
-   {
-      *estPrb = 0;
-      return 0;
-   }
+   /* JOJO: Check if accumulated BO achieved MFBR or not.*/
+   // if(accumulatedBO >= mfbr)
+   // {
+   //    *estPrb = 0;
+   //    return 0;
+   // }
 
    requiredBO = MIN(reqBO, mfbr - accumulatedBO);
    *estPrb = MIN_PRB;
