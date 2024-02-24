@@ -2906,6 +2906,7 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       /* Allocate PDCCH and PDSCH resources for the ue */
       if((*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] == NULL)
       {
+         DU_LOG("\nJOJO  -->  SCH : Ded DL msg alloc 1.");
          SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
          if(!dciSlotAlloc)
          {
@@ -2917,6 +2918,7 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       }
       else
       {
+         DU_LOG("\nJOJO  -->  SCH : Ded DL msg alloc 2.");
          dciSlotAlloc = (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1];
       }
 
@@ -3695,6 +3697,11 @@ uint8_t schSliceBasedUpdateLcListReqBo(CmLListCp *lcInfoList, SchUeCb *ueCb, Dir
 
          lcIdx = lcInfoNode->lcId;
 
+         if(lcInfoNode->isMFBRAchieved)
+         {
+            ueCb->dlInfo.dlLcCtxt[lcIdx].bo = 0;
+         }
+
          if(dir == DIR_DL)
          {
             if(ueCb->dlInfo.dlLcCtxt[lcIdx].bo)
@@ -3894,7 +3901,6 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
                   lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);            
                if(dlMsgAlloc != NULLP)
                {
-
                   /*Add this LC to dlMsgAlloc so that if this LC gets allocated, BO
                   * report for allocation can be sent to MAC*/
                   dlMsgAlloc->numOfTbs = 1;
