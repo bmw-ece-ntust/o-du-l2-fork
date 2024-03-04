@@ -54,6 +54,7 @@ typedef struct schSliceBasedLcInfo
    float_t weight; /*  Weight (0 ~ 1) which is used for WFQ algorithm */
    uint32_t reqBO;    /*Size of the BO requested/to be allocated for this LC*/
    uint32_t allocBO;  /*TBS/BO Size which is actually allocated*/
+   uint32_t unAllocBO; /* JOJO: To solve BO reset problem. */
    uint8_t  allocPRB; /*PRB count which is allocated based on RRM policy/FreePRB*/
 }SchSliceBasedLcInfo;
 

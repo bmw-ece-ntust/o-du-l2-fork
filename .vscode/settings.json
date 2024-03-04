@@ -3,6 +3,9 @@
         "*.x": "c",
         "quantityconfignr.h": "c",
         "du_app_mac_inf.h": "c",
-        "du_cfg.h": "c"
+        "du_cfg.h": "c",
+        "bitset": "c",
+        "chrono": "c",
+        "algorithm": "c"
     }
 }

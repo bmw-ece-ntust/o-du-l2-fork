@@ -414,7 +414,7 @@ uint8_t startDlData()
                   }
                   /* TODO : sleep(1) will be removed later once we will be able to
                    * support the continuous data pack transfer */
-                  //sleep(1);
+                  sleep(1);
                   cnt++;
                }
             }
@@ -619,7 +619,7 @@ uint8_t startDlDataForExperiment12()
    uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {4, 4, 4, 4};
 
    /*JOJO: The experiment runs for ten seconds.*/
-   while(timerCnt < 5000)
+   while(timerCnt < 7500)
    {
       for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {

@@ -843,6 +843,7 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo)
       DU_LOG("\nINFO  -->  Jacky: The BO size is: %d", rbCb->m.umDl.bo);
       if(rbCb->m.umDl.bo>150000)
       {
+         // rbCb->m.umDl.bo = 0;
          RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_DL, RLC_POOL, datReqInfo, sizeof(RlcDatReqInfo));
          ODU_PUT_MSG_BUF(dlDataMsgInfo->dlMsg);
          RLC_SHRABL_STATIC_BUF_FREE(pst->region, pst->pool, dlDataMsgInfo, sizeof(RlcDlUserDataInfo));
