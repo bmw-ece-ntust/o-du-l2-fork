@@ -530,7 +530,7 @@ uint8_t rlcUtlSendToMac(RlcCb *gCb, SuId suId, KwDStaIndInfo *staIndInfo)
                }
 
                staIndSz += staIndTb->lchStaInd[count].totBufSize;
-               datReq.pduSz = staIndTb->lchStaInd[count].totBufSize;
+               datReq.pduSz = staIndTb->lchStaInd[count].totBufSize + staIndTb->lchStaInd[count].unSchBytes;
 #ifdef LTE_L2_MEAS            
                datReq.totMacGrant = grantPerLch[staIndTb->lchStaInd[count].lcId];
 #endif

@@ -646,7 +646,7 @@ uint8_t startDlDataForExperiment12()
             }           
          }
       } 
-      usleep(2000); /*JOJO: Minimum of transmission duration.*/
+      usleep(1500); /*JOJO: Minimum of transmission duration.*/
       timerCnt++;
    }
    DU_LOG("\nJOJO  -->  Stop experiment.\n");

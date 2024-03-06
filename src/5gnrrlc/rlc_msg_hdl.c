@@ -714,6 +714,8 @@ uint8_t RlcProcSchedResultRpt(Pst *pst, RlcSchedResultRpt *schRep)
                                                                    schRep->lcSch[idx].lcId;
       dLchSchInfo->staInd[0].staIndTb[0].lchStaInd[nmbDLch].totBufSize = \
                                                                          schRep->lcSch[idx].bufSize;
+      dLchSchInfo->staInd[0].staIndTb[0].lchStaInd[nmbDLch].unSchBytes = \
+                                                                         schRep->lcSch[idx].unSchBytes;
       nmbDLch++;
    }
 

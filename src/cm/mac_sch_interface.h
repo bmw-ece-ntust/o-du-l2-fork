@@ -1036,6 +1036,7 @@ typedef struct lcSchInfo
 {
    uint8_t   lcId;
    uint32_t  schBytes; 
+   uint32_t  unSchBytes;
 }LcSchInfo;
 
 typedef struct ceSchInfo
