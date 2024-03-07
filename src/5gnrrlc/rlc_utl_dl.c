@@ -530,7 +530,11 @@ uint8_t rlcUtlSendToMac(RlcCb *gCb, SuId suId, KwDStaIndInfo *staIndInfo)
                }
 
                staIndSz += staIndTb->lchStaInd[count].totBufSize;
-               datReq.pduSz = staIndTb->lchStaInd[count].totBufSize + staIndTb->lchStaInd[count].unSchBytes;
+               datReq.pduSz = staIndTb->lchStaInd[count].totBufSize;
+               // datReq.pduSz = staIndTb->lchStaInd[count].totBufSize + staIndTb->lchStaInd[count].unSchBytes;
+               DU_LOG("\nJOJO  -->  RLC_DL : report LC %d, PDU size: %d = schBytes:%d + unSchBytes:%d", \
+                  staIndTb->lchStaInd[count].lcId, datReq.pduSz, staIndTb->lchStaInd[count].totBufSize, staIndTb->lchStaInd[count].unSchBytes);
+               
 #ifdef LTE_L2_MEAS            
                datReq.totMacGrant = grantPerLch[staIndTb->lchStaInd[count].lcId];
 #endif
