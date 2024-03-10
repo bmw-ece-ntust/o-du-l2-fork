@@ -776,8 +776,8 @@ RlcEntCfgCfmInfo   *entCfm
          if(entCfg->rbType == CM_LTE_SRB)
             ueCb->srbCb[entCfg->rbId] = rlcRbCb;
          else
-            ueCb->drbCb[entCfg->rbId] = rlcRbCb;
-
+            ueCb->drbCb[entCfg->rbId] = rlcRbCb; 
+                
          RLC_LMM_RB_STS_INC(gCb);
 
       }

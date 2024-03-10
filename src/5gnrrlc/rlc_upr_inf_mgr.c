@@ -1074,16 +1074,16 @@ uint8_t rlcCalculateTputPerSnssai(CmLListCp *snssaiList, Direction dir)
    while(node)
    {
       snssaiNode = (RlcTptPerSnssai *)node->node;
-      snssaiNode->tpt =  (double)(snssaiNode->dataVol * 8)/(double)(ODU_SNSSAI_THROUGHPUT_PRINT_TIME_INTERVAL);
+      snssaiNode->tpt =  (double)(snssaiNode->dataVol * 8)/(double)(ODU_SNSSAI_THROUGHPUT_PRINT_TIME_INTERVAL * 0.001);
      
       if(dir == DIR_DL)
       {
-         DU_LOG("\nDEBUG  -->  RLC_DL: SNSSAI(sst:%d,sd [%d,%d, %d]), DL Tpt : %.5lf (kbps)", snssaiNode->snssai->sst,\
+         DU_LOG("\nDEBUG  -->  RLC_DL: SNSSAI(sst:%d,sd [%d,%d, %d]), DL Tpt : %.5lf (bps)", snssaiNode->snssai->sst,\
                snssaiNode->snssai->sd[0], snssaiNode->snssai->sd[1],snssaiNode->snssai->sd[2] , snssaiNode->tpt);
       }
       if(dir == DIR_UL)
       {
-         DU_LOG("\nDEBUG  -->  RLC_UL: SNSSAI(sst:%d,sd [%d,%d, %d]), UL Tpt : %.5lf (kbps)", snssaiNode->snssai->sst,\
+         DU_LOG("\nDEBUG  -->  RLC_UL: SNSSAI(sst:%d,sd [%d,%d, %d]), UL Tpt : %.5lf (bps)", snssaiNode->snssai->sst,\
                snssaiNode->snssai->sd[0], snssaiNode->snssai->sd[1],snssaiNode->snssai->sd[2] , snssaiNode->tpt);
       }
 

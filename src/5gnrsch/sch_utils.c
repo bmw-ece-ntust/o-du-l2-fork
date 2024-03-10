@@ -88,6 +88,9 @@ int8_t coresetIdxTable[MAX_CORESET_INDEX][4] = {
 };
 #endif
 
+/* JOJO: Cyclic shift set for PUCCH based on Table 9.2.1-1 spec 38.213 */ 
+uint8_t defaultPucchCsset[MAX_PUCCH_RES_SET_IDX] = {2, 3, 3, 2, 4, 4, 4, 2, 4, 4, 4, 2, 4, 4, 4, 4};
+
 /* spec-38.213 Table 13-11 */
 /* m value is scaled to 2, when using it in formula, divide by 2 */
 /* firstSymbol will vary depends on i, hence not filled */
@@ -1207,36 +1210,29 @@ void schInitUlSlot(SchUlSlotInfo *schUlSlotInfo)
    FreePrbBlock *freeBlock;
 
    /* Delete the old blocks */
-   for(int symbolIndex=0;symbolIndex<MAX_SYMB_PER_SLOT;symbolIndex++)
+   if(schUlSlotInfo->prbAlloc.freePrbBlockList.count)
    {
-      if(schUlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex].count)
-      {
-         node = schUlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex].first;
-      }
-      while(node)
-      {
-         next = node->next;
-         freeBlock = (FreePrbBlock *)node->node;
-         if(deleteNodeFromLList(&schUlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex], node) == ROK)
-            SCH_FREE(freeBlock, sizeof(FreePrbBlock));
-         node = next;
-      }
+      node = schUlSlotInfo->prbAlloc.freePrbBlockList.first;
+   }
+   while(node)
+   {
+      next = node->next;
+      freeBlock = (FreePrbBlock *)node->node;
+      if(deleteNodeFromLList(&schUlSlotInfo->prbAlloc.freePrbBlockList, node) == ROK)
+         SCH_FREE(freeBlock, sizeof(FreePrbBlock));
+      node = next;
    }
 
    /* Initilize UL Slot info and mark all PRBs as free */
    memset(schUlSlotInfo, 0, sizeof(SchUlSlotInfo));
-   
-   for(int symbolIndex=0;symbolIndex<MAX_SYMB_PER_SLOT;symbolIndex++)
+   cmLListInit(&schUlSlotInfo->prbAlloc.freePrbBlockList);
+   SCH_ALLOC(freeBlock, sizeof(FreePrbBlock));
+   if(freeBlock)
    {
-      cmLListInit(&schUlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex]);
-      SCH_ALLOC(freeBlock, sizeof(FreePrbBlock));
-      if(freeBlock)
-      {
-         freeBlock->numFreePrb = MAX_NUM_RB;
-         freeBlock->startPrb = 0;
-         freeBlock->endPrb = MAX_NUM_RB-1;
-         addNodeToLList(&schUlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex], freeBlock, NULL);
-      }
+      freeBlock->numFreePrb = MAX_NUM_RB;
+      freeBlock->startPrb = 0;
+      freeBlock->endPrb = MAX_NUM_RB-1;
+      addNodeToLList(&schUlSlotInfo->prbAlloc.freePrbBlockList, freeBlock, NULL);
    }
 
    schUlSlotInfo->puschCurrentPrb = PUSCH_START_RB;
@@ -1261,34 +1257,27 @@ void schInitDlSlot(SchDlSlotInfo *schDlSlotInfo)
    FreePrbBlock *freeBlock;
 
    /* Delete the old blocks */
-   for(int symbolIndex=0;symbolIndex<MAX_SYMB_PER_SLOT;symbolIndex++)
+   if(schDlSlotInfo->prbAlloc.freePrbBlockList.count)
+      node = schDlSlotInfo->prbAlloc.freePrbBlockList.first;
+   while(node)
    {
-      if(schDlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex].count)
-         node = schDlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex].first;
-      while(node)
-      {
-         next = node->next;
-         freeBlock = (FreePrbBlock *)node->node;
-         if(deleteNodeFromLList(&schDlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex], node) == ROK)
-            SCH_FREE(freeBlock, sizeof(FreePrbBlock));
-         node = next;
-      }
+      next = node->next;
+      freeBlock = (FreePrbBlock *)node->node;
+      if(deleteNodeFromLList(&schDlSlotInfo->prbAlloc.freePrbBlockList, node) == ROK)
+         SCH_FREE(freeBlock, sizeof(FreePrbBlock));
+      node = next;
    }
 
    /* Initilize DL Slot info and mark all PRBs as free */
    memset(schDlSlotInfo, 0, sizeof(SchDlSlotInfo));
-   
-   for(int symbolIndex=0;symbolIndex<MAX_SYMB_PER_SLOT;symbolIndex++)
+   cmLListInit(&schDlSlotInfo->prbAlloc.freePrbBlockList);
+   SCH_ALLOC(freeBlock, sizeof(FreePrbBlock));
+   if(freeBlock)
    {
-      cmLListInit(&schDlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex]);
-      SCH_ALLOC(freeBlock, sizeof(FreePrbBlock));
-      if(freeBlock)
-      {
-         freeBlock->numFreePrb = MAX_NUM_RB;
-         freeBlock->startPrb = 0;
-         freeBlock->endPrb = MAX_NUM_RB-1;
-         addNodeToLList(&schDlSlotInfo->prbAlloc.freePrbBlockList[symbolIndex], freeBlock, NULL);
-      }
+      freeBlock->numFreePrb = MAX_NUM_RB;
+      freeBlock->startPrb = 0;
+      freeBlock->endPrb = MAX_NUM_RB-1;
+      addNodeToLList(&schDlSlotInfo->prbAlloc.freePrbBlockList, freeBlock, NULL);
    }
 }
 

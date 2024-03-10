@@ -21,7 +21,8 @@
 #define __MACINT_H__
 
 #define NUM_NUMEROLOGY 5  /* Number of numerology */
-
+#define MAX_SI_MESSAGE 32 /* As per 138 331 V15.3, RRC Multiplicity and type constraint definitions maxSI-Message = 32 */ 
+#define NUM_SIB 32         /* As per 138 331 V15.3, RRC Multiplicity and type constraint definitions  maxSIB = 32 */ 
 #define NUM_SSB		1	/* max value is 64 */
 #define SSB_MASK_SIZE	1	/* SSB mask size is 32bit for sub6 */
 #define SIB1_REPETITION_PERIOD   20
@@ -87,7 +88,8 @@
 #define EVENT_MAC_UE_RESET_REQ       225
 #define EVENT_MAC_UE_RESET_RSP       226
 #define EVENT_MAC_UE_SYNC_STATUS_IND 227
-#define EVENT_MAC_UE_MCS_IDX_REPORT 228
+#define EVENT_MAC_DL_BROADCAST_REQ   228
+#define EVENT_MAC_UE_MCS_IDX_REPORT  229
 
 #define BSR_PERIODIC_TIMER_SF_10 10
 #define BSR_RETX_TIMER_SF_320 320
@@ -95,7 +97,6 @@
 
 #define PAGING_SCHED_DELTA  4
 #define MAX_PLMN 2
-
 /* Macro For CSI-Meas */
 #define MAX_NUM_NZP_CSI_RS_RESOURCE 1
 #define MAX_NUM_NZP_CSI_RS_RESOURCE_SET 1
@@ -246,6 +247,74 @@ typedef enum{
 }MoreThanTwoOptions;
 
 /* End of CSI-RS Configuration */
+
+
+typedef enum
+{
+   SIB_TYPE2,
+   SIB_TYPE3,
+   SIB_TYPE4,
+   SIB_TYPE5,
+   SIB_TYPE6,
+   SIB_TYPE7,
+   SIB_TYPE8,
+   SIB_TYPE9,
+   SPARE
+}SibType;
+
+typedef enum
+{
+   SSB_PER_RACH_OCCASION_ONE_EIGHTH,
+   SSB_PER_RACH_OCCASION_ONE_FOURTH,
+   SSB_PER_RACH_OCCASION_ONE_HALF,
+   SSB_PER_RACH_OCCASION_ONE,
+   SSB_PER_RACH_OCCASION_TWO,
+   SSB_PER_RACH_OCCASION_FOUR,
+   SSB_PER_RACH_OCCASION_EIGHT,
+   SSB_PER_RACH_OCCASION_SIXTEEN
+}SsbPerRachOccasion;
+
+typedef enum
+{
+   BROADCASTING,
+   NOTBROADCASTING,
+}SiBroadcastStatus;
+
+typedef enum
+{
+   RF8,
+   RF16,
+   RF32,
+   RF64,
+   RF128,
+   RF256,
+   RF512
+}SiPeriodicity;
+
+typedef enum
+{
+   S5,
+   S10,
+   S20, 
+   S40, 
+   S80, 
+   S160, 
+   S320, 
+   S640, 
+   S1280
+}SiWindowLength;
+
+typedef enum
+{
+   SI_REQ_PERIOD_1,
+   SI_REQ_PERIOD_2,
+   SI_REQ_PERIOD_4,
+   SI_REQ_PERIOD_6,
+   SI_REQ_PERIOD_8,
+   SI_REQ_PERIOD_10,
+   SI_REQ_PERIOD_12,
+   SI_REQ_PERIOD_16
+}SiRequestPeriod;
 
 typedef enum
 {
@@ -2263,6 +2332,10 @@ uint8_t DuProcMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd);
 uint8_t unpackDuMacUeSyncStatusInd(MacDuUeSyncStatusIndFunc func, Pst *pst, Buffer *mBuf);
 uint8_t packDuMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt);
 uint8_t DuProcMacUeMcsIdxRpt(Pst *pst, MacUeMcsIndexRpt *MacMcsIdxRpt);
+
+// uint8_t packDuMacDlBroadcastReq(Pst *pst, MacDlBroadcastReq *dlBroadcastReq);
+// uint8_t MacProcDlBroadcastReq(Pst *pst,  MacDlBroadcastReq *dlBroadcastReq);
+// uint8_t unpackMacDlBroadcastReq(DuMacDlBroadcastReq func, Pst *pst, Buffer *mBuf);
 #endif
 
 

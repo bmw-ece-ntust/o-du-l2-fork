@@ -10,7 +10,7 @@ cd $ODU_PATH/bin
 cd odu
 
 # Debug Mode
-sudo gdb ./odu
+# sudo gdb ./odu
 
 # Normal Mode
-# sudo ./odu
+sudo ./odu

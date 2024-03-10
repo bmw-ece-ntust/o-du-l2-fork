@@ -119,7 +119,7 @@ void fillSchDlLcCtxt(SchDlLcCtxt *ueCbLcCfg, SchLcCfg *lcCfg)
 {
    ueCbLcCfg->lcId = lcCfg->lcId;
    ueCbLcCfg->lcp = lcCfg->dlLcCfg.lcp;
-   ueCbLcCfg->lcState = SCH_LC_STATE_ACTIVE;
+   ueCbLcCfg->lcState = SCH_LC_STATE_ACTIVE;  
    ueCbLcCfg->bo = 0;
    if(lcCfg->drbQos)
    {
@@ -138,9 +138,9 @@ void fillSchDlLcCtxt(SchDlLcCtxt *ueCbLcCfg, SchLcCfg *lcCfg)
    {
       ueCbLcCfg->fiveQi = 0;
    }
-
    if(lcCfg->snssai)
    {
+     //DU_LOG("\nDennis --> Dedicated LC ID: %d", lcCfg->lcId);
      if(ueCbLcCfg->snssai == NULLP)/*In CONFIG_MOD case, no need to allocate SNSSAI memory*/
      {
         SCH_ALLOC(ueCbLcCfg->snssai, sizeof(Snssai));

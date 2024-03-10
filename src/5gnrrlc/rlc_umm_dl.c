@@ -231,7 +231,7 @@ void rlcUmmProcessSdus(RlcCb *gCb, RlcDlRbCb *rbCb, RlcDatReq *datReq)
       if ((sdu->mode.um.isSegmented == FALSE) && (rbCb->discTmrInt > 0) && 
             (rbCb->rlcId.rbType == CM_LTE_DRB))
       {
-         timeDiff = RLC_TIME_DIFF(curTime,sdu->arrTime); 
+         timeDiff = RLC_TIME_DIFF(curTime,sdu->arrTime);
 
          if (timeDiff >= rbCb->discTmrInt)
          {
@@ -469,6 +469,14 @@ void rlcUmmProcessSdus(RlcCb *gCb, RlcDlRbCb *rbCb, RlcDatReq *datReq)
    {
       datReq->boRep.oldestSduArrTime = 
         ((RlcSdu *)(rbCb->m.umDl.sduQ.first->node))->arrTime;
+      rlcUtlGetCurrTime(&curTime);
+      DU_LOG("\nJOJO --> Current time is %d", curTime);
+      DU_LOG("\nJOJO --> Oldest arrival time of SDUs is %d", datReq->boRep.oldestSduArrTime);
+      DU_LOG("\nJOJO --> BO of SDUs is %d", datReq->boRep.bo);
+      DU_LOG("\nJOJO --> BO of SDUs for controlled PDU is %d", datReq->boRep.staPduBo);
+      DU_LOG("\nJOJO --> If controlled PDU is present or not: %d", datReq->boRep.staPduPrsnt);
+      DU_LOG("\nJOJO --> PDU size of : %d", datReq->pduSz);
+      DU_LOG("\nJOJO --> Number of PDUs : %d", datReq->pduInfo.numPdu);
    }
    return; 
 }
