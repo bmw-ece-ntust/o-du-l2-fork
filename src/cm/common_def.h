@@ -52,6 +52,7 @@
 #include "cm_lte.x"
 #include "cm_lib.x"
 #include "du_log.h"
+#include "rgu.h"
 
 #define RADIO_FRAME_DURATION 10 /* Time duration of a radio frame in ms */
 /* MAX values */
@@ -346,6 +347,7 @@ typedef struct tddCfg
 OduCellStatus gCellStatus;
 uint64_t gSlotCount;
 uint64_t gDlDataRcvdCnt;   /* Number of DL data received at EGTP */
+bool isMFBR[RGU_MAX_LC];
 
 void fillCoresetFeqDomAllocMap(uint16_t startPrb, uint16_t prbSize, uint8_t *freqDomain);
 void oduCpyFixBufToMsg(uint8_t *fixBuf, Buffer *mBuf, uint16_t len);

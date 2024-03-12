@@ -714,8 +714,6 @@ uint8_t RlcProcSchedResultRpt(Pst *pst, RlcSchedResultRpt *schRep)
                                                                    schRep->lcSch[idx].lcId;
       dLchSchInfo->staInd[0].staIndTb[0].lchStaInd[nmbDLch].totBufSize = \
                                                                          schRep->lcSch[idx].bufSize;
-      dLchSchInfo->staInd[0].staIndTb[0].lchStaInd[nmbDLch].unSchBytes = \
-                                                                         schRep->lcSch[idx].unSchBytes;
       nmbDLch++;
    }
 
@@ -842,20 +840,25 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo)
 
    if(rbCb)
    {
-      DU_LOG("\nINFO  -->  Jacky: The BO size is: %d", rbCb->m.umDl.bo);
-      if(rbCb->m.umDl.bo>150000)
+      DU_LOG("\nINFO  -->  JOJO: The BO size for RB ID %d is: %d", dlDataMsgInfo->rbId, rbCb->m.umDl.bo);
+      // if(rbCb->m.umDl.bo>150000)
+      if(isMFBR[dlDataMsgInfo->rbId - 1])
       {
-         // rbCb->m.umDl.bo = 0;
+         DU_LOG("\nINFO  -->  JOJO: RLC dropped DL data request.");
          RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_DL, RLC_POOL, datReqInfo, sizeof(RlcDatReqInfo));
          ODU_PUT_MSG_BUF(dlDataMsgInfo->dlMsg);
          RLC_SHRABL_STATIC_BUF_FREE(pst->region, pst->pool, dlDataMsgInfo, sizeof(RlcDlUserDataInfo));
          --rlcCb[pst->dstInst]->dlSduId;
          return ROK;
       }
+      else
+      {
+         DU_LOG("\nINFO  -->  JOJO: RLC sent DL data request %d.", dlDataMsgInfo->msgLen);
+      }
    }
    else
    {
-      DU_LOG("\nINFO  -->  Jacky: Empty allocate for rbCb->m.umDl.bo");
+      DU_LOG("\nINFO  -->  JOJO: Failed to get RB control block.");
    }
 
    if(rlcProcDlData(pst, datReqInfo, mBuf) != ROK)

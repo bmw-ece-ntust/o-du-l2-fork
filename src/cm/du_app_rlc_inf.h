@@ -51,6 +51,8 @@
 #define LCH_DTCH      4      /*!< DTCH Logical Channel */
 #define LCH_DCCH      5      /*!< DCCH Logical Channel */
 
+
+
 typedef enum
 {
    RB_TYPE_SRB,      /* Signalling Radio Bearer */

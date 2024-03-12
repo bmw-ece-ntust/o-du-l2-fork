@@ -323,8 +323,6 @@ typedef struct rguLchStaInd
    CmLteLcId   lcId;         /*!< Logical channel ID */
    S16         totBufSize;  /*!< Total buffer size in bytes 
                                 scheduled by MAC */
-   S16         unSchBytes;  /*!< Total dropped buffer size in bytes 
-                                by MAC */
 } RguLchStaInd;
 
 /**

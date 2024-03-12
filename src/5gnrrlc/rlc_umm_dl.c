@@ -309,7 +309,7 @@ void rlcUmmProcessSdus(RlcCb *gCb, RlcDlRbCb *rbCb, RlcDatReq *datReq)
             sdu->mBuf = NULLP;
          }
          rbCb->m.umDl.bo -= sdu->sduSz;
-	 rbCb->m.umDl.bo -= RLC_MAX_HDRSZ;
+	      rbCb->m.umDl.bo -= RLC_MAX_HDRSZ;
          pduSz -= sdu->sduSz;
 
 #ifdef LTE_L2_MEAS

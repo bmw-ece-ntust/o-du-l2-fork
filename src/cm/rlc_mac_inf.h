@@ -44,7 +44,6 @@ typedef struct rlcLcSchInfo
 {
    uint8_t   lcId;        /*!< Logical channel ID */
    uint32_t  bufSize;  /*!< Total buffer size in bytes scheduled by MAC */
-   uint32_t  unSchBytes;
 }RlcLcSchInfo;
 
 /* Schedule result report */

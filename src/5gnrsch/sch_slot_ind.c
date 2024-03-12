@@ -780,8 +780,8 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                }
                
                dlSchedInfo.prbMetric.usedPrb += sliceCb->allocatedPrb;
-               if(sliceCb->allocatedPrb)
-                  printf("\nJacky --> SCH : Slice # %d : Used Prb = %d", slice_cnt, sliceCb->allocatedPrb);
+               // if(sliceCb->allocatedPrb)
+               //    printf("\nJacky --> SCH : Slice # %d : Used Prb = %d", slice_cnt, sliceCb->allocatedPrb);
                slice_cnt = slice_cnt + 1;
                /*JOJO: Fill out DRB info.*/
                for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
@@ -805,10 +805,11 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                         dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].mfbr = lcInfoNode->mfbr;
                         /*Reset accumulated BO when average window comes.*/
                         lcInfoNode->avgWindowCnt += 1;
-                        if(lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow && lcInfoNode->avgWindow != 0)
+                        if(lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow/2 && lcInfoNode->avgWindow != 0)
                         {
                            lcInfoNode->avgWindowCnt = 0;
                            lcInfoNode->accumulatedBO = 0;
+                           isMFBR[lcInfoNode->lcId - 4] = false;
                            lcInfoNode->isGFBRAchieved = false;
                            lcInfoNode->isMFBRAchieved = false;
                            DU_LOG("\nJOJO  --> LC %d average window %d  Accumulated BO is reset at slot %d",\

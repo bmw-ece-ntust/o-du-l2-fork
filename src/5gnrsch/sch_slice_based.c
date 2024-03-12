@@ -1578,13 +1578,13 @@ uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb)
                tempLcInfo->lcId = lcIdx;
                tempLcInfo->reqBO = 0;
                tempLcInfo->allocBO = 0;
-               tempLcInfo->unAllocBO = 0;
                tempLcInfo->allocPRB = 0;
                tempLcInfo->ueCb = ueCb;
                tempLcInfo->avgWindowCnt = 0;
                tempLcInfo->gfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].gfbr;
                tempLcInfo->mfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].mfbr;
                tempLcInfo->avgWindow = ueCb->dlInfo.dlLcCtxt[lcIdx].avgWindow;
+               isMFBR[lcIdx - 4] = false;
                tempLcInfo->isGFBRAchieved = false;
                tempLcInfo->isMFBRAchieved = false;
                tempLcInfo->avgTpt = 0; /* JOJO: initialize the measurement of average throughput.*/
@@ -3076,6 +3076,7 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       cmLListDeleteLList(&defLcList);
 
       /*Re-setting the BO's of all DL LCs in this UE*/
+      DU_LOG("\nJOJO  -->  SCH : Reset BO's of all DL LCs' BO in this UE");
       for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
       {
          ueCb->dlInfo.dlLcCtxt[lcIdx].bo = 0;
@@ -3902,20 +3903,29 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
          lcNode = (SchSliceBasedLcInfo *)node->node;
          if(lcNode != NULLP)
          {
-            if(lcNode->reqBO != 0 || lcNode->allocBO != 0)
+            if((lcNode->reqBO != 0 || lcNode->allocBO != 0) && !lcNode->isMFBRAchieved)
+            // if(lcNode->reqBO != 0 || lcNode->allocBO != 0)
             {
+               /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR. (MFBR algo. version 2)*/
+               // uint8_t resourceType = schGetResourceTypeFromFiveQI(lcNode->fiveQI);
+               // if(lcNode->accumulatedBO >= lcNode->mfbr && (resourceType == 0 || resourceType == 2) && lcNode->isMFBRAchieved == false)
+               // {
+               //    DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcNode->lcId);
+               //    lcNode->isMFBRAchieved = true;
+               //    isMFBR[lcNode->lcId - 4] = true;
+               // }
+               
                DU_LOG("\nINFO 1   -->  SCH : LcID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
                   lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);            
                if(dlMsgAlloc != NULLP)
                {
                   /*Add this LC to dlMsgAlloc so that if this LC gets allocated, BO
                   * report for allocation can be sent to MAC*/
-                 DU_LOG("\nJOJO   -->  SCH : LcID:%d, [reqBO, allocBO, unallocBO]:[%d,%d,%d]",\
-                  lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->unAllocBO);    
+                 DU_LOG("\nJOJO   -->  SCH : LcID:%d, [reqBO, allocBO]:[%d,%d,%d]",\
+                  lcNode->lcId, lcNode->reqBO, lcNode->allocBO);    
                   dlMsgAlloc->numOfTbs = 1;
                   dlMsgAlloc->transportBlock[0].lcSchInfo[dlMsgAlloc->transportBlock[0].numLc].lcId = lcNode->lcId;
                   dlMsgAlloc->transportBlock[0].lcSchInfo[dlMsgAlloc->transportBlock[0].numLc].schBytes = lcNode->allocBO;
-                  dlMsgAlloc->transportBlock[0].lcSchInfo[dlMsgAlloc->transportBlock[0].numLc].unSchBytes = lcNode->unAllocBO;
 
                   /*Calculate the Total Payload/BO size allocated*/
                   *accumalatedBOSize += dlMsgAlloc->transportBlock[0].lcSchInfo[dlMsgAlloc->transportBlock[0].numLc].schBytes; 
@@ -3927,7 +3937,6 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
 
                   lcNode->reqBO = 0;
                   lcNode->allocBO = 0;
-                  lcNode->unAllocBO = 0;
                   lcNode->allocPRB = 0;   
                }
                else if(bsrInfo != NULLP)
@@ -4797,7 +4806,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
             }
             else
             {
-               DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into GFBR list.", ueId, lcInfoNode->lcId);
+               // DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into GFBR list.", ueId, lcInfoNode->lcId);
             }
          }
 
@@ -4807,7 +4816,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
          }
          else
          {
-            DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into MFBR list.", ueId, lcInfoNode->lcId);
+            // DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into MFBR list.", ueId, lcInfoNode->lcId);
          }
 
          lcNode = lcNode->next;
@@ -4821,7 +4830,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
    if(*availablePrb == 0)
       DU_LOG("\nJOJO  --> GBR traffics are not yet satisfied.");
    /* JOJO: Schedule LCs and also consider MFBR for all traffics. */
-   schMFBRAlgoforLc(&MFBRLcList, numSymbols, availablePrb, \
+   schMFBRAlgoforLcv1(&MFBRLcList, numSymbols, availablePrb, \
                                        &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
 
    /* Free the GBR LC list */
@@ -5053,7 +5062,7 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
  * @return void
  *
  * ****************************************************************/
-void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
+void schMFBRAlgoforLcv1(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
                                        bool *isTxPayloadLenAdded, bool *srRcvd)
 {
    CmLList *node = NULLP;
@@ -5061,7 +5070,189 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
 
    uint16_t estPrb = 0;
    uint32_t allocBO = 0;
-   uint32_t unAllocBO = 0;
+   uint8_t remainingLc = 0;
+   uint16_t mcsIdx;
+   uint16_t totalAvaiPrb = *availablePrb;
+   uint8_t resourceType;
+
+   if(lcInfoList == NULLP || lcInfoList->count == 0)
+   {
+      DU_LOG("\nERROR --> SCH: LcList not present");
+      return;
+   }
+
+   /*JOJO: Sort logical channel based on priority level. */
+   schSortLcByPriority(lcInfoList);
+
+   /*JOJO: Check the result of sorting*/
+   node = lcInfoList->first;
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+      DU_LOG("\nJOJO  -->  MFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
+                  Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
+         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
+         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
+      node = node->next; 
+   }
+
+   remainingLc = lcInfoList->count;
+   node = lcInfoList->first;
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+
+      /*JOJO: If available PRBs are exhausted*/
+      /*Loop Exit: All resources exhausted*/
+      DU_LOG("\nJOJO --> SCH: Available PRBs: %d for LC ID: %d.", *availablePrb, lcInfoNode->lcId);
+      if(*availablePrb == 0)
+      {
+         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
+         return;
+      }
+
+      mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+      resourceType = schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI);
+      DU_LOG("\nJOJO  -->  SCH: LC -> %d, resource type -> %d.", lcInfoNode->lcId, resourceType);
+      
+      /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
+      if(lcInfoNode->accumulatedBO + lcInfoNode->reqBO > lcInfoNode->mfbr && (resourceType == 0 || resourceType == 2) && lcInfoNode->isMFBRAchieved == false)
+      {
+         DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR.", lcInfoNode->lcId);
+         lcInfoNode->isMFBRAchieved = true;
+         isMFBR[lcInfoNode->lcId - 4] = true;
+      }
+
+      if(lcInfoNode->reqBO != 0)
+      {
+         /*JOJO: check the amount of BO we can allocate for each LC*/
+         if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
+         {
+            if(resourceType == 0 || resourceType == 2)
+            {
+               if(lcInfoNode->isMFBRAchieved)
+               {
+                  allocBO = 0;
+                  estPrb = 0;
+               }
+               else
+               {
+                  allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
+                        *availablePrb, &estPrb);
+                  allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
+                  DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
+                        lcInfoNode->lcId);
+                  *isTxPayloadLenAdded = TRUE;
+               }
+               lcInfoNode->accumulatedBO += allocBO;
+            }
+            else
+            {
+               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
+                     *availablePrb, &estPrb);
+               allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
+               DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
+                        lcInfoNode->lcId);
+               *isTxPayloadLenAdded = TRUE;
+            }            
+            lcInfoNode->allocBO += allocBO;
+         }
+         else if((srRcvd != NULLP) && (*srRcvd == TRUE))
+         {
+            *srRcvd = FALSE;
+            lcInfoNode->reqBO += UL_GRANT_SIZE;
+            DU_LOG("\nDEBUG  --> SCH: LC:%d is the First node to be allocated which includes UL_GRANT_SIZE",\
+                     lcInfoNode->lcId);
+            if(resourceType == 0 || resourceType == 2)
+            {
+               if(lcInfoNode->isMFBRAchieved)
+               {
+                  allocBO = schSliceBasedcalculateEstimateTBSize(UL_GRANT_SIZE, mcsIdx, numSymbols, *availablePrb, &estPrb);
+               }
+               else
+               {                 
+                  allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+               }
+               lcInfoNode->accumulatedBO += allocBO;
+            }
+            else
+            {
+               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+            }
+            lcInfoNode->allocBO += allocBO;
+         }
+         else
+         {
+            if(resourceType == 0 || resourceType == 2)
+            {
+               if(lcInfoNode->isMFBRAchieved)
+               {
+                  allocBO = 0;
+                  estPrb = 0;
+               }
+               else
+               {
+                  allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+               }
+               lcInfoNode->accumulatedBO += allocBO;
+            }
+            else
+            {
+               allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+            }
+            lcInfoNode->allocBO += allocBO;
+         }
+
+         /*JOJO: Calculate the availablePrb Count based on estimated PRB allocated*/
+         *availablePrb = *availablePrb - estPrb;
+         lcInfoNode->reqBO -= allocBO;
+         lcInfoNode->allocPRB += estPrb;
+
+         if(lcInfoNode->reqBO == 0)
+         {
+            remainingLc--;
+         }
+      }
+      else
+      {
+         remainingLc--;
+      }
+      
+      /*JOJO: the scheduling result of each LC*/
+      DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: MFBR, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, allocPRB: %d, MFBR: %d]",\
+            lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, lcInfoNode->allocBO, estPrb, lcInfoNode->mfbr);
+      
+      node = node->next;
+   }
+   return;
+}
+
+/*******************************************************************
+ *
+ * @brief Allocate and estimate Prb for each LC within current slice based on MFBR requirement.
+ *
+ * @details
+ *
+ *    Function : schMFBRAlgoforLc
+ *
+ *    Functionality: Allocate the LCs based on MFBR.
+ * 
+ * @params[in] Pointer to LC Info Control Block List
+ *             Number of PDSCH symbols
+ *             Number of minimum PRB which is calculated according to RRMPolicyRatio
+ *             srRcvd Flag[For UL] : Decision flag to add UL_GRANT_SIZE
+ *             isTxPayloadLenAdded Flag: Check whether the TxPayload should be added to the first node in current slice
+ * @return void
+ *
+ * ****************************************************************/
+void schMFBRAlgoforLcv2(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
+                                       bool *isTxPayloadLenAdded, bool *srRcvd)
+{
+   CmLList *node = NULLP;
+   SchSliceBasedLcInfo *lcInfoNode = NULLP;
+
+   uint16_t estPrb = 0;
+   uint32_t allocBO = 0;
    uint8_t remainingLc = 0;
    uint16_t mcsIdx;
    uint16_t totalAvaiPrb = *availablePrb;
@@ -5111,43 +5302,38 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
       {
          /*JOJO: check the amount of BO we can allocate for each LC*/
          if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
-         {
-            *isTxPayloadLenAdded = TRUE;
-            DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
-                  lcInfoNode->lcId);
-            
+         {            
             if(resourceType == 0 || resourceType == 2)
             {
                if(lcInfoNode->isMFBRAchieved)
                {
-                  allocBO = schSliceBasedcalculateEstimateTBSize(TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
-                        *availablePrb, &estPrb);
-                  
-                  unAllocBO = lcInfoNode->reqBO;
+                  allocBO = 0;
+                  estPrb = 0;
                }
                else
                {
                   allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
                         *availablePrb, &estPrb, lcInfoNode->mfbr + TX_PAYLOAD_HDR_LEN, lcInfoNode->accumulatedBO);
                   
-                  /*JOJO: It shows that it exceed*/
-                  if(allocBO - TX_PAYLOAD_HDR_LEN == lcInfoNode->mfbr - lcInfoNode->accumulatedBO)
-                  {
-                     unAllocBO = lcInfoNode->reqBO - (allocBO - TX_PAYLOAD_HDR_LEN);
-                  }
-                  
+                  allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
+                  DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
+                        lcInfoNode->lcId);
+                  *isTxPayloadLenAdded = TRUE;
                }
+
+               lcInfoNode->accumulatedBO += allocBO;
             }
             else
             {
                allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols,\
                         *availablePrb, &estPrb);
-               unAllocBO = 0;
+               allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
+               DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
+                     lcInfoNode->lcId);
+               *isTxPayloadLenAdded = TRUE;
             }
-            allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
+
             lcInfoNode->allocBO += allocBO;
-            lcInfoNode->accumulatedBO += allocBO;
-            lcInfoNode->unAllocBO += unAllocBO;
          }
          else if((srRcvd != NULLP) && (*srRcvd == TRUE))
          {
@@ -5160,28 +5346,20 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
                if(lcInfoNode->isMFBRAchieved)
                {
                   allocBO = schSliceBasedcalculateEstimateTBSize(UL_GRANT_SIZE, mcsIdx, numSymbols, *availablePrb, &estPrb);
-
-                  unAllocBO = lcInfoNode->reqBO;
                }
                else
                {
                   allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
                         &estPrb, lcInfoNode->mfbr + UL_GRANT_SIZE, lcInfoNode->accumulatedBO);
-                  
-                  if(allocBO - UL_GRANT_SIZE == lcInfoNode->mfbr - lcInfoNode->accumulatedBO)
-                  {
-                     unAllocBO = lcInfoNode->reqBO - (allocBO - UL_GRANT_SIZE);
-                  }
                }
+
+               lcInfoNode->accumulatedBO += allocBO;
             }
             else
             {
                allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
-               unAllocBO = 0;
             }
             lcInfoNode->allocBO += allocBO;
-            lcInfoNode->accumulatedBO += allocBO;
-            lcInfoNode->unAllocBO += unAllocBO;
          }
          else
          {
@@ -5191,45 +5369,25 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
                {
                   allocBO = 0;
                   estPrb = 0;
-
-                  unAllocBO = lcInfoNode->reqBO;
                }
                else
                {
                   allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
                         &estPrb, lcInfoNode->mfbr, lcInfoNode->accumulatedBO);
-
-                  if(allocBO == lcInfoNode->mfbr - lcInfoNode->accumulatedBO)
-                  {
-                     unAllocBO = lcInfoNode->reqBO - allocBO;
-                  }
                }
+
+               lcInfoNode->accumulatedBO += allocBO;
             }
             else
             {
                allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
-               unAllocBO = 0;
             }
             lcInfoNode->allocBO += allocBO;
-            lcInfoNode->accumulatedBO += allocBO;
-            lcInfoNode->unAllocBO += unAllocBO;
-         }
-
-         /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
-         if(lcInfoNode->accumulatedBO >= lcInfoNode->mfbr && (resourceType == 0 || resourceType == 2))
-         {
-            DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcInfoNode->lcId);
-            // lcInfoNode->ueCb->dlInfo.dlLcCtxt[lcInfoNode->lcId].bo = 0;
-            lcInfoNode->isMFBRAchieved = true;
          }
 
          /*JOJO: calculate the availablePrb Count based on estimated PRB allocated*/
-         *availablePrb = *availablePrb - estPrb;
-         
+         *availablePrb = *availablePrb - estPrb;        
          lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
-         if(unAllocBO != 0)
-            DU_LOG("\nJOJO  -->  SCH: LC: %d dropped %d bytes.", lcInfoNode->lcId, unAllocBO);
-         lcInfoNode->reqBO -= unAllocBO;
          lcInfoNode->allocPRB += estPrb;
 
          if(lcInfoNode->reqBO == 0)
@@ -5243,84 +5401,11 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
       }
       
       /*JOJO: the scheduling result of each LC*/
-      DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: MFBR, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, unallocBO: %d, allocPRB: %d, MFBR: %d]",\
-            lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, lcInfoNode->allocBO, lcInfoNode->unAllocBO, estPrb, lcInfoNode->mfbr);
+      DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: MFBR, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, allocPRB: %d, MFBR: %d]",\
+            lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, lcInfoNode->allocBO, estPrb, lcInfoNode->mfbr);
       
-      node = node->next; 
+      node = node->next;
    }
-
-   
-
-    /* If is there any LC which reqBO is not zero and there are remaining PRB,  allocate the remaing PRB to LC which has reqBO */
-   // if(remainingLc > 0 && *availablePrb)
-   // {
-   //    node = lcInfoList->first;
-
-   //    while(node)
-   //    {
-   //       lcInfoNode = (SchSliceBasedLcInfo *)node->node;
-         
-   //       if(*availablePrb == 0)
-   //       {
-   //          DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
-   //          return;
-   //       }
-
-   //       mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
-   //       resourceType = schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI);
-
-   //       if(lcInfoNode->reqBO != 0)
-   //       {
-   //          if(resourceType == 0 || resourceType == 2)
-   //          {
-   //             if(lcInfoNode->isMFBRAchieved)
-   //             {
-   //                allocBO = 0;
-   //                estPrb = 0;
-   //                /*
-   //                unAllocBO = reqBO;
-   //                */
-   //             }
-   //             else
-   //             {
-   //                allocBO = schMFBRBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb,\
-   //                      &estPrb, lcInfoNode->mfbr, lcInfoNode->accumulatedBO);
-   //                /*
-   //                if(allocBO == mfbr - accumulatedBO)
-   //                {
-   //                   unAllocBO = reqBO - allocBO;
-   //                }
-   //                */
-   //             }
-   //          }
-   //          else
-   //          {
-   //             allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
-   //          }
-   //          lcInfoNode->allocBO += allocBO;
-   //          lcInfoNode->accumulatedBO += allocBO;
-
-   //          /*JOJO: calculate the availablePrb Count based on estimated PRB allocated*/
-   //          *availablePrb = *availablePrb - estPrb;
-            
-   //          lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
-   //          lcInfoNode->allocPRB += estPrb;
-   //       }
-         
-   //       /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
-   //       if(lcInfoNode->accumulatedBO >= lcInfoNode->mfbr && (resourceType == 0 || resourceType == 2))
-   //       {
-   //          DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR", lcInfoNode->lcId);
-   //          lcInfoNode->isMFBRAchieved = true;
-   //       }
-
-   //       /*JOJO: the scheduling result of each LC*/
-   //       DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: MFBR, Priority Level: %d, lcId: %d, allocBO: %d, allocPRB: %d, MFBR: %d]",\
-   //          lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->allocBO, estPrb, lcInfoNode->mfbr);
-         
-   //       node = node->next;
-   //    }
-   // }
 
    return;
 }
