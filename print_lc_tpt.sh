@@ -18,6 +18,8 @@ second=0
 declare -A mfbr_array
 declare -A gfbr_array
 
+echo "time,ueId,lcId,tpt,gfbr,mfbr" >> $OUTPUT_FILE
+
 # run the odu command and continuously monitor its output
 while IFS= read -r line; do
     # check if the line contains "DL Tpt"

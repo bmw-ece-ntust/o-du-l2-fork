@@ -5227,24 +5227,6 @@ void schMFBRAlgoforLcv1(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *ava
    return;
 }
 
-/*******************************************************************
- *
- * @brief Allocate and estimate Prb for each LC within current slice based on MFBR requirement.
- *
- * @details
- *
- *    Function : schMFBRAlgoforLc
- *
- *    Functionality: Allocate the LCs based on MFBR.
- * 
- * @params[in] Pointer to LC Info Control Block List
- *             Number of PDSCH symbols
- *             Number of minimum PRB which is calculated according to RRMPolicyRatio
- *             srRcvd Flag[For UL] : Decision flag to add UL_GRANT_SIZE
- *             isTxPayloadLenAdded Flag: Check whether the TxPayload should be added to the first node in current slice
- * @return void
- *
- * ****************************************************************/
 void schMFBRAlgoforLcv2(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
                                        bool *isTxPayloadLenAdded, bool *srRcvd)
 {
