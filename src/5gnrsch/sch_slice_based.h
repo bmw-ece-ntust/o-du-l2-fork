@@ -199,12 +199,6 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
                                        bool *isTxPayloadLenAdded, bool *srRcvd);
 /*JOJO: Sorting algorithm based on priority.*/
 void schSortLcByPriority(CmLListCp *lcInfoList);
-/* JOJO: Calculate estimated TB size based on GFBR. */
-uint32_t schGFBRBasedcalculateEstimateTBSize(uint32_t reqBO, uint16_t mcsIdx, uint8_t numSymbols,\
-                                   uint16_t maxPRB, uint16_t *estPrb, uint32_t gfbr, uint32_t accumulatedBO);
-/* JOJO: Calculate estimated TB size based on MFBR. */
-uint32_t schMFBRBasedcalculateEstimateTBSize(uint32_t reqBO, uint16_t mcsIdx, uint8_t numSymbols,\
-                                   uint16_t maxPRB, uint16_t *estPrb, uint32_t mfbr, uint32_t accumulatedBO);
 
 uint8_t schSliceBasedRoundRobinAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);

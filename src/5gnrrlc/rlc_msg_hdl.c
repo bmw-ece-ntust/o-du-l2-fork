@@ -842,7 +842,7 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo)
    {
       DU_LOG("\nINFO  -->  JOJO: The BO size for RB ID %d is: %d", dlDataMsgInfo->rbId, rbCb->m.umDl.bo);
       // if(rbCb->m.umDl.bo>150000)
-      if(isMFBR[dlDataMsgInfo->rbId - 1])
+      if(isMFBR[dlDataMsgInfo->rbId - 1] || rbCb->m.umDl.bo > 150000)
       {
          DU_LOG("\nINFO  -->  JOJO: RLC dropped DL data request.");
          RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_DL, RLC_POOL, datReqInfo, sizeof(RlcDatReqInfo));

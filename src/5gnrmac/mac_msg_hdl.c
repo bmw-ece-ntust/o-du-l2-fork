@@ -471,6 +471,7 @@ uint8_t sendSchedRptToRlc(DlSchedInfo dlInfo, SlotTimingInfo slotInfo, uint8_t u
       {
          schedRpt->lcSch[lcIdx].lcId = dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].lcId;
          schedRpt->lcSch[lcIdx].bufSize = dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].schBytes;
+         DU_LOG("\nJOJO   -->  MAC: Scheduled bytes: %d", dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].schBytes);
       }
    }
 

@@ -679,7 +679,8 @@ uint16_t cuEgtpDatReq(uint32_t duId, uint8_t teId)
    }
    /* Build Application message that is supposed to come from app to egtp */
    // ret = BuildAppMsg(duId, &egtpMsg);
-   ret = BuildAppMsgForExperiment1(duId, &egtpMsg);
+   // ret = BuildAppMsgForExperiment1(duId, &egtpMsg);
+   ret = BuildAppMsgForExperiment2(duId, &egtpMsg);
    if(ret != ROK)
    {
       DU_LOG("\nERROR  -->  EGTP : Failed to build App Msg");
@@ -1123,97 +1124,151 @@ S16 BuildAppMsgForExperiment2(uint32_t duId, EgtpMsg  *egtpMsg)
    
    if (teId == 1) 
    {
-      data = (char *)malloc(20 * sizeof(char));
+      data = (char *)malloc(1200 * sizeof(char));
       strncpy(data,
-         "aaaaaaaaaaaaaaaaaaaa",
-         20);
-      datSize = 20;
-      // data = (char *)malloc(10 * sizeof(char));
-      // strncpy(data,
-      //    "aaaaaaaaaa", // 10 elements per line
-      //    10);
-      // datSize = 10;
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+         1200);
+      datSize = 1200;
    } 
    else if (teId == 2) 
    {
-      data = (char *)malloc(20 * sizeof(char));
+      data = (char *)malloc(1200 * sizeof(char));
       strncpy(data,
-         "aaaaaaaaaaaaaaaaaaaa",
-         20);
-      datSize = 20;
-      // data = (char *)malloc(150 * sizeof(char));
-      // strncpy(data,
-      //    "aaaaaaaaaa" // 10 elements per line
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa",
-      //    150);
-      // datSize = 150;
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+         1200);
+      datSize = 1200;
    }
    else if (teId == 3) 
    {
-      data = (char *)malloc(20 * sizeof(char));
+      data = (char *)malloc(1200 * sizeof(char));
       strncpy(data,
-         "aaaaaaaaaaaaaaaaaaaa",
-         20);
-      datSize = 20;
-      // data = (char *)malloc(150 * sizeof(char));
-      // strncpy(data,
-      //    "aaaaaaaaaa" // 10 elements per line
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa",
-      //    150);
-      // datSize = 150;
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+         1200);
+      datSize = 1200;
    }
    else if (teId == 4) 
    {
-      data = (char *)malloc(20 * sizeof(char));
+      data = (char *)malloc(1200 * sizeof(char));
       strncpy(data,
-         "aaaaaaaaaaaaaaaaaaaa",
-         20);
-      datSize = 20;
-      // data = (char *)malloc(150 * sizeof(char));
-      // strncpy(data,
-      //    "aaaaaaaaaa" // 10 elements per line
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa"
-      //    "aaaaaaaaaa",
-      //    150);
-      // datSize = 150;
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+         1200);
+      datSize = 1200;
    }
    else 
    {

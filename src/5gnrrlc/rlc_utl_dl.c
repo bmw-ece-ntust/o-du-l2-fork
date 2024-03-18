@@ -523,7 +523,7 @@ uint8_t rlcUtlSendToMac(RlcCb *gCb, SuId suId, KwDStaIndInfo *staIndInfo)
                   if(drbTputNode != NULLP)
                   {
                      drbTputNode->dataVol += staIndTb->lchStaInd[count].totBufSize;
-                     //DU_LOG("\nINFO   -->  RLC_DL: DRB List Grant:%d, lcId:%d, total :%ld",\
+                     // DU_LOG("\nJOJO   -->  RLC_DL: DRB List Grant:%d, lcId:%d, total :%ld",\
                            staIndTb->lchStaInd[count].totBufSize, staIndTb->lchStaInd[count].lcId,\
                            drbTputNode->dataVol);
                   }

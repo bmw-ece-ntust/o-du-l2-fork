@@ -783,7 +783,11 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                      {
                         lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
                         lcInfoNode->avgWindowCnt += 1;
-                        if(lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow/2 && lcInfoNode->avgWindow != 0)
+
+                        // if(lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow/2 && lcInfoNode->avgWindow != 0)
+                        // If the size of average window is as large as RIC timer interval.
+                        if((lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow/2 && lcInfoNode->avgWindow != 0)
+                           || rlcSyncUpWithSch == true)
                         {
                            lcInfoNode->avgWindowCnt = 0;
                            lcInfoNode->accumulatedBO = 0;
@@ -795,7 +799,11 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                         }
                         drb_cnt += 1;
                         lcNode = lcNode->next;
-                     }       
+                     }
+                     if(rlcSyncUpWithSch == true)
+                     {
+                        rlcSyncUpWithSch = false;
+                     }
                   } 
                }
          }
