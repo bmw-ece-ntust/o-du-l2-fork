@@ -635,7 +635,7 @@ uint8_t startDlDataForExperiment12()
                // DU_LOG("\nDEBUG  -->  EGTP: Sending DL User Data (duId: %d, teId: %d)\n", duId, teId);
                while(cnt < numOfPacket)
                {
-                  ret =  cuEgtpDatReq(duId, teId);      
+                  ret =  cuEgtpDatReq(duId, teId);
                   if(ret != ROK)
                   {
                      DU_LOG("\nERROR --> EGTP: Issue with teid=%d\n",teId);

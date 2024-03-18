@@ -1586,27 +1586,6 @@ uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb)
                tempLcInfo->avgWindowCnt = 0;
                tempLcInfo->gfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].gfbr;
                tempLcInfo->mfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].mfbr;
-               if(tempLcInfo->lcId == 4)
-               {
-                  tempLcInfo->gfbr = 150000;
-                  tempLcInfo->mfbr = 160000;
-               }
-               else if(tempLcInfo->lcId == 5)
-               {
-                  tempLcInfo->gfbr = 170000;
-                  tempLcInfo->mfbr = 180000;
-               }
-               else if(tempLcInfo->lcId == 6)
-               {
-                  tempLcInfo->gfbr = 190000;
-                  tempLcInfo->mfbr = 200000;
-               }
-               else
-               {
-                  tempLcInfo->gfbr = 0;
-                  tempLcInfo->mfbr = 0;
-               }
-               
                tempLcInfo->avgWindow = ueCb->dlInfo.dlLcCtxt[lcIdx].avgWindow;
                isMFBR[lcIdx - 4] = false;
                tempLcInfo->isGFBRAchieved = false;
@@ -4917,6 +4896,7 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
    uint8_t remainingLc = 0;
    uint16_t mcsIdx;
    uint16_t totalAvaiPrb = *availablePrb;
+   uint8_t resourceType;
 
    if(lcInfoList->count == 0 || lcInfoList == NULLP)
    {
@@ -5058,16 +5038,16 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
    schSortLcByPriority(lcInfoList);
 
    /*JOJO: Check the result of sorting*/
-   // node = lcInfoList->first;
-   // while(node)
-   // {
-   //    lcInfoNode = (SchSliceBasedLcInfo *)node->node;
-   //    DU_LOG("\nJOJO  -->  MFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
-   //                Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
-   //       lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
-   //       lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
-   //    node = node->next; 
-   // }
+   node = lcInfoList->first;
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+      DU_LOG("\nJOJO  -->  MFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
+                  Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
+         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
+         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
+      node = node->next; 
+   }
 
    remainingLc = lcInfoList->count;
    node = lcInfoList->first;
