@@ -1,6 +1,6 @@
 {
     "vesConfig": {
-        "vesV4IpAddress" : "192.168.8.229",
+        "vesV4IpAddress" : "dcae-ves-collector-service1",
         "vesPort" : "30417",
         "username" : "sample1",
         "password" : "sample1"

@@ -155,7 +155,7 @@ install_netconf_lib() {
 
    # libnetconf2
    cd $NETCONF_PATH && \
-      git clone -b v1.1.36 --depth 1 https://github.com/CESNET/libnetconf2.git && \
+      git clone -b v1.1.46 --depth 1 https://github.com/CESNET/libnetconf2.git && \
       cd libnetconf2 && mkdir build && cd build && \
       cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF .. && \
       make -j2 && \
@@ -166,8 +166,9 @@ install_netconf_lib() {
 
    # netopeer2
    cd $NETCONF_PATH && \
-      git clone -b libyang1 --depth 1 https://git-ntustoran.ddns.net/oran/netopeer2.git && \
-      cd netopeer2 && mkdir build && cd build && \
+      git clone --depth 1 https://github.com/ToriRobert/netopeer2.git && \
+      cd netopeer2 && cd scripts && chmod +x setup.sh merge_hostkey.sh merge_config.sh && cd .. && \
+      mkdir build && cd build && \
       cmake -DCMAKE_BUILD_TYPE:String="Debug" -DNP2SRV_DATA_CHANGE_TIMEOUT=30000 \
             -DNP2SRV_DATA_CHANGE_WAIT=OFF .. && \
       make -j2 && \
