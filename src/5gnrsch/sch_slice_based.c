@@ -3909,14 +3909,12 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
             if((lcNode->reqBO != 0 || lcNode->allocBO != 0) && !lcNode->isMFBRAchieved)
             // if(lcNode->reqBO != 0 || lcNode->allocBO != 0)
             {             
-               DU_LOG("\nINFO 1   -->  SCH : LcID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
-                  lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);            
+               DU_LOG("\nJOJO INFO    -->  SCH : UE ID:%d LC ID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
+                  lcNode->ueCb->ueId, lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);           
                if(dlMsgAlloc != NULLP)
                {
                   /*Add this LC to dlMsgAlloc so that if this LC gets allocated, BO
                   * report for allocation can be sent to MAC*/
-                 DU_LOG("\nJOJO   -->  SCH : LcID:%d, [reqBO, allocBO]:[%d,%d,%d]",\
-                  lcNode->lcId, lcNode->reqBO, lcNode->allocBO);    
                   dlMsgAlloc->numOfTbs = 1;
                   dlMsgAlloc->transportBlock[0].lcSchInfo[dlMsgAlloc->transportBlock[0].numLc].lcId = lcNode->lcId;
                   dlMsgAlloc->transportBlock[0].lcSchInfo[dlMsgAlloc->transportBlock[0].numLc].schBytes = lcNode->allocBO;
@@ -4467,10 +4465,10 @@ void schSliceBasedRoundRobinAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols,
          if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
          {
             *isTxPayloadLenAdded = TRUE;
-#ifdef SLICE_BASED_DEBUG_LOG
+
             DU_LOG("\nDEBUG  -->  SCH: LC:%d is the First node to be allocated which includes TX_PAYLOAD_HDR_LEN",\
                   lcInfoNode->lcId);
-#endif
+
             allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO + TX_PAYLOAD_HDR_LEN, mcsIdx, numSymbols, quantum, &estPrb);
             allocBO = allocBO - TX_PAYLOAD_HDR_LEN;
             lcInfoNode->allocBO += allocBO;      
@@ -4792,24 +4790,6 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
          lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
 
          resourceType = schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI);
-         
-         // if((resourceType == 0 || resourceType == 2) && accumulatedDataVolume[lcInfoNode->lcId - 4] >= lcInfoNode->gfbr && !lcInfoNode->isGFBRAchieved)
-         // {
-         //    lcInfoNode->isGFBRAchieved = true;
-         //    DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved GFBR.", lcInfoNode->lcId);
-         // }
-
-         // if((resourceType == 0 || resourceType == 2) && !lcInfoNode->isGFBRAchieved)
-         // {
-         //    if(addNodeToLList(&GFBRLcList, lcNode->node, NULLP) != ROK)
-         //    {
-         //       DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into GBR LC list.");
-         //    }
-         //    else
-         //    {
-         //       // DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into GFBR list.", ueId, lcInfoNode->lcId);
-         //    }
-         // }
 
          if((resourceType == 0 || resourceType == 2) && !lcInfoNode->isGFBRAchieved)
          {
@@ -4838,13 +4818,12 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
    }
 
    /* JOJO: Schedule LCs based on GFBR for GBR traffics. */
-   schGFBRAlgoforLc(&GFBRLcList, numSymbols, availablePrb, \
-                                       &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+   schGFBRAlgoforLc(cellCb, &GFBRLcList, numSymbols, availablePrb, srRcvd);
+
    if(*availablePrb == 0)
       DU_LOG("\nJOJO  --> GBR traffics are not yet satisfied.");
    /* JOJO: Schedule LCs and also consider MFBR for all traffics. */
-   schMFBRAlgoforLc(&MFBRLcList, numSymbols, availablePrb, \
-                                       &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
+   schMFBRAlgoforLc(cellCb, &MFBRLcList, numSymbols, availablePrb, srRcvd);
 
    /* Free the GBR LC list */
    lcNode = GFBRLcList.first;
@@ -4883,8 +4862,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
  * @return void
  *
  * ****************************************************************/
-void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
-                                       bool *isTxPayloadLenAdded, bool *srRcvd)
+void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, bool *srRcvd)
 {
    CmLList *node = NULLP;
    SchSliceBasedLcInfo *lcInfoNode = NULLP;
@@ -4897,6 +4875,10 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
    uint16_t mcsIdx;
    uint16_t totalAvaiPrb = *availablePrb;
    uint8_t resourceType;
+
+   SchUeCb *ueCb = NULLP;
+   SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
+   bool *isTxPayloadLenAdded;
 
    if(lcInfoList->count == 0 || lcInfoList == NULLP)
    {
@@ -4934,6 +4916,10 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
       }
 
       mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+      /*JOJO: Get isTxPayloadLenAdded from UE control block. */
+      ueCb = &cellCb->ueCb[lcInfoNode->ueCb->ueId-1];
+      ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+      isTxPayloadLenAdded = &ueSliceBasedCb->isTxPayloadLenAdded;
 
       if(lcInfoNode->reqBO != 0)
       {
@@ -5015,8 +5001,7 @@ void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
  * @return void
  *
  * ****************************************************************/
-void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
-                                       bool *isTxPayloadLenAdded, bool *srRcvd)
+void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, bool *srRcvd)
 {
    CmLList *node = NULLP;
    SchSliceBasedLcInfo *lcInfoNode = NULLP;
@@ -5028,9 +5013,13 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
    uint16_t totalAvaiPrb = *availablePrb;
    uint8_t resourceType;
 
+   SchUeCb *ueCb = NULLP;
+   SchSliceBasedUeCb *ueSliceBasedCb = NULLP;
+   bool *isTxPayloadLenAdded;
+
    if(lcInfoList == NULLP || lcInfoList->count == 0)
    {
-      DU_LOG("\nERROR --> SCH: LcList not present");
+      DU_LOG("\nERROR --> SCH: LcList not present in MFBR Algo.");
       return;
    }
 
@@ -5057,7 +5046,7 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
 
       /*JOJO: If available PRBs are exhausted*/
       /*Loop Exit: All resources exhausted*/
-      DU_LOG("\nJOJO --> SCH: Available PRBs: %d for LC ID: %d.", *availablePrb, lcInfoNode->lcId);
+      DU_LOG("\nJOJO --> SCH: Available PRBs: %d for UE ID: %d LC ID: %d.", *availablePrb, lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
       if(*availablePrb == 0)
       {
          DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
@@ -5065,6 +5054,10 @@ void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *avail
       }
 
       mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+      /*JOJO: Get isTxPayloadLenAdded from UE control block. */
+      ueCb = &cellCb->ueCb[lcInfoNode->ueCb->ueId-1];
+      ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
+      isTxPayloadLenAdded = &ueSliceBasedCb->isTxPayloadLenAdded;
       resourceType = schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI);
       // DU_LOG("\nJOJO  -->  SCH: LC -> %d, resource type -> %d.", lcInfoNode->lcId, resourceType);
       

@@ -1046,6 +1046,9 @@ uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t c
    pdsch->pdschFreqAlloc.startPrb = startPRB; /*Start PRB will be already known*/
    pdsch->pdschFreqAlloc.numPrb = schCalcNumPrb(tbSize, ueCb.ueCfg.dlModInfo.mcsIndex, pdschNumSymbols);
 
+   DU_LOG("\nJOJO  -->  SCH : UE %d has TBS %d, needs %d PRBs, starts from PRB %d.",\
+       ueId, tbSize, pdsch->pdschFreqAlloc.numPrb, startPRB);
+
    /* Find total symbols occupied including DMRS */
    dmrsStartSymbol = findDmrsStartSymbol(pdsch->dmrs.dlDmrsSymbPos);
    /* If there are no DRMS symbols, findDmrsStartSymbol() returns MAX_SYMB_PER_SLOT,

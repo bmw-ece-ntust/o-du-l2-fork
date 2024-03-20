@@ -679,8 +679,8 @@ uint16_t cuEgtpDatReq(uint32_t duId, uint8_t teId)
    }
    /* Build Application message that is supposed to come from app to egtp */
    // ret = BuildAppMsg(duId, &egtpMsg);
-   // ret = BuildAppMsgForExperiment1(duId, &egtpMsg);
-   ret = BuildAppMsgForExperiment2(duId, &egtpMsg);
+   ret = BuildAppMsgForExperiment1(duId, &egtpMsg);
+   // ret = BuildAppMsgForExperiment2(duId, &egtpMsg);
    if(ret != ROK)
    {
       DU_LOG("\nERROR  -->  EGTP : Failed to build App Msg");

@@ -193,10 +193,9 @@ uint8_t schSliceBasedUlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo puschTi
 uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
 /* Scheduling Algorithm for Logical Channel Level */
-void schGFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
-                                       bool *isTxPayloadLenAdded, bool *srRcvd);
-void schMFBRAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \
-                                       bool *isTxPayloadLenAdded, bool *srRcvd);
+void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, bool *srRcvd);
+void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, bool *srRcvd);
+
 /*JOJO: Sorting algorithm based on priority.*/
 void schSortLcByPriority(CmLListCp *lcInfoList);
 
