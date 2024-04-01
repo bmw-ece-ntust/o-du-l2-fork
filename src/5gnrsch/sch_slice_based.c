@@ -3906,6 +3906,12 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
          lcNode = (SchSliceBasedLcInfo *)node->node;
          if(lcNode != NULLP)
          {
+            if(lcNode->reqBO != 0 && lcNode->allocBO == 0)
+            {
+               DU_LOG("\nJOJO INFO    -->  SCH : There might be wrong, allocBO, but still have TB.");
+               // lcNode->reqBO = 0; // Reset "reqBO"
+            }
+            // if(lcNode->allocBO != 0 && !lcNode->isMFBRAchieved)
             if((lcNode->reqBO != 0 || lcNode->allocBO != 0) && !lcNode->isMFBRAchieved)
             // if(lcNode->reqBO != 0 || lcNode->allocBO != 0)
             {             
@@ -4818,12 +4824,16 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
    }
 
    /* JOJO: Schedule LCs based on GFBR for GBR traffics. */
+   *availablePrb = *availablePrb;
    schGFBRAlgoforLc(cellCb, &GFBRLcList, numSymbols, availablePrb, srRcvd);
 
    if(*availablePrb == 0)
       DU_LOG("\nJOJO  --> GBR traffics are not yet satisfied.");
    /* JOJO: Schedule LCs and also consider MFBR for all traffics. */
    schMFBRAlgoforLc(cellCb, &MFBRLcList, numSymbols, availablePrb, srRcvd);
+
+   // schSliceBasedRoundRobinAlgoforLc(&MFBRLcList, numSymbols, availablePrb, \
+                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
 
    /* Free the GBR LC list */
    lcNode = GFBRLcList.first;
@@ -4895,9 +4905,9 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
    {
       lcInfoNode = (SchSliceBasedLcInfo *)node->node;
       DU_LOG("\nJOJO  -->  GFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
-                  Priority Level: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d",\
-         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, \
-         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr);
+                  Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
+         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
+         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
       node = node->next; 
    }
 
@@ -4909,6 +4919,7 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
 
       /*JOJO: If available PRBs are exhausted*/
       /*Loop Exit: All resources exhausted*/
+      DU_LOG("\nJOJO --> SCH: Available PRBs: %d for UE ID: %d LC ID: %d.", *availablePrb, lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
       if(*availablePrb == 0)
       {
          DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);

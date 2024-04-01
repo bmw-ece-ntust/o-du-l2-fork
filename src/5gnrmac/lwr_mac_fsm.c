@@ -4539,6 +4539,7 @@ uint16_t fillUlTtiReq(SlotTimingInfo currTimingInfo, p_fapi_api_queue_elem_t pre
                   /* Fill PUCCH PDU */
                   if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_UCI)
                   {
+                     DU_LOG("\nJOJO  -->  LWR_MAC: UE %d sends UL TTI Request.", ueIdx+1);
                      pduIdx++;
                      fillPucchPdu(&ulTtiReq->pdus[pduIdx], &vendorUlTti->ul_pdus[pduIdx], &macCellCfg, currUlSlot, ueIdx);
                      ulTtiReq->nUlcch++;

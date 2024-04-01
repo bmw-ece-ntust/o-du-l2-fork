@@ -548,6 +548,7 @@ uint8_t schUlResAlloc(SchCellCb *cell, Inst schInst)
             ret = fillPucchResourceInfo(schUlSlotInfo->pucchUe[ueIdx], &schUlSlotInfo->schPucchInfo[ueIdx], schInst, ulTimingInfo);
             if (ret == ROK)
             {
+               DU_LOG("\nJOJO  --> SCH : UE %d filled PUCCH.", ueIdx+1);
                ulSchedInfo[ueIdx].dataType |= SCH_DATATYPE_UCI;
                memcpy(&ulSchedInfo[ueIdx].schPucchInfo, &schUlSlotInfo->schPucchInfo[ueIdx],
                      sizeof(SchPucchInfo));

@@ -1088,6 +1088,7 @@ uint8_t fillPucchF0F1PduInfo(fapi_uci_o_pucch_f0f1_t *pduInfo, fapi_ul_pucch_pdu
       for(idx = 0; idx < pduInfo->harqInfo.numHarq; idx++)
       {
          pduInfo->harqInfo.harqValue[idx] = result[ind%50];
+         DU_LOG("\nJOJO  -->  PHY_STUB: HARQ indication: %d.", ind);
          ind++;
          /*TBD: To use harq ind with random number and percentage*/
          //pduInfo->harqInfo.harqValue[idx] = (dlHqPassPer >= rand()%(100))?HARQ_PASS:HARQ_FAIL;
@@ -1167,6 +1168,7 @@ uint8_t l1BuildAndSendUciInd(uint16_t slot, uint16_t sfn, fapi_ul_pucch_pdu_t pu
    uint32_t msgLen = 0;
    fapi_uci_indication_t *uciInd =  NULLP;
 
+   DU_LOG("\nJOJO   -->  PHY STUB: Allocate UCI indication for UE.");
    MAC_ALLOC(uciInd, sizeof(fapi_uci_indication_t));
    if(!uciInd)
    {
