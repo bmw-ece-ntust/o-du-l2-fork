@@ -801,6 +801,7 @@ uint16_t schAllocPucchResourceMu(SchCellCb *cell, SlotTimingInfo pdcchTime, Slot
    GET_UE_ID(crnti, ueId);
    memset(&schUlSlotInfo->schPucchInfo[ueId-1], 0, sizeof(SchPucchInfo));
 
+   DU_LOG("\nJOJO DEBUG  -->  Allocate SchPucchInfo.");
    pdcchCfg = cell->schDlSlotInfo[pdcchSlot]->dlMsgAlloc[ueId-1]->dlMsgPdcchCfg;
    schUlSlotInfo->pucchPres = true;
    if(ueCb != NULLP)

@@ -740,6 +740,7 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
       if(cell->schDlSlotInfo[dlSchedInfo.schSlotValue.dlMsgTime.slot]->dlMsgAlloc[ueIdx] != NULLP)
       {
          slot = dlSchedInfo.schSlotValue.dlMsgTime.slot;
+         DU_LOG("\nJOJO DEBUG  --> SCH : Send dlMsgAlloc to MAC at slot %d for UE %d.", slot, ueIdx+1);
          dlSchedInfo.dlMsgAlloc[ueIdx] = cell->schDlSlotInfo[slot]->dlMsgAlloc[ueIdx];
          cell->schDlSlotInfo[slot]->dlMsgAlloc[ueIdx] = NULLP;
       }

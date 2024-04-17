@@ -4157,6 +4157,7 @@ uint16_t sendTxDataReq(SlotTimingInfo currTimingInfo, MacDlSlot *dlSlot, p_fapi_
                   dlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPduLen);
             dlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPdu = NULLP;
             MAC_FREE(dlSlot->dlInfo.dlMsgAlloc[ueIdx], sizeof(DlMsgSchInfo));
+            DU_LOG("\nJOJO DEBUG  --> Release dlMsgAlloc at slot %d for UE %d.", currTimingInfo.slot, ueIdx+1);
          }
       }
 

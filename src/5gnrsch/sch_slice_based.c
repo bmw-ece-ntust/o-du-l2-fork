@@ -2188,6 +2188,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
             findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
                &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, FALSE, *hqP) == true)
             {
+               DU_LOG("\nJOJO DEBUG  -->  Allocate HARQ for UE %d", ueId);
                UEWillBeScheduled = ueId;
                ueNewHarqList[ueId-1] = *hqP; /*JOJO: Keep HARQ list for new transmission.*/
                SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
@@ -2198,6 +2199,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
             /* JOJO: Allocate PDCCH and PDSCH resources for the ue (move from function schSliceBasedDlIntraSliceScheduling) */
             if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
             {
+               DU_LOG("\nJOJO DEBUG  -->  Allocate DlMsgSchInfo for UE %d at slot %d", ueId, pdcchTime.slot);
                SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
                if(!dciSlotAlloc)
                {
@@ -3008,6 +3010,7 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
 
       if(pdcchTime.slot == pdschTime.slot)
       {
+         DU_LOG("\nJOJO DEBUG  -->  Allocate PDSCH config.");
          SCH_ALLOC(dciSlotAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
          if(!dciSlotAlloc->dlMsgPdschCfg)
          {
@@ -3040,12 +3043,17 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
             memset(dlMsgAlloc, 0, sizeof(DlMsgSchInfo));
          }
          else
+         {
+            DU_LOG("\nJOJO DEBUG  -->  Assign dlMsgAlloc.");
             dlMsgAlloc = cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1];
+         }
+            
 
          /* Copy all DL_MSG info */
          dlMsgAlloc->crnti =crnti;
          dlMsgAlloc->bwp = dciSlotAlloc->bwp;
          SCH_ALLOC(dlMsgAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
+         DU_LOG("\nJOJO DEBUG  -->  Allocate PDSCH config.");
          if(dlMsgAlloc->dlMsgPdschCfg)
          {
             memcpy(dlMsgAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg, sizeof(PdschCfg));
