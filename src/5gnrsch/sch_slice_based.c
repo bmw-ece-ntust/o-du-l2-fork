@@ -2970,6 +2970,10 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
             /*Schedule the LC for next slot*/
             DU_LOG("\nDEBUG  -->  SCH : No LC has been scheduled");
          }
+         /*JOJO: Free DlMsgSchInfo, if UE is not scheduled.*/
+         SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+         cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = NULL;
+
          /* Not Freeing dlMsgAlloc as ZERO BO REPORT to be sent to RLC so that
          * Allocation can be done in next slot*/
          accumalatedSize = 0;

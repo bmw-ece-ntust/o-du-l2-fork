@@ -8,8 +8,8 @@ file_path3="$ODU_PATH/src/cu_stub/cu_stub_egtp.h"
 file_path4="$ODU_PATH/src/cm/rgu.h"
 
 # New values for experiment
-new_max_num_ue=1  # New value for max number of UEs
-new_lc_each_ue=4  # New value for the number of logical channels for each UE
+new_max_num_ue=4  # New value for max number of UEs
+new_lc_each_ue=1  # New value for the number of logical channels for each UE
 new_total_lc_traffic=4  # New value for total number of logical channels for traffic
 new_total_lc_rlc=4  # New value for total number of logical channels in RLC layer
 

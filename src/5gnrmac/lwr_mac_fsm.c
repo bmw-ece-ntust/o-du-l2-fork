@@ -3455,10 +3455,30 @@ uint8_t calcDlTtiReqPduCount(MacDlSlot *dlSlot)
       if(dlSlot->dlInfo.dlMsgAlloc[ueIdx] != NULLP)
       {
          /* PDCCH and PDSCH PDU is filled */
+         uint8_t cnt = 0;
          if(dlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg)
+         {
+            DU_LOG("\nJOJO DEBUG  -->  PDCCH is not NULL");cnt++;
             count += 1;
+         }
          if(dlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPdschCfg)
+         {
+            DU_LOG("\nJOJO DEBUG  -->  PDSCH is not NULL");cnt++;
             count += 1;
+         }
+
+         if(cnt == 0)
+         {
+            DU_LOG("\nJOJO DEBUG  -->  dlMsgAlloc is not NULL, but no PDCCH and PDSCH.");
+         }
+         else if (cnt == 1)
+         {
+            DU_LOG("\nJOJO DEBUG  -->  dlMsgAlloc is not NULL, but only either PDCCH or PDSCH.");
+         }
+         else
+         {
+            DU_LOG("\nJOJO DEBUG  -->  dlMsgAlloc is normal.");
+         }
       }
    }
    return count;
