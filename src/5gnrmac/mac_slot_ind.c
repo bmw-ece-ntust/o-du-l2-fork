@@ -133,7 +133,6 @@ uint8_t MacProcDlAlloc(Pst *pst, DlSchedInfo *dlSchedInfo)
                   /* If new data transmission is scheduled, send schedule results to RLC */
                   if(dlSchedInfo->dlMsgAlloc[ueIdx]->dlMsgPdschCfg) 
                   {
-                     DU_LOG("\nJOJO  --> MAC : UE %d send scheduling report to RLC and add HARQ process.", ueIdx+1);
                      sendSchedRptToRlc(currDlSlot->dlInfo, dlSchedInfo->schSlotValue.dlMsgTime, ueIdx, schInfoIdx);
 
                      /* Add HARQ Proc to DL HARQ Proc Entity in UE */
@@ -200,8 +199,6 @@ uint8_t MacProcDlAlloc(Pst *pst, DlSchedInfo *dlSchedInfo)
                      macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].lcId = dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx][drb_cnt].lcId;
                      macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].gfbr = dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx][drb_cnt].gfbr;
                      macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].mfbr = dlSchedInfo->drbInfo.listOfDrbInfo[ueIdx][drb_cnt].mfbr;
-                     // DU_LOG("\nJOJO  -->  MAC : Received 5QI: %d.", macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].fiveQI);
-                     // DU_LOG("\nJOJO  -->  MAC : Received GFBR: %d.", macDrbInfo->listOfDrbInfo[ueIdx][drb_cnt].gfbr);
                   }
                }
             }

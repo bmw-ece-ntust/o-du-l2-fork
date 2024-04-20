@@ -3019,29 +3019,29 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       {
       fiveQI = 1;
       avgWindow = 1000;
-      GFBR = 10000;
-      MFBR = 15000;
+      GFBR = 15000;
+      MFBR = 100000;
       }
-      else if(ueId == 2 && drbSetItem->dRBID == 1)
+      else if(ueId == 1 && drbSetItem->dRBID == 2)
       {
-      fiveQI = 2;
+      fiveQI = 1;
       avgWindow = 1000;
-      GFBR = 10000;
-      MFBR = 20000;
+      GFBR = 15000;
+      MFBR = 100000;
       }
-      else if(ueId == 3 && drbSetItem->dRBID == 1)
+      else if(ueId == 1 && drbSetItem->dRBID == 3)
       {
-      fiveQI = 65;
+      fiveQI = 1;
       avgWindow = 1000;
-      GFBR = 10000;
-      MFBR = 25000;
+      GFBR = 15000;
+      MFBR = 100000;
       }
-      else if(ueId == 4 && drbSetItem->dRBID == 1)
+      else if(ueId == 1 && drbSetItem->dRBID == 4)
       {
-      fiveQI = 2;
+      fiveQI = 1;
       avgWindow = 1000;
-      GFBR = 10000;
-      MFBR = 20000;
+      GFBR = 15000;
+      MFBR = 100000;
       // fiveQI = 7;
       // avgWindow = 0;
       // GFBR = 0;

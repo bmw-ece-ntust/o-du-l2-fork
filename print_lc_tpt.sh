@@ -35,8 +35,8 @@ while IFS= read -r line; do
         avgWin_jojo="${BASH_REMATCH[5]}"
 
         # calculate mfbr and gfbr as throughput
-        mfbr_jojo_calculated=$(echo "scale=2; $mfbr_jojo * 8 / $avgWin_jojo" | bc)
-        gfbr_jojo_calculated=$(echo "scale=2; $gfbr_jojo * 8 / $avgWin_jojo" | bc)
+        mfbr_jojo_calculated=$(echo "scale=2; $mfbr_jojo * 8 / 1000" | bc)
+        gfbr_jojo_calculated=$(echo "scale=2; $gfbr_jojo * 8 / 1000" | bc)
 
         # output the JOJO values to the console
         echo "JOJO --> UE id: $ue_id_jojo, LC id: $lc_id_jojo, MFBR: $mfbr_jojo, GFBR: $gfbr_jojo"

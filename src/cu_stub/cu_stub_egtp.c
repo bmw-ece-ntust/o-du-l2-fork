@@ -856,7 +856,7 @@ S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg)
    
    if (teId == 1) 
    {
-      data = (char *)malloc(200 * sizeof(char));
+      data = (char *)malloc(400 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
          "aaaaaaaaaaaaaaaaaaaa"
@@ -868,8 +868,8 @@ S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaa",
-         200);
-      datSize = 200;
+         400);
+      datSize = 400;
       // data = (char *)malloc(10 * sizeof(char));
       // strncpy(data,
       //    "aaaaaaaaaa", // 10 elements per line
@@ -878,7 +878,7 @@ S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg)
    } 
    else if (teId == 2) 
    {
-      data = (char *)malloc(200 * sizeof(char));
+      data = (char *)malloc(400 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
          "aaaaaaaaaaaaaaaaaaaa"
@@ -890,8 +890,8 @@ S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaa",
-         200);
-      datSize = 200;
+         400);
+      datSize = 400;
       // data = (char *)malloc(150 * sizeof(char));
       // strncpy(data,
       //    "aaaaaaaaaa" // 10 elements per line
@@ -914,7 +914,7 @@ S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg)
    }
    else if (teId == 3) 
    {
-      data = (char *)malloc(200 * sizeof(char));
+      data = (char *)malloc(400 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
          "aaaaaaaaaaaaaaaaaaaa"
@@ -926,8 +926,8 @@ S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaa",
-         200);
-      datSize = 200;
+         400);
+      datSize = 400;
       // data = (char *)malloc(150 * sizeof(char));
       // strncpy(data,
       //    "aaaaaaaaaa" // 10 elements per line
@@ -950,7 +950,7 @@ S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg)
    }
    else if (teId == 4) 
    {
-      data = (char *)malloc(200 * sizeof(char));
+      data = (char *)malloc(400 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaaaaaaaaaaaa" // 10 elements per line
          "aaaaaaaaaaaaaaaaaaaa"
@@ -962,8 +962,8 @@ S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaa",
-         200);
-      datSize = 200;
+         400);
+      datSize = 400;
       // data = (char *)malloc(150 * sizeof(char));
       // strncpy(data,
       //    "aaaaaaaaaa" // 10 elements per line

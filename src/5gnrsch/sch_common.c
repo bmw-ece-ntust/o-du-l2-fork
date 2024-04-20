@@ -548,7 +548,6 @@ uint8_t schUlResAlloc(SchCellCb *cell, Inst schInst)
             ret = fillPucchResourceInfo(schUlSlotInfo->pucchUe[ueIdx], &schUlSlotInfo->schPucchInfo[ueIdx], schInst, ulTimingInfo);
             if (ret == ROK)
             {
-               DU_LOG("\nJOJO  --> SCH : UE %d filled PUCCH.", ueIdx+1);
                ulSchedInfo[ueIdx].dataType |= SCH_DATATYPE_UCI;
                memcpy(&ulSchedInfo[ueIdx].schPucchInfo, &schUlSlotInfo->schPucchInfo[ueIdx],
                      sizeof(SchPucchInfo));
@@ -801,7 +800,6 @@ uint16_t schAllocPucchResourceMu(SchCellCb *cell, SlotTimingInfo pdcchTime, Slot
    GET_UE_ID(crnti, ueId);
    memset(&schUlSlotInfo->schPucchInfo[ueId-1], 0, sizeof(SchPucchInfo));
 
-   DU_LOG("\nJOJO DEBUG  -->  Allocate SchPucchInfo.");
    pdcchCfg = cell->schDlSlotInfo[pdcchSlot]->dlMsgAlloc[ueId-1]->dlMsgPdcchCfg;
    schUlSlotInfo->pucchPres = true;
    if(ueCb != NULLP)
@@ -1048,8 +1046,8 @@ uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t c
    pdsch->pdschFreqAlloc.startPrb = startPRB; /*Start PRB will be already known*/
    pdsch->pdschFreqAlloc.numPrb = schCalcNumPrb(tbSize, ueCb.ueCfg.dlModInfo.mcsIndex, pdschNumSymbols);
 
-   DU_LOG("\nJOJO  -->  SCH : UE %d has TBS %d, needs %d PRBs, starts from PRB %d.",\
-       ueId, tbSize, pdsch->pdschFreqAlloc.numPrb, startPRB);
+   // DU_LOG("\nJOJO  -->  SCH : UE %d has TBS %d, needs %d PRBs, starts from PRB %d.",\
+   //     ueId, tbSize, pdsch->pdschFreqAlloc.numPrb, startPRB);
 
    /* Find total symbols occupied including DMRS */
    dmrsStartSymbol = findDmrsStartSymbol(pdsch->dmrs.dlDmrsSymbPos);

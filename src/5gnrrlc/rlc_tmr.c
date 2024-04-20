@@ -560,6 +560,9 @@ void rlcUeThptTmrExpiry(PTR cb)
    long double tpt;
    RlcThpt *rlcThptCb = (RlcThpt*)cb; 
    
+   DU_LOG("\nJOJO --> UE throughput display.");
+   // rlcSyncUpWithSch = true;
+
    /* If cell is not up, throughput details cannot be printed */
    if(gCellStatus != CELL_UP)
    {

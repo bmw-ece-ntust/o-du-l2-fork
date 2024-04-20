@@ -458,7 +458,7 @@ uint8_t sendSchedRptToRlc(DlSchedInfo dlInfo, SlotTimingInfo slotInfo, uint8_t u
       return RFAILED;
    }
 
-   DU_LOG("\nDEBUG  -->  MAC: Send scheduled result report for sfn %d slot %d", slotInfo.sfn, slotInfo.slot);
+   // DU_LOG("\nDEBUG  -->  MAC: Send scheduled result report for sfn %d slot %d", slotInfo.sfn, slotInfo.slot);
    schedRpt->cellId = dlInfo.cellId;
    schedRpt->slotInfo.sfn = slotInfo.sfn;
    schedRpt->slotInfo.slot = slotInfo.slot;
@@ -471,7 +471,7 @@ uint8_t sendSchedRptToRlc(DlSchedInfo dlInfo, SlotTimingInfo slotInfo, uint8_t u
       {
          schedRpt->lcSch[lcIdx].lcId = dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].lcId;
          schedRpt->lcSch[lcIdx].bufSize = dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].schBytes;
-         DU_LOG("\nJOJO   -->  MAC: Scheduled bytes: %d", dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].schBytes);
+         // DU_LOG("\nJOJO   -->  MAC: Scheduled bytes: %d", dlInfo.dlMsgAlloc[ueIdx]->transportBlock[0].lcSchInfo[lcIdx].schBytes);
       }
    }
 

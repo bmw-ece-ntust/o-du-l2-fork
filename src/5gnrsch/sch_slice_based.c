@@ -1361,7 +1361,7 @@ void schSliceBasedScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst sc
    {
       if(pendingUeNode->node)
       {
-         DU_LOG("\nDennis  --> SCH Has UE to be scheduled. [%d : %d]", slotInd->sfn, slotInd->slot);
+         // DU_LOG("\nDennis  --> SCH Has UE to be scheduled. [%d : %d]", slotInd->sfn, slotInd->slot);
          ueId = *(uint8_t *)(pendingUeNode->node);
          schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
 
@@ -1584,8 +1584,13 @@ uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb)
                tempLcInfo->allocPRB = 0;
                tempLcInfo->ueCb = ueCb;
                tempLcInfo->avgWindowCnt = 0;
-               tempLcInfo->gfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].gfbr;
-               tempLcInfo->mfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].mfbr;
+               tempLcInfo->rlc_avgWindowCnt = ueCb->dlInfo.dlLcCtxt[lcIdx].avgWindow / ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL;
+               tempLcInfo->gfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].gfbr * tempLcInfo->rlc_avgWindowCnt;
+               tempLcInfo->mfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].mfbr * tempLcInfo->rlc_avgWindowCnt;
+               // tempLcInfo->rlc_avgWindowCnt = ueCb->dlInfo.dlLcCtxt[lcIdx].avgWindow / ODU_UE_THROUGHPUT_PRINT_TIME_INTERVAL;
+               // tempLcInfo->gfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].gfbr * 0.5;
+               // tempLcInfo->mfbr = ueCb->dlInfo.dlLcCtxt[lcIdx].mfbr * 0.5;
+
                tempLcInfo->avgWindow = ueCb->dlInfo.dlLcCtxt[lcIdx].avgWindow;
                isMFBR[lcIdx - 4] = false;
                tempLcInfo->isGFBRAchieved = false;
@@ -1597,7 +1602,7 @@ uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb)
                totalPriorLevel += tempLcInfo->priorLevel;
                DU_LOG("\nJOJO --> UE ID:%d LC ID:%d is with 5QI: %d, priority level: %d, PDU session ID: %d, MFBR: %d, GFBR: %d, avg. win: %d.", ueId,
                   tempLcInfo->lcId, ueCb->dlInfo.dlLcCtxt[lcIdx].fiveQi, tempLcInfo->priorLevel, ueCb->dlInfo.dlLcCtxt[lcIdx].pduSessionId,\
-                  tempLcInfo->mfbr, tempLcInfo->gfbr, tempLcInfo->avgWindow);
+                  ueCb->dlInfo.dlLcCtxt[lcIdx].mfbr, ueCb->dlInfo.dlLcCtxt[lcIdx].gfbr, tempLcInfo->avgWindow);
                addNodeToLList(&sliceCb->lcInfoList[ueId-1], tempLcInfo, NULL);
             }
          }
@@ -2070,8 +2075,6 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    cmLListInit(&ueDlNewTransmission);
    cmLListInit(&ueDlRetransmission);
 
-   if(cell->boIndBitMap != 0)
-      DU_LOG("\nJOJO --> BO Indication Bitmap: %d", cell->boIndBitMap);
    /*JOJO: Loop over each UE in UE to be scheduled list for DL transmission.*/
    ueNode = schSpcCell->ueToBeScheduled.first;
 
@@ -2188,7 +2191,6 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
             findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
                &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, FALSE, *hqP) == true)
             {
-               DU_LOG("\nJOJO DEBUG  -->  Allocate HARQ for UE %d", ueId);
                UEWillBeScheduled = ueId;
                ueNewHarqList[ueId-1] = *hqP; /*JOJO: Keep HARQ list for new transmission.*/
                SCH_ALLOC(ueIdToAdd, sizeof(uint8_t));
@@ -2199,11 +2201,9 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
             /* JOJO: Allocate PDCCH and PDSCH resources for the ue (move from function schSliceBasedDlIntraSliceScheduling) */
             if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
             {
-               DU_LOG("\nJOJO DEBUG  -->  Allocate DlMsgSchInfo for UE %d at slot %d", ueId, pdcchTime.slot);
                SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
                if(!dciSlotAlloc)
                {
-                  DU_LOG("\nERROR1  -->  SCH : Memory Allocation failed for ded DL msg alloc");
                   return false;
                }
                cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
@@ -2221,7 +2221,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    }
    else
    {
-      DU_LOG("\nJOJO --> %d UEs need to be scheduled for DL.", UENeedToBeScheduled);
+      // DU_LOG("\nJOJO --> %d UEs need to be scheduled for DL.", UENeedToBeScheduled);
    }
 
    schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
@@ -2299,7 +2299,6 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
          if(!dciSlotAlloc)
          {
-            DU_LOG("\nERROR2  -->  SCH : Memory Allocation failed for ded DL msg alloc");
             return false;
          }
          cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
@@ -2307,15 +2306,15 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       }
    }
 
-   clock_gettime(1, &end);
-   processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
-   DU_LOG("\nDennis  -->  Measurement : Processing Time of all intra-slice scheduling: %f sec", processTime);
-
    if(schSliceBasedDlFinalScheduling(cell, pdschTime, pdcchTime, pucchTime, pdschStartSymbol, pdschNumSymbols, &ueDlNewTransmission, isRetx, ueNewHarqList, totalRemainingPrb, startPrb) != ROK)
    {
       DU_LOG("\nDennis --> DL Final Scheduling Failed");
       return false;
    }
+
+   clock_gettime(1, &end);
+   processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
+   DU_LOG("\nJOJO processing time Measurement : Processing Time of slice scheduling: %f sec", processTime);
 
    /* JOJO: Traverse DL scheduling list, release new transmission list.*/
    int UEScheduled = 0;
@@ -2329,12 +2328,12 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       /*JOJO: If UE is not scheduled, then release the new allocated HARQ.*/
       if(!schSpcUeCb->isDlMsgScheduled)
       {
-         DU_LOG("\nSCH --> UE id: %d, releasing HARQ.", ueId);
+         // DU_LOG("\nSCH --> UE id: %d, releasing HARQ.", ueId);
          schDlReleaseHqProcess(ueNewHarqList[ueId-1]);
       }
       else
       {
-         DU_LOG("\nSCH --> UE id: %d, is scheduled.", ueId);
+         // DU_LOG("\nSCH --> UE id: %d, is scheduled.", ueId);
          UEScheduled++;
 #ifdef NR_DRX
          schHdlDrxInActvStrtTmr(cell, &cell->ueCb[ueId-1], PHY_DELTA_DL + SCHED_DELTA);
@@ -2376,7 +2375,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       ueNode = ueNodeNext;
    }
    
-   DU_LOG("\nSCH --> %d UEs are scheduled in this slot.", UEScheduled);
+   // DU_LOG("\nSCH --> %d UEs are scheduled in this slot.", UEScheduled);
    cmLListDeleteLList(&ueDlNewTransmission);
    cmLListDeleteLList(&ueDlRetransmission);
 
@@ -2764,11 +2763,11 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
                {
                   DU_LOG("\nERROR  --> SCH : Updation in LC List Failed");
                   /* Free the dl ded msg info allocated in macSchDlRlcBoInfo */
-                  // if(!dciSlotAlloc->dlMsgPdschCfg)
-                  // {
-                  //    SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
-                  //    (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] = NULL;
-                  // }
+                  if(!dciSlotAlloc->dlMsgPdschCfg)
+                  {
+                     SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+                     cellCb->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = NULL;
+                  }
                }
                else
                {
@@ -2912,7 +2911,6 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       /* Allocate PDCCH and PDSCH resources for the ue */
       if((*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] == NULL)
       {
-         DU_LOG("\nJOJO  -->  SCH : Ded DL msg alloc 1.");
          SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
          if(!dciSlotAlloc)
          {
@@ -2924,7 +2922,6 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       }
       else
       {
-         DU_LOG("\nJOJO  -->  SCH : Ded DL msg alloc 2.");
          dciSlotAlloc = (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1];
       }
 
@@ -3014,7 +3011,6 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
 
       if(pdcchTime.slot == pdschTime.slot)
       {
-         DU_LOG("\nJOJO DEBUG  -->  Allocate PDSCH config.");
          SCH_ALLOC(dciSlotAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
          if(!dciSlotAlloc->dlMsgPdschCfg)
          {
@@ -3048,7 +3044,6 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
          }
          else
          {
-            DU_LOG("\nJOJO DEBUG  -->  Assign dlMsgAlloc.");
             dlMsgAlloc = cellCb->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1];
          }
             
@@ -3057,7 +3052,6 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
          dlMsgAlloc->crnti =crnti;
          dlMsgAlloc->bwp = dciSlotAlloc->bwp;
          SCH_ALLOC(dlMsgAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
-         DU_LOG("\nJOJO DEBUG  -->  Allocate PDSCH config.");
          if(dlMsgAlloc->dlMsgPdschCfg)
          {
             memcpy(dlMsgAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg, sizeof(PdschCfg));
@@ -3091,7 +3085,7 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       cmLListDeleteLList(&defLcList);
 
       /*Re-setting the BO's of all DL LCs in this UE*/
-      DU_LOG("\nJOJO  -->  SCH : Reset BO's of all DL LCs' BO in this UE");
+      // DU_LOG("\nJOJO  -->  SCH : Reset BO's of all DL LCs' BO in this UE");
       for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
       {
          ueCb->dlInfo.dlLcCtxt[lcIdx].bo = 0;
@@ -3918,17 +3912,10 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
          lcNode = (SchSliceBasedLcInfo *)node->node;
          if(lcNode != NULLP)
          {
-            if(lcNode->reqBO != 0 && lcNode->allocBO == 0)
-            {
-               DU_LOG("\nJOJO INFO    -->  SCH : There might be wrong, allocBO, but still have TB.");
-               // lcNode->reqBO = 0; // Reset "reqBO"
-            }
-            // if(lcNode->allocBO != 0 && !lcNode->isMFBRAchieved)
             if((lcNode->reqBO != 0 || lcNode->allocBO != 0) && !lcNode->isMFBRAchieved)
-            // if(lcNode->reqBO != 0 || lcNode->allocBO != 0)
             {             
-               DU_LOG("\nJOJO INFO    -->  SCH : UE ID:%d LC ID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
-                  lcNode->ueCb->ueId, lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);           
+               // DU_LOG("\nJOJO INFO    -->  SCH : UE ID:%d LC ID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
+               //    lcNode->ueCb->ueId, lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);           
                if(dlMsgAlloc != NULLP)
                {
                   /*Add this LC to dlMsgAlloc so that if this LC gets allocated, BO
@@ -3980,8 +3967,8 @@ void schSliceBasedUpdateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAl
          {
             if(lcNode->reqBO != 0 || lcNode->allocBO != 0)
             {
-               DU_LOG("\nINFO 2  -->  SCH : LcID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
-                  lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);            
+               // DU_LOG("\nINFO 2  -->  SCH : LcID:%d, [reqBO, allocBO, allocPRB]:[%d,%d,%d]",\
+               //    lcNode->lcId, lcNode->reqBO, lcNode->allocBO, lcNode->allocPRB);            
                if(dlMsgAlloc != NULLP)
                {
 
@@ -4789,6 +4776,10 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
 
    totalAvaiPrb = *availablePrb;
    
+   struct timespec start, end;
+   double processTime;
+   clock_gettime(1, &start);
+
    ueNode = ueList->first;
 
    cmLListInit(&GFBRLcList);
@@ -4813,7 +4804,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
          {
             if(addNodeToLList(&GFBRLcList, lcNode->node, NULLP) != ROK)
             {
-               DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into GBR LC list.");
+               // DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into GBR LC list.");
             }
             else
             {
@@ -4823,7 +4814,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
 
          if(addNodeToLList(&MFBRLcList, lcNode->node, NULLP) != ROK)
          {
-            DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into general LC list.");
+            // DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into general LC list.");
          }
          else
          {
@@ -4839,8 +4830,6 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
    *availablePrb = *availablePrb;
    schGFBRAlgoforLc(cellCb, &GFBRLcList, numSymbols, availablePrb, srRcvd);
 
-   if(*availablePrb == 0)
-      DU_LOG("\nJOJO  --> GBR traffics are not yet satisfied.");
    /* JOJO: Schedule LCs and also consider MFBR for all traffics. */
    schMFBRAlgoforLc(cellCb, &MFBRLcList, numSymbols, availablePrb, srRcvd);
 
@@ -4864,6 +4853,10 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
       SCH_FREE(lcNode, sizeof(CmLList));
       lcNode = next;
    }
+
+   clock_gettime(1, &end);
+   processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000.0;
+   DU_LOG("\nJOJO processing time Measurement : Processing Time of QoS Scheduling Algorithm: %f us", processTime);
 }
 
 /*******************************************************************
@@ -4904,7 +4897,7 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
 
    if(lcInfoList->count == 0 || lcInfoList == NULLP)
    {
-      DU_LOG("\nJOJO --> SCH: GFBR traffics are satisfied.");
+      // DU_LOG("\nJOJO --> SCH: GFBR traffics are satisfied.");
       return;
    }
 
@@ -4912,16 +4905,16 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
    schSortLcByPriority(lcInfoList);
 
    /*JOJO: Check the result of sorting*/
-   node = lcInfoList->first;
-   while(node)
-   {
-      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
-      DU_LOG("\nJOJO  -->  GFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
-                  Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
-         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
-         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
-      node = node->next; 
-   }
+   // node = lcInfoList->first;
+   // while(node)
+   // {
+   //    lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+   //    DU_LOG("\nJOJO  -->  GFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
+   //                Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
+   //       lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
+   //       lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
+   //    node = node->next; 
+   // }
 
    remainingLc = lcInfoList->count;
    node = lcInfoList->first;
@@ -4931,10 +4924,10 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
 
       /*JOJO: If available PRBs are exhausted*/
       /*Loop Exit: All resources exhausted*/
-      DU_LOG("\nJOJO --> SCH: Available PRBs: %d for UE ID: %d LC ID: %d.", *availablePrb, lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
+      // DU_LOG("\nJOJO --> SCH: Available PRBs: %d for UE ID: %d LC ID: %d.", *availablePrb, lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
       if(*availablePrb == 0)
       {
-         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
+         // DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
          return;
       }
 
@@ -4976,7 +4969,7 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
          lcInfoNode->accumulatedBO += allocBO;
          if(lcInfoNode->accumulatedBO >= lcInfoNode->gfbr)
          {
-            DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved GFBR.", lcInfoNode->lcId);
+            // DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved GFBR.", lcInfoNode->lcId);
             lcInfoNode->isGFBRAchieved = true;
          }
 
@@ -4997,8 +4990,8 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
       }
 
       /*JOJO: the scheduling result of each LC*/
-      DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: GFBR, Priority Level: %d, lcId: %d, allocBO: %d, allocPrb: %d, GFBR: %d]",\
-            lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->allocBO, lcInfoNode->allocPRB, lcInfoNode->gfbr);
+      // DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: GFBR, Priority Level: %d, lcId: %d, allocBO: %d, allocPrb: %d, GFBR: %d]",\
+      //       lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->allocBO, lcInfoNode->allocPRB, lcInfoNode->gfbr);
       
       node = node->next; 
    }
@@ -5042,7 +5035,7 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
 
    if(lcInfoList == NULLP || lcInfoList->count == 0)
    {
-      DU_LOG("\nERROR --> SCH: LcList not present in MFBR Algo.");
+      // DU_LOG("\nERROR --> SCH: LcList not present in MFBR Algo.");
       return;
    }
 
@@ -5050,16 +5043,16 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
    schSortLcByPriority(lcInfoList);
 
    /*JOJO: Check the result of sorting*/
-   node = lcInfoList->first;
-   while(node)
-   {
-      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
-      DU_LOG("\nJOJO  -->  MFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
-                  Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
-         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
-         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
-      node = node->next; 
-   }
+   // node = lcInfoList->first;
+   // while(node)
+   // {
+   //    lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+   //    DU_LOG("\nJOJO  -->  MFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
+   //                Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
+   //       lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
+   //       lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
+   //    node = node->next;
+   // }
 
    remainingLc = lcInfoList->count;
    node = lcInfoList->first;
@@ -5069,10 +5062,10 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
 
       /*JOJO: If available PRBs are exhausted*/
       /*Loop Exit: All resources exhausted*/
-      DU_LOG("\nJOJO --> SCH: Available PRBs: %d for UE ID: %d LC ID: %d.", *availablePrb, lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
+      // DU_LOG("\nJOJO --> SCH: Available PRBs: %d for UE ID: %d LC ID: %d.", *availablePrb, lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
       if(*availablePrb == 0)
       {
-         DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
+         // DU_LOG("\nJOJO  -->  SCH: Dedicated resources exhausted for UE:%d LC:%d", lcInfoNode->ueCb->ueId, lcInfoNode->lcId);
          return;
       }
 
@@ -5082,12 +5075,11 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
       ueSliceBasedCb = (SchSliceBasedUeCb *)ueCb->schSpcUeCb;
       isTxPayloadLenAdded = &ueSliceBasedCb->isTxPayloadLenAdded;
       resourceType = schGetResourceTypeFromFiveQI(lcInfoNode->fiveQI);
-      // DU_LOG("\nJOJO  -->  SCH: LC -> %d, resource type -> %d.", lcInfoNode->lcId, resourceType);
       
       /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
       if(lcInfoNode->accumulatedBO + lcInfoNode->reqBO > lcInfoNode->mfbr && (resourceType == 0 || resourceType == 2) && lcInfoNode->isMFBRAchieved == false)
       {
-         DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR.", lcInfoNode->lcId);
+         // DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR.", lcInfoNode->lcId);
          lcInfoNode->isMFBRAchieved = true;
          isMFBR[lcInfoNode->lcId - 4] = true;
       }
@@ -5188,8 +5180,8 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
       }
       
       /*JOJO: the scheduling result of each LC*/
-      DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: MFBR, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, allocPRB: %d, MFBR: %d]",\
-            lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, lcInfoNode->allocBO, estPrb, lcInfoNode->mfbr);
+      // DU_LOG("\nJOJO  -->  SCH: Allocate LC [Algorithm: MFBR, Priority Level: %d, lcId: %d, reqBO: %d, allocBO: %d, allocPRB: %d, MFBR: %d]",\
+      //       lcInfoNode->priorLevel, lcInfoNode->lcId, lcInfoNode->reqBO, lcInfoNode->allocBO, estPrb, lcInfoNode->mfbr);
       
       node = node->next;
    }

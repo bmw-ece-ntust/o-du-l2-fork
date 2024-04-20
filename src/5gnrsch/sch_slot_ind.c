@@ -740,7 +740,6 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
       if(cell->schDlSlotInfo[dlSchedInfo.schSlotValue.dlMsgTime.slot]->dlMsgAlloc[ueIdx] != NULLP)
       {
          slot = dlSchedInfo.schSlotValue.dlMsgTime.slot;
-         DU_LOG("\nJOJO DEBUG  --> SCH : Send dlMsgAlloc to MAC at slot %d for UE %d.", slot, ueIdx+1);
          dlSchedInfo.dlMsgAlloc[ueIdx] = cell->schDlSlotInfo[slot]->dlMsgAlloc[ueIdx];
          cell->schDlSlotInfo[slot]->dlMsgAlloc[ueIdx] = NULLP;
       }
@@ -785,19 +784,23 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                         lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
                         lcInfoNode->avgWindowCnt += 1;
 
-                        // if(lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow/2 && lcInfoNode->avgWindow != 0)
-                        // If the size of average window is as large as RIC timer interval.
-                        if((lcInfoNode->avgWindowCnt >= lcInfoNode->avgWindow/2 && lcInfoNode->avgWindow != 0)
-                           || rlcSyncUpWithSch == true)
+                        /*JOJO: If the size of average window is not as large as RIC timer interval.*/
+                        if(rlcSyncUpWithSch == true && lcInfoNode->avgWindow != 0)
                         {
-                           lcInfoNode->avgWindowCnt = 0;
-                           lcInfoNode->accumulatedBO = 0;
-                           isMFBR[lcInfoNode->lcId - 4] = false;
-                           lcInfoNode->isGFBRAchieved = false;
-                           lcInfoNode->isMFBRAchieved = false;
-                           DU_LOG("\nJOJO  --> LC %d average window %d  Accumulated BO is reset at slot %d",\
-                              lcInfoNode->lcId, lcInfoNode->avgWindow, slot);
+                           lcInfoNode->rlc_avgWindowCnt = lcInfoNode->rlc_avgWindowCnt - 1;
+                           if(lcInfoNode->rlc_avgWindowCnt == 0)
+                           {
+                              lcInfoNode->avgWindowCnt = 0;
+                              lcInfoNode->rlc_avgWindowCnt = lcInfoNode->avgWindow / ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL;
+                              lcInfoNode->accumulatedBO = 0;
+                              isMFBR[lcInfoNode->lcId - 4] = false;
+                              lcInfoNode->isGFBRAchieved = false;
+                              lcInfoNode->isMFBRAchieved = false;
+                              DU_LOG("\nJOJO  --> LC %d average window %d  Accumulated BO is reset at slot %d",\
+                                 lcInfoNode->lcId, lcInfoNode->avgWindow, slot);
+                           }
                         }
+
                         drb_cnt += 1;
                         lcNode = lcNode->next;
                      }
@@ -816,59 +819,59 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
       }
    }
 
-   sliceCbNode = schSpcCell->sliceCbList.first; /*JOJO: Reset the pointer of slice control block to the first node. */
+   // sliceCbNode = schSpcCell->sliceCbList.first; /*JOJO: Reset the pointer of slice control block to the first node. */
 
-   dlSchedInfo.prbMetric.sliceNum = schSpcCell->sliceCbList.count;
-   if(dlSchedInfo.prbMetric.sliceNum > 0){
-      if(dlSchedInfo.prbMetric.listOfSlicePm == NULLP){
-         SCH_ALLOC(dlSchedInfo.prbMetric.listOfSlicePm, dlSchedInfo.prbMetric.sliceNum * sizeof(SchSlicePrbPmList));
-      }  
-      slice_cnt = 0;
-      while(sliceCbNode)
-      {
-         sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
-         if(slice_cnt < dlSchedInfo.prbMetric.sliceNum){
-               if(dlSchedInfo.prbMetric.listOfSlicePm){
-                  dlSchedInfo.prbMetric.listOfSlicePm[slice_cnt].usedPrb = sliceCb->allocatedPrb;
-               }
+   // dlSchedInfo.prbMetric.sliceNum = schSpcCell->sliceCbList.count;
+   // if(dlSchedInfo.prbMetric.sliceNum > 0){
+   //    if(dlSchedInfo.prbMetric.listOfSlicePm == NULLP){
+   //       SCH_ALLOC(dlSchedInfo.prbMetric.listOfSlicePm, dlSchedInfo.prbMetric.sliceNum * sizeof(SchSlicePrbPmList));
+   //    }  
+   //    slice_cnt = 0;
+   //    while(sliceCbNode)
+   //    {
+   //       sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
+   //       if(slice_cnt < dlSchedInfo.prbMetric.sliceNum){
+   //             if(dlSchedInfo.prbMetric.listOfSlicePm){
+   //                dlSchedInfo.prbMetric.listOfSlicePm[slice_cnt].usedPrb = sliceCb->allocatedPrb;
+   //             }
                
-               dlSchedInfo.prbMetric.usedPrb += sliceCb->allocatedPrb;
-               // if(sliceCb->allocatedPrb)
-               //    printf("\nJacky --> SCH : Slice # %d : Used Prb = %d", slice_cnt, sliceCb->allocatedPrb);
-               slice_cnt = slice_cnt + 1;
-               /*JOJO: Fill out DRB info.*/
-               for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
-               {
-                  if(sliceCb->lcInfoList[ueIdx].count)
-                  {
-                     if(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx] == NULLP)
-                     {
-                        dlSchedInfo.drbInfo.drbNum[ueIdx] = sliceCb->lcInfoList[ueIdx].count;
-                        SCH_ALLOC(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx], dlSchedInfo.drbInfo.drbNum[ueIdx] * sizeof(SchDrbInfoList));
-                     }
-                     lcNode = sliceCb->lcInfoList[ueIdx].first;
-                     drb_cnt = 0;
-                     while(lcNode)
-                     {
-                        lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
-                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].lcId = lcInfoNode->lcId;
-                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].ueId = lcInfoNode->ueCb->ueId;
-                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].fiveQI = lcInfoNode->fiveQI;
-                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].gfbr = lcInfoNode->gfbr;
-                        dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].mfbr = lcInfoNode->mfbr;
+   //             dlSchedInfo.prbMetric.usedPrb += sliceCb->allocatedPrb;
+   //             // if(sliceCb->allocatedPrb)
+   //             //    printf("\nJacky --> SCH : Slice # %d : Used Prb = %d", slice_cnt, sliceCb->allocatedPrb);
+   //             slice_cnt = slice_cnt + 1;
+   //             /*JOJO: Fill out DRB info.*/
+   //             for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+   //             {
+   //                if(sliceCb->lcInfoList[ueIdx].count)
+   //                {
+   //                   if(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx] == NULLP)
+   //                   {
+   //                      dlSchedInfo.drbInfo.drbNum[ueIdx] = sliceCb->lcInfoList[ueIdx].count;
+   //                      SCH_ALLOC(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx], dlSchedInfo.drbInfo.drbNum[ueIdx] * sizeof(SchDrbInfoList));
+   //                   }
+   //                   lcNode = sliceCb->lcInfoList[ueIdx].first;
+   //                   drb_cnt = 0;
+   //                   while(lcNode)
+   //                   {
+   //                      lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
+   //                      dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].lcId = lcInfoNode->lcId;
+   //                      dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].ueId = lcInfoNode->ueCb->ueId;
+   //                      dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].fiveQI = lcInfoNode->fiveQI;
+   //                      dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].gfbr = lcInfoNode->gfbr;
+   //                      dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx][drb_cnt].mfbr = lcInfoNode->mfbr;
 
-                        drb_cnt += 1;
-                        lcNode = lcNode->next;
-                     }       
-                  } 
-               }
-         }
-         else{
-            DU_LOG("\nJacky  -->  SCH SliceCB is oversize");
-         }
-         sliceCbNode = sliceCbNode->next;
-      }
-   }
+   //                      drb_cnt += 1;
+   //                      lcNode = lcNode->next;
+   //                   }       
+   //                } 
+   //             }
+   //       }
+   //       else{
+   //          DU_LOG("\nJacky  -->  SCH SliceCB is oversize");
+   //       }
+   //       sliceCbNode = sliceCbNode->next;
+   //    }
+   // }
 
    /* Send msg to MAC */
    ret = sendDlAllocToMac(&dlSchedInfo, schInst);
@@ -878,20 +881,20 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
       return (ret);
    }
 
-   if(dlSchedInfo.prbMetric.listOfSlicePm){
-      SCH_FREE(dlSchedInfo.prbMetric.listOfSlicePm, dlSchedInfo.prbMetric.sliceNum * sizeof(SchSlicePrbPmList));
-      dlSchedInfo.prbMetric.listOfSlicePm = NULLP;
-   }
+   // if(dlSchedInfo.prbMetric.listOfSlicePm){
+   //    SCH_FREE(dlSchedInfo.prbMetric.listOfSlicePm, dlSchedInfo.prbMetric.sliceNum * sizeof(SchSlicePrbPmList));
+   //    dlSchedInfo.prbMetric.listOfSlicePm = NULLP;
+   // }
 
-   /*JOJO: Release DRB info.*/
-   for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
-   {
-      if(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx])
-      {
-         SCH_FREE(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx], dlSchedInfo.drbInfo.drbNum[ueIdx] * sizeof(SchDrbInfoList));
-         dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx] = NULLP;
-      } 
-   }
+   // /*JOJO: Release DRB info.*/
+   // for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+   // {
+   //    if(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx])
+   //    {
+   //       SCH_FREE(dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx], dlSchedInfo.drbInfo.drbNum[ueIdx] * sizeof(SchDrbInfoList));
+   //       dlSchedInfo.drbInfo.listOfDrbInfo[ueIdx] = NULLP;
+   //    } 
+   // }
 
    schInitDlSlot(cell->schDlSlotInfo[slot]);
    schUlResAlloc(cell, schInst);
@@ -901,7 +904,7 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
 
    clock_gettime(1, &end);
    processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
-   // DU_LOG("\nDennis  -->  Measurement : Processing Time of whole scheduling: %f sec", processTime);
+   DU_LOG("\nJOJO processing time Measurement : Processing Time of whole scheduling: %f sec", processTime);
 
    return ret;
 }

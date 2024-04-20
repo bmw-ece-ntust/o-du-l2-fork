@@ -840,7 +840,7 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo)
 
    if(rbCb)
    {
-      DU_LOG("\nINFO  -->  JOJO: The BO size for RB ID %d is: %d", dlDataMsgInfo->rbId, rbCb->m.umDl.bo);
+      // DU_LOG("\nINFO  -->  JOJO: The BO size for RB ID %d is: %d", dlDataMsgInfo->rbId, rbCb->m.umDl.bo);
       // if(rbCb->m.umDl.bo>150000)
       /************************
       - Set the limitation of BO as five times of packet size.
@@ -858,12 +858,12 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo)
       }
       else
       {
-         DU_LOG("\nINFO  -->  JOJO: RLC sent DL data request %d.", dlDataMsgInfo->msgLen);
+         // DU_LOG("\nINFO  -->  JOJO: RLC sent DL data request %d.", dlDataMsgInfo->msgLen);
       }
    }
    else
    {
-      DU_LOG("\nINFO  -->  JOJO: Failed to get RB control block.");
+      // DU_LOG("\nINFO  -->  JOJO: Failed to get RB control block.");
    }
 
    if(rlcProcDlData(pst, datReqInfo, mBuf) != ROK)

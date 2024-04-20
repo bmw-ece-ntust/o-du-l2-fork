@@ -3455,29 +3455,13 @@ uint8_t calcDlTtiReqPduCount(MacDlSlot *dlSlot)
       if(dlSlot->dlInfo.dlMsgAlloc[ueIdx] != NULLP)
       {
          /* PDCCH and PDSCH PDU is filled */
-         uint8_t cnt = 0;
          if(dlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPdcchCfg)
          {
-            DU_LOG("\nJOJO DEBUG  -->  PDCCH is not NULL");cnt++;
             count += 1;
          }
          if(dlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPdschCfg)
          {
-            DU_LOG("\nJOJO DEBUG  -->  PDSCH is not NULL");cnt++;
             count += 1;
-         }
-
-         if(cnt == 0)
-         {
-            DU_LOG("\nJOJO DEBUG  -->  dlMsgAlloc is not NULL, but no PDCCH and PDSCH.");
-         }
-         else if (cnt == 1)
-         {
-            DU_LOG("\nJOJO DEBUG  -->  dlMsgAlloc is not NULL, but only either PDCCH or PDSCH.");
-         }
-         else
-         {
-            DU_LOG("\nJOJO DEBUG  -->  dlMsgAlloc is normal.");
          }
       }
    }
@@ -4177,7 +4161,6 @@ uint16_t sendTxDataReq(SlotTimingInfo currTimingInfo, MacDlSlot *dlSlot, p_fapi_
                   dlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPduLen);
             dlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPdu = NULLP;
             MAC_FREE(dlSlot->dlInfo.dlMsgAlloc[ueIdx], sizeof(DlMsgSchInfo));
-            DU_LOG("\nJOJO DEBUG  --> Release dlMsgAlloc at slot %d for UE %d.", currTimingInfo.slot, ueIdx+1);
          }
       }
 
@@ -4560,7 +4543,6 @@ uint16_t fillUlTtiReq(SlotTimingInfo currTimingInfo, p_fapi_api_queue_elem_t pre
                   /* Fill PUCCH PDU */
                   if(currUlSlot->ulInfo[ueIdx].dataType & SCH_DATATYPE_UCI)
                   {
-                     DU_LOG("\nJOJO  -->  LWR_MAC: UE %d sends UL TTI Request.", ueIdx+1);
                      pduIdx++;
                      fillPucchPdu(&ulTtiReq->pdus[pduIdx], &vendorUlTti->ul_pdus[pduIdx], &macCellCfg, currUlSlot, ueIdx);
                      ulTtiReq->nUlcch++;

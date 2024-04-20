@@ -1168,7 +1168,6 @@ uint8_t l1BuildAndSendUciInd(uint16_t slot, uint16_t sfn, fapi_ul_pucch_pdu_t pu
    uint32_t msgLen = 0;
    fapi_uci_indication_t *uciInd =  NULLP;
 
-   DU_LOG("\nJOJO   -->  PHY STUB: Allocate UCI indication for UE.");
    MAC_ALLOC(uciInd, sizeof(fapi_uci_indication_t));
    if(!uciInd)
    {
