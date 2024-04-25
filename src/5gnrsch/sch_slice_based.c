@@ -3708,12 +3708,6 @@ uint8_t schSliceBasedUpdateLcListReqBo(CmLListCp *lcInfoList, SchUeCb *ueCb, Dir
 
          lcIdx = lcInfoNode->lcId;
 
-         // if(lcInfoNode->isMFBRAchieved)
-         // {
-         //    ueCb->dlInfo.dlLcCtxt[lcIdx].bo = 0;
-         //    DU_LOG("\nJOJO  -->  Reset BO if MFBR is achieved.");
-         // }
-
          if(dir == DIR_DL)
          {
             if(ueCb->dlInfo.dlLcCtxt[lcIdx].bo)
@@ -3721,11 +3715,7 @@ uint8_t schSliceBasedUpdateLcListReqBo(CmLListCp *lcInfoList, SchUeCb *ueCb, Dir
                lcInfoNode->reqBO = ueCb->dlInfo.dlLcCtxt[lcIdx].bo + MAC_HDR_SIZE;
                lcInfoNode->allocBO = 0;
                lcInfoNode->allocPRB = 0;
-               // if(lcInfoNode->isMFBRAchieved)
-               // {
-               //    lcInfoNode->reqBO = 0;
-               //    DU_LOG("\nJOJO  -->  Reset BO if MFBR is achieved.");
-               // }
+
 #ifdef SLICE_BASED_DEBUG_LOG
                DU_LOG("\nDennis  -->  SCH Intra-Slice : Update reqBO of DL LC [LcID:%d, reqBO:%d]", lcIdx, lcInfoNode->reqBO);
 #endif
@@ -4969,7 +4959,7 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
          lcInfoNode->accumulatedBO += allocBO;
          if(lcInfoNode->accumulatedBO >= lcInfoNode->gfbr)
          {
-            // DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved GFBR.", lcInfoNode->lcId);
+            DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved GFBR.", lcInfoNode->lcId);
             lcInfoNode->isGFBRAchieved = true;
          }
 
@@ -5079,7 +5069,7 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
       /*JOJO: If reqBO is not 0, and allocBO is 0, that means it achieved MFBR.*/
       if(lcInfoNode->accumulatedBO + lcInfoNode->reqBO > lcInfoNode->mfbr && (resourceType == 0 || resourceType == 2) && lcInfoNode->isMFBRAchieved == false)
       {
-         // DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR.", lcInfoNode->lcId);
+         DU_LOG("\nDEBUG  -->  SCH: LC: %d achieved MFBR.", lcInfoNode->lcId);
          lcInfoNode->isMFBRAchieved = true;
          isMFBR[lcInfoNode->lcId - 4] = true;
       }

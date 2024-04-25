@@ -29,7 +29,7 @@ while IFS= read -r line; do
         processing_time=$(echo "$line" | grep -oE "$sec_pattern" | sed 's/ sec//')
 
         # Print the processing time
-        echo "Processing Time of whole scheduling: $processing_time sec"
+        # echo "Processing Time of whole scheduling: $processing_time sec"
 
         # append the DL Tpt value to the csv file
         echo "$processing_time" >> $OUTPUT_FILE
