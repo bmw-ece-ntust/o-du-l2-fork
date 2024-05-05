@@ -255,6 +255,172 @@ bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    return true;
 }
 
+bool FCFSTesting(SchCellCb *cell, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, SlotTimingInfo pdcchTime, SlotTimingInfo pdschTime, SlotTimingInfo pucchTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP)
+{
+   // uint8_t pdschNumSymbols = 0, pdschStartSymbol = 0;
+   uint8_t lcIdx = 0;
+   uint16_t startPrb = 0;
+   uint16_t crnti = 0;
+   uint32_t accumalatedSize = 0;
+   SchUeCb *ueCb = NULLP;
+   DlMsgSchInfo *dciSlotAlloc, *dlMsgAlloc;
+   // SlotTimingInfo pdcchTime, pdschTime, pucchTime;
+
+   GET_CRNTI(crnti,ueId);
+   ueCb = &cell->ueCb[ueId-1];
+
+   // testing for FCFS
+   // if (isRetx == FALSE)
+   // {
+   //    if(schDlGetAvlHqProcess(cell, ueCb, hqP) != ROK)
+   //    {
+   //       return false;
+   //    }
+   // }
+
+   // if(findValidK0K1Value(cell, currTime, ueId, ueCb->k0K1TblPrsnt,\
+   //          &pdschStartSymbol, &pdschNumSymbols, &pdcchTime, &pdschTime, &pucchTime, isRetx, *hqP) != true )
+   // {
+   //    /* If a valid combination of slots to scheduled PDCCH, PDSCH and PUCCH is
+   //     * not found, do not perform resource allocation. Return from here. */
+   //    return false;
+   // }
+   
+   /* allocate PDCCH and PDSCH resources for the ue */
+   if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
+   {
+
+      SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
+      if(!dciSlotAlloc)
+      {
+         DU_LOG("\nERROR4  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+         return false;
+      }
+      cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
+      memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
+   }
+   else
+   {
+      dciSlotAlloc = cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1];
+   }
+   /* Dl ded Msg info is copied, this was earlier filled in macSchDlRlcBoInfo */
+   fillDlMsgInfo(dciSlotAlloc, crnti, isRetx, *hqP);
+   dciSlotAlloc->transportBlock[0].ndi = isRetx;
+
+   accumalatedSize = cell->api->SchScheduleDlLc(pdcchTime, pdschTime, pdschNumSymbols, &startPrb, isRetx, hqP);
+
+   /*Below case will hit if NO LC(s) are allocated due to resource crunch*/
+   DU_LOG("\nJOJO  --> FCFS schedules %d for UE %d", accumalatedSize, ueId);
+   if (!accumalatedSize)
+      return false;
+
+   /*[Step6]: pdcch and pdsch data is filled */
+   if((schDlRsrcAllocDlMsg(cell, pdschTime, crnti, accumalatedSize, dciSlotAlloc, startPrb, pdschStartSymbol, pdschNumSymbols, isRetx, *hqP)) != ROK)
+   {
+      DU_LOG("\nERROR  --> SCH : Scheduling of DL dedicated message failed");
+
+      /* Free the dl ded msg info allocated in macSchDlRlcBoInfo */
+      if(!dciSlotAlloc->dlMsgPdschCfg)
+      {
+         SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+         cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = NULL;
+      }
+      return false;
+   }
+
+   /* TODO : Update the scheduling byte report for multiple LC based on QCI
+    * and Priority */
+   /* As of now, the total number of bytes scheduled for a slot is divided
+    * equally amongst all LC with pending data. This is avoid starving of any
+    * LC 
+    * */
+#if 0
+   accumalatedSize = accumalatedSize/dlMsgAlloc->numLc;
+   for(lcIdx = 0; lcIdx < dlMsgAlloc->numLc; lcIdx ++)
+      dlMsgAlloc->lcSchInfo[lcIdx].schBytes = accumalatedSize;
+#endif
+   
+   /* Check if both DCI and DL_MSG are sent in the same slot.
+    * If not, allocate memory for DL_MSG PDSCH slot to store PDSCH info */
+
+   if(pdcchTime.slot == pdschTime.slot)
+   {
+      SCH_ALLOC(dciSlotAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
+      if(!dciSlotAlloc->dlMsgPdschCfg)
+      {
+         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dciSlotAlloc->dlMsgPdschCfg");
+         SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));
+         SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+         cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+         return false;
+      }
+      memcpy(dciSlotAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg,  sizeof(PdschCfg));
+   }
+   else
+   {
+      /* Allocate memory to schedule dlMsgAlloc to send DL_Msg, pointer will be checked at schProcessSlotInd() */
+      if(cell->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] == NULLP)
+      {
+         SCH_ALLOC(dlMsgAlloc, sizeof(DlMsgSchInfo));
+         if(dlMsgAlloc == NULLP)
+         {
+            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dlMsgAlloc");
+            SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));
+            if(dciSlotAlloc->dlMsgPdschCfg == NULLP)
+            {
+               SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+               cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+            }
+            return false;
+         }
+         cell->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] = dlMsgAlloc;
+         memset(dlMsgAlloc, 0, sizeof(DlMsgSchInfo));
+      }
+      else
+         dlMsgAlloc = cell->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1];
+
+      /* Copy all DL_MSG info */
+      dlMsgAlloc->crnti =crnti;
+      dlMsgAlloc->bwp = dciSlotAlloc->bwp;
+      SCH_ALLOC(dlMsgAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
+      if(dlMsgAlloc->dlMsgPdschCfg)
+      {
+         memcpy(dlMsgAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg, sizeof(PdschCfg));
+      }
+      else
+      {
+         SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));    
+         if(dciSlotAlloc->dlMsgPdschCfg == NULLP)
+         {
+            SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+            cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+
+         }
+         SCH_FREE(dlMsgAlloc, sizeof(DlMsgSchInfo));
+         cell->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dlMsgAlloc->dlMsgPdschCfg");
+         return false;
+      }
+   }
+
+   schAllocPucchResource(cell, pucchTime, crnti, ueCb, isRetx, *hqP);
+
+   /* JOJO: Store UE id into specific element in UE list.*/
+   cell->schDlSlotInfo[pdcchTime.slot]->pdcchUe[ueId-1] = ueId;
+   cell->schDlSlotInfo[pdschTime.slot]->pdschUe[ueId-1] = ueId;
+   cell->schUlSlotInfo[pucchTime.slot]->pucchUe[ueId-1] = ueId;
+
+   /*Re-setting the BO's of all DL LCs in this UE*/
+   for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
+   {
+      ueCb->dlInfo.dlLcCtxt[lcIdx].bo = 0;
+   }
+
+   /* after allocation is done, unset the bo bit for that ue */
+   UNSET_ONE_BIT(ueId, cell->boIndBitMap);
+   return true;
+}
+
 /*******************************************************************
  *
  * @brief Handles sending DL Page alloc to MAC 

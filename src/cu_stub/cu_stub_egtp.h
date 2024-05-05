@@ -151,6 +151,7 @@ uint16_t cuEgtpDatReq(uint32_t duId, uint8_t teId);
 S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg);
 S16 BuildAppMsgForExperiment1(uint32_t duId, EgtpMsg  *egtpMsg);
 S16 BuildAppMsgForExperiment2(uint32_t duId, EgtpMsg  *egtpMsg);
+S16 BuildAppMsgForExperiment3(uint32_t duId, EgtpMsg  *egtpMsg);
 S16 BuildEgtpMsg(uint32_t duId, EgtpMsg *egtpMsg);
 S16 cuEgtpSendMsg(uint32_t duId, Buffer *mBuf);
 S16 cuEgtpDecodeHdr(Buffer *mBuf);

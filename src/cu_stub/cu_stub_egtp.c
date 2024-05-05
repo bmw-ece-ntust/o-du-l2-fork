@@ -681,6 +681,7 @@ uint16_t cuEgtpDatReq(uint32_t duId, uint8_t teId)
    // ret = BuildAppMsg(duId, &egtpMsg);
    // ret = BuildAppMsgForExperiment1(duId, &egtpMsg);
    ret = BuildAppMsgForExperiment2(duId, &egtpMsg);
+   // ret = BuildAppMsgForExperiment3(duId, &egtpMsg);
    if(ret != ROK)
    {
       DU_LOG("\nERROR  -->  EGTP : Failed to build App Msg");
@@ -1124,7 +1125,7 @@ S16 BuildAppMsgForExperiment2(uint32_t duId, EgtpMsg  *egtpMsg)
    
    if (teId == 1) 
    {
-      data = (char *)malloc(1200 * sizeof(char));
+      data = (char *)malloc(2400 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -1156,12 +1157,12 @@ S16 BuildAppMsgForExperiment2(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-         1200);
-      datSize = 1200;
+         2400);
+      datSize = 2400;
    } 
    else if (teId == 2) 
    {
-      data = (char *)malloc(1200 * sizeof(char));
+      data = (char *)malloc(2400 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -1193,12 +1194,12 @@ S16 BuildAppMsgForExperiment2(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-         1200);
-      datSize = 1200;
+         2400);
+      datSize = 2400;
    }
    else if (teId == 3) 
    {
-      data = (char *)malloc(1200 * sizeof(char));
+      data = (char *)malloc(2400 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -1230,12 +1231,12 @@ S16 BuildAppMsgForExperiment2(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-         1200);
-      datSize = 1200;
+         2400);
+      datSize = 2400;
    }
    else if (teId == 4) 
    {
-      data = (char *)malloc(1200 * sizeof(char));
+      data = (char *)malloc(2400 * sizeof(char));
       strncpy(data,
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -1267,8 +1268,8 @@ S16 BuildAppMsgForExperiment2(uint32_t duId, EgtpMsg  *egtpMsg)
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-         1200);
-      datSize = 1200;
+         2400);
+      datSize = 2400;
    }
    else 
    {
@@ -1282,6 +1283,141 @@ S16 BuildAppMsgForExperiment2(uint32_t duId, EgtpMsg  *egtpMsg)
          50);
       datSize = 50;
    }
+ 
+   Buffer   *mBuf;
+ 
+   if(ODU_GET_MSG_BUF(CU_APP_MEM_REG, CU_POOL, &mBuf) == ROK)
+   {
+      if(ODU_ADD_POST_MSG_MULT((Data *)data, datSize, mBuf) != ROK)
+      {
+         DU_LOG("\nERROR  -->  EGTP : ODU_ADD_POST_MSG_MULT failed");
+         ODU_PUT_MSG_BUF(mBuf);
+         return RFAILED;
+      }
+   }
+   else
+   {
+       DU_LOG("\nERROR  -->  EGTP : Failed to allocate memory");
+       return RFAILED;
+   }
+
+   free(data); /*JOJO: free data after post the message.*/
+ 
+   /* filling IPv4 header */
+   CmIpv4Hdr ipv4Hdr;
+   MsgLen    mLen;
+ 
+   mLen = 0;
+   ODU_GET_MSG_LEN(mBuf, &mLen);
+
+   memset(&ipv4Hdr, 0, sizeof(CmIpv4Hdr));
+   ipv4Hdr.length = CM_IPV4_HDRLEN + mLen;
+   ipv4Hdr.hdrVer = 0x45;
+   ipv4Hdr.proto = 1;
+   ipv4Hdr.srcAddr = CM_INET_NTOH_UINT32(egtpCb.egtpCfg.localIp.ipV4Addr);
+   ipv4Hdr.destAddr = CM_INET_NTOH_UINT32(egtpCb.egtpCfg.dstCfg[duId-1].dstIp.ipV4Addr);
+ 
+   /* Packing IPv4 header into buffer */
+   S16          ret, cnt, idx;
+   Data         revPkArray[CM_IPV4_HDRLEN];
+   Data         pkArray[CM_IPV4_HDRLEN];
+ 
+   /* initialize locals */
+   cnt = 0;
+   memset(revPkArray, 0, CM_IPV4_HDRLEN);
+   memset(pkArray, 0, CM_IPV4_HDRLEN);
+
+   /* Pack Header Version */
+   pkArray[cnt++] = ipv4Hdr.hdrVer;
+ 
+   /* Pack TOS */
+   pkArray[cnt++] = ipv4Hdr.tos;
+ 
+   pkArray[cnt++] = (Data)GetHiByte(ipv4Hdr.length);
+   pkArray[cnt++] = (Data)GetLoByte(ipv4Hdr.length);
+ 
+   /* Pack Id */
+   pkArray[cnt++] = (Data) GetHiByte(ipv4Hdr.id);
+   pkArray[cnt++] = (Data) GetLoByte(ipv4Hdr.id);
+ 
+   /* Pack Offset */
+   pkArray[cnt++] = (Data)GetHiByte(ipv4Hdr.off);
+   pkArray[cnt++] = (Data)GetLoByte(ipv4Hdr.off);
+ 
+   /* Pack TTL */
+   pkArray[cnt++] = ipv4Hdr.ttl;
+ 
+   /* Pack Protocol */
+   pkArray[cnt++] = ipv4Hdr.proto;
+ 
+   /* Pack Checksum */
+   pkArray[cnt++] = (Data)GetHiByte(ipv4Hdr.chkSum);
+   pkArray[cnt++] = (Data)GetLoByte(ipv4Hdr.chkSum);
+                                                        
+   /* Pack Source Address */
+   pkArray[cnt++] = (Data)GetHiByte(GetHiWord(ipv4Hdr.srcAddr));
+   pkArray[cnt++] = (Data)GetLoByte(GetHiWord(ipv4Hdr.srcAddr));
+   pkArray[cnt++] = (Data)GetHiByte(GetLoWord(ipv4Hdr.srcAddr));
+   pkArray[cnt++] = (Data)GetLoByte(GetLoWord(ipv4Hdr.srcAddr));
+ 
+   /* Pack Destination Address */
+   pkArray[cnt++] = (Data)GetHiByte(GetHiWord(ipv4Hdr.destAddr));
+   pkArray[cnt++] = (Data)GetLoByte(GetHiWord(ipv4Hdr.destAddr));
+   pkArray[cnt++] = (Data)GetHiByte(GetLoWord(ipv4Hdr.destAddr));
+   pkArray[cnt++] = (Data)GetLoByte(GetLoWord(ipv4Hdr.destAddr));
+ 
+   for (idx = 0;  idx < CM_IPV4_HDRLEN;  idx++)
+      revPkArray[idx] = pkArray[CM_IPV4_HDRLEN - idx -1];
+ 
+   /* this function automatically reverses revPkArray */
+   ret = ODU_ADD_PRE_MSG_MULT(revPkArray, (MsgLen)cnt, mBuf);
+ 
+   egtpMsg->msgHdr.msgType = EGTPU_MSG_GPDU;
+   egtpMsg->msgHdr.nPdu.pres = TRUE;
+
+   if(egtpCb.gCntPdu[egtpMsg->msgHdr.teId] != NUM_DL_PACKETS + 5)
+     egtpCb.gCntPdu[egtpMsg->msgHdr.teId]++;
+   else
+     egtpCb.gCntPdu[egtpMsg->msgHdr.teId] = 1;
+
+   egtpMsg->msgHdr.nPdu.val = egtpCb.gCntPdu[egtpMsg->msgHdr.teId];
+   // DU_LOG("\nJOJO  -->  Debug in EGTP : Value of number of PDUs: %d", egtpMsg->msgHdr.nPdu.val);
+   egtpMsg->msgHdr.seqNum.pres = FALSE;
+   egtpMsg->msgHdr.extHdr.udpPort.pres = FALSE;
+   egtpMsg->msgHdr.extHdr.pdcpNmb.pres = FALSE;
+   egtpMsg->msg = mBuf;
+
+   return ret;
+}
+
+S16 BuildAppMsgForExperiment3(uint32_t duId, EgtpMsg  *egtpMsg)
+{
+   // char data[1215] = "In telecommunications, 5G is the fifth generation technology standard for broadband cellular"
+   // " networks, which cellular phone companies began deploying worldwide in 2019, and is the planned successor to the 4G "
+   // " networks which provide connectivity to most current cellphones. 5G networks are predicted to have more than 1.7"
+   // " billion subscribers worldwide by 2025, according to the GSM Association.Like its predecessors, 5G networks are"
+   // " cellular networks,in which the service area is divided into small geographical areas called cells.All 5G wireless"
+   // " devices in a cell are connected to the Internet and telephone network by radio waves through local antenna in the"
+   // " cell. The main advantage of the new networks is that they will have greater bandwidth, giving higher download"
+   // " speeds, eventually up to 10 gigabits per second(Gbit/s). Due to the increased bandwidth, it is expected the"
+   // " networks will not exclusively serve cellphones like existing cellular networks, but also be used as general"
+   // " internet service providers for laptops and desktop computers, competing with existing ISPs such as cable"
+   // " internet, and also will make possible new applications in internet of things (IoT) and machine to machine areas.";
+
+   int datSize = 1215;
+   uint8_t teId = egtpMsg->msgHdr.teId;
+   /*JOJO: Customize the data size for each channel based on tunnel ID.*/
+   char *data = NULL;
+   
+   data = (char *)malloc(50 * sizeof(char));
+   strncpy(data,
+      "aaaaaaaaaa" // 10 elements per line
+      "aaaaaaaaaa"
+      "aaaaaaaaaa"
+      "aaaaaaaaaa"
+      "aaaaaaaaaa",
+      50);
+   datSize = 50;
  
    Buffer   *mBuf;
  

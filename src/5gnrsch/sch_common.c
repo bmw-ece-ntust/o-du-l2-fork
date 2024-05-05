@@ -1687,6 +1687,7 @@ void prbAllocUsingRRMPolicy(CmLListCp *lcLL, bool isDedicatedPRB, uint16_t mcsId
 
       /*[Step3]*/
       maxPRB = remReservedPRB + *sharedPRB;
+      // DU_LOG("\nJOJO DEBUG  --> SCH : Max. PRB = %d can be allocated.", maxPRB);
 
       /*[Step4]*/
       if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
@@ -1734,8 +1735,11 @@ void prbAllocUsingRRMPolicy(CmLListCp *lcLL, bool isDedicatedPRB, uint16_t mcsId
       }
 
       /*[Step7]*/
+      // DU_LOG("\nJOJO DEBUG  --> SCH : Requested BO = %d for LC %d", lcNode->reqBO, lcNode->lcId);
+      // DU_LOG("\nJOJO DEBUG  --> SCH : Allocated BO = %d for LC %d", lcNode->allocBO, lcNode->lcId);
       lcNode->reqBO -= lcNode->allocBO;  /*Update the reqBO with remaining bytes unallocated*/
       lcNode->allocPRB = estPrb;
+      // DU_LOG("\nJOJO DEBUG  --> SCH : Allocated PRB = %d for LC %d", lcNode->allocPRB, lcNode->lcId);
       cmLListAdd2Tail(lcLL, cmLListDelFrm(lcLL, node));
 
       /*[Step8]:Next loop: First LC to be picked from the list

@@ -1258,6 +1258,7 @@ uint32_t schSliceBasedScheduleDlLc(SlotTimingInfo pdcchTime, SlotTimingInfo pdsc
 
          if((schSpcHqProcCb->lcCb.dedLcList.count == NULLP) || ((maxFreePRB < rsvdDedicatedPRB)))
          { 
+            // DU_LOG("\nJOJO DEBUG  --> SCH : flow 1");
             schSpcHqProcCb->lcCb.sharedNumPrb = maxFreePRB;
             DU_LOG("\nDEBUG  -->  SCH : DL Only Default Slice is scheduled, sharedPRB Count:%d",\
                   schSpcHqProcCb->lcCb.sharedNumPrb);
@@ -1268,6 +1269,7 @@ uint32_t schSliceBasedScheduleDlLc(SlotTimingInfo pdcchTime, SlotTimingInfo pdsc
          }
          else
          {
+            // DU_LOG("\nJOJO DEBUG  --> SCH : flow 2");
             schSpcHqProcCb->lcCb.sharedNumPrb = maxFreePRB - rsvdDedicatedPRB;
             /*PRB Alloc for Dedicated LCs*/
             prbAllocUsingRRMPolicy(&(schSpcHqProcCb->lcCb.dedLcList), TRUE, mcsIdx, pdschNumSymbols,\
@@ -2224,6 +2226,20 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       // DU_LOG("\nJOJO --> %d UEs need to be scheduled for DL.", UENeedToBeScheduled);
    }
 
+   // Testing for FCFS
+   // ueNode = ueDlNewTransmission.first;
+   // while(ueNode)
+   // {
+   //    uint8_t ueId = *(uint8_t *)(ueNode->node);
+   //    SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+   //    ueCb = &cell->ueCb[ueId-1];
+
+   //    DU_LOG("\nJOJO : UE %d is scheduled.", ueId);
+   //    schSpcUeCb->isDlMsgScheduled = FCFSTesting(cell, pdschStartSymbol, pdschNumSymbols, pdcchTime, pdschTime, pucchTime, ueId, false, &(ueNewHarqList[ueId-1]));
+   //    ueNode = ueNode->next;
+   // }
+
+   // if(false){ // testing for FCFS 
    schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
    sliceCbNode = schSpcCell->sliceCbList.first;
 
@@ -2288,8 +2304,8 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          sliceCbNode = sliceCbNode->next;
       }
 #endif
-
-   }  
+   
+   }
 
    else
    {
@@ -2315,6 +2331,8 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    clock_gettime(1, &end);
    processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
    DU_LOG("\nJOJO processing time Measurement : Processing Time of slice scheduling: %f sec", processTime);
+
+   // } // testing for FCFS 
 
    /* JOJO: Traverse DL scheduling list, release new transmission list.*/
    int UEScheduled = 0;
@@ -2375,7 +2393,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       ueNode = ueNodeNext;
    }
    
-   // DU_LOG("\nSCH --> %d UEs are scheduled in this slot.", UEScheduled);
+   DU_LOG("\nSCH --> %d UEs are scheduled in this slot.", UEScheduled);
    cmLListDeleteLList(&ueDlNewTransmission);
    cmLListDeleteLList(&ueDlRetransmission);
 

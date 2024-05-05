@@ -730,6 +730,7 @@ bool schProcessRaReq(Inst schInst, SchCellCb *cellCb, SlotTimingInfo currTime, u
 uint8_t schProcessMsg4Req(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId,bool isRetxMsg4, SchDlHqProcCb **hqP);
 uint8_t schFillRar(SchCellCb *cell, SlotTimingInfo rarTime, uint16_t ueId, RarAlloc *rarAlloc, uint8_t k0Index);
 bool schFillBoGrantDlSchedInfo(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP);
+bool FCFSTesting(SchCellCb *cell, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, SlotTimingInfo pdcchTime, SlotTimingInfo pdschTime, SlotTimingInfo pucchTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP); // for FCFS testing
 uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t crnti,
 uint32_t tbSize, DlMsgSchInfo *dlMsgAlloc, uint16_t startPRB, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols,bool isRetx, SchDlHqProcCb* hqP);
 uint8_t schDlRsrcAllocMsg4(SchCellCb *cell, SlotTimingInfo msg4Time, uint8_t ueId, DlMsgSchInfo *msg4Alloc,\

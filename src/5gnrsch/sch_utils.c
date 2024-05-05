@@ -1599,12 +1599,14 @@ uint32_t calculateEstimateTBSize(uint32_t reqBO, uint16_t mcsIdx, uint8_t numSym
        * Eg: tbs=128 bits(1000 0000) ; Right Shift by 3: Tbs = 0001 0000(16 bytes)*/
       tbs = tbs >> 3;
       *estPrb += 1;
+      // DU_LOG("\nJOJO DEBUG  --> %d %d %d %d %d %d", tbs, reqBO, *estPrb, maxPRB, mcsIdx, numSymbols);
    }while((tbs < reqBO) && (*estPrb < maxPRB));
 
    /*Effective BO is the Grant which can be provided for this LC.
     * Here,it is decided based on whether we can fully cater its requirment (reqBO) 
     * or has to provide lesser grant due to resource limitation.
     * Thus effective BO/Grant for this LC will be min of TBS calculated and reqBO*/
+
    effecBO = MIN(tbs,reqBO);
    return (effecBO);
 }
