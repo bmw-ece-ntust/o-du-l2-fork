@@ -680,8 +680,8 @@ uint16_t cuEgtpDatReq(uint32_t duId, uint8_t teId)
    /* Build Application message that is supposed to come from app to egtp */
    // ret = BuildAppMsg(duId, &egtpMsg);
    // ret = BuildAppMsgForExperiment1(duId, &egtpMsg);
-   ret = BuildAppMsgForExperiment2(duId, &egtpMsg);
-   // ret = BuildAppMsgForExperiment3(duId, &egtpMsg);
+   // ret = BuildAppMsgForExperiment2(duId, &egtpMsg);
+   ret = BuildAppMsgForExperiment3(duId, &egtpMsg);
    if(ret != ROK)
    {
       DU_LOG("\nERROR  -->  EGTP : Failed to build App Msg");
@@ -1409,15 +1409,40 @@ S16 BuildAppMsgForExperiment3(uint32_t duId, EgtpMsg  *egtpMsg)
    /*JOJO: Customize the data size for each channel based on tunnel ID.*/
    char *data = NULL;
    
-   data = (char *)malloc(50 * sizeof(char));
+   data = (char *)malloc(2400 * sizeof(char));
    strncpy(data,
-      "aaaaaaaaaa" // 10 elements per line
-      "aaaaaaaaaa"
-      "aaaaaaaaaa"
-      "aaaaaaaaaa"
-      "aaaaaaaaaa",
-      50);
-   datSize = 50;
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      2400);
+   datSize = 2400;
  
    Buffer   *mBuf;
  

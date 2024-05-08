@@ -310,7 +310,7 @@ bool FCFSTesting(SchCellCb *cell, uint8_t pdschStartSymbol, uint8_t pdschNumSymb
    accumalatedSize = cell->api->SchScheduleDlLc(pdcchTime, pdschTime, pdschNumSymbols, &startPrb, isRetx, hqP);
 
    /*Below case will hit if NO LC(s) are allocated due to resource crunch*/
-   DU_LOG("\nJOJO  --> FCFS schedules %d for UE %d", accumalatedSize, ueId);
+   // DU_LOG("\nJOJO  --> FCFS schedules %d for UE %d", accumalatedSize, ueId);
    if (!accumalatedSize)
       return false;
 
@@ -930,60 +930,61 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
     uint8_t drb_cnt = 0;
 
    /* For accumuating BO and resetting accumulated BO of each LC.*/
-   if(schSpcCell->sliceCbList.count > 0){
-      slice_cnt = 0;
-      while(sliceCbNode)
-      {
-         sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
-         if(slice_cnt < schSpcCell->sliceCbList.count)
-         {
-               slice_cnt = slice_cnt + 1;
-               /*JOJO: Fill out DRB info.*/
-               for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
-               {
-                  if(sliceCb->lcInfoList[ueIdx].count)
-                  {
-                     lcNode = sliceCb->lcInfoList[ueIdx].first;
-                     drb_cnt = 0;
-                     while(lcNode)
-                     {
-                        lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
-                        lcInfoNode->avgWindowCnt += 1;
+   /* Comment it for processing time testing if it is necessary.*/
+   // if(schSpcCell->sliceCbList.count > 0){
+   //    slice_cnt = 0;
+   //    while(sliceCbNode)
+   //    {
+   //       sliceCb = (SchSliceBasedSliceCb *)sliceCbNode->node;
+   //       if(slice_cnt < schSpcCell->sliceCbList.count)
+   //       {
+   //             slice_cnt = slice_cnt + 1;
+   //             /*JOJO: Fill out DRB info.*/
+   //             for(ueIdx=0; ueIdx<MAX_NUM_UE; ueIdx++)
+   //             {
+   //                if(sliceCb->lcInfoList[ueIdx].count)
+   //                {
+   //                   lcNode = sliceCb->lcInfoList[ueIdx].first;
+   //                   drb_cnt = 0;
+   //                   while(lcNode)
+   //                   {
+   //                      lcInfoNode = (SchSliceBasedLcInfo *)lcNode->node;
+   //                      lcInfoNode->avgWindowCnt += 1;
 
-                        /*JOJO: If the size of average window is not as large as RIC timer interval.*/
-                        if(rlcSyncUpWithSch == true && lcInfoNode->avgWindow != 0)
-                        {
-                           lcInfoNode->rlc_avgWindowCnt = lcInfoNode->rlc_avgWindowCnt - 1;
-                           if(lcInfoNode->rlc_avgWindowCnt == 0)
-                           {
-                              lcInfoNode->avgWindowCnt = 0;
-                              lcInfoNode->rlc_avgWindowCnt = lcInfoNode->avgWindow / ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL;
-                              lcInfoNode->accumulatedBO = 0;
-                              isMFBR[lcInfoNode->lcId - 4] = false;
-                              lcInfoNode->isGFBRAchieved = false;
-                              lcInfoNode->isMFBRAchieved = false;
-                              DU_LOG("\nJOJO  --> LC %d average window %d  Accumulated BO is reset at slot %d",\
-                                 lcInfoNode->lcId, lcInfoNode->avgWindow, slot);
-                           }
-                        }
+   //                      /*JOJO: If the size of average window is not as large as RIC timer interval.*/
+   //                      if(rlcSyncUpWithSch == true && lcInfoNode->avgWindow != 0)
+   //                      {
+   //                         lcInfoNode->rlc_avgWindowCnt = lcInfoNode->rlc_avgWindowCnt - 1;
+   //                         if(lcInfoNode->rlc_avgWindowCnt == 0)
+   //                         {
+   //                            lcInfoNode->avgWindowCnt = 0;
+   //                            lcInfoNode->rlc_avgWindowCnt = lcInfoNode->avgWindow / ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL;
+   //                            lcInfoNode->accumulatedBO = 0;
+   //                            isMFBR[lcInfoNode->lcId - 4] = false;
+   //                            lcInfoNode->isGFBRAchieved = false;
+   //                            lcInfoNode->isMFBRAchieved = false;
+   //                            DU_LOG("\nJOJO  --> LC %d average window %d  Accumulated BO is reset at slot %d",\
+   //                               lcInfoNode->lcId, lcInfoNode->avgWindow, slot);
+   //                         }
+   //                      }
 
-                        drb_cnt += 1;
-                        lcNode = lcNode->next;
-                     }
-                     if(rlcSyncUpWithSch == true)
-                     {
-                        rlcSyncUpWithSch = false;
-                     }
-                  } 
-               }
-         }
-         else
-         {
-            DU_LOG("\nERROR  -->  SCH: counter in SliceCB is wrong.");
-         }
-         sliceCbNode = sliceCbNode->next;
-      }
-   }
+   //                      drb_cnt += 1;
+   //                      lcNode = lcNode->next;
+   //                   }
+   //                   if(rlcSyncUpWithSch == true)
+   //                   {
+   //                      rlcSyncUpWithSch = false;
+   //                   }
+   //                } 
+   //             }
+   //       }
+   //       else
+   //       {
+   //          DU_LOG("\nERROR  -->  SCH: counter in SliceCB is wrong.");
+   //       }
+   //       sliceCbNode = sliceCbNode->next;
+   //    }
+   // }
 
    // sliceCbNode = schSpcCell->sliceCbList.first; /*JOJO: Reset the pointer of slice control block to the first node. */
 

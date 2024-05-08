@@ -7,10 +7,6 @@ line=$(grep "JOJO processing time Measurement" "$file")
 # Use awk to extract the processing time
 processing_time=$(echo "$line" | awk '{print $NF}')
 
-
-
-#!/bin/bash
-
 # ODU PATH
 ODU_PATH=$(pwd)
 

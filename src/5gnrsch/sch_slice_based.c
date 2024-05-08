@@ -4526,44 +4526,44 @@ void schSliceBasedRoundRobinAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols,
    }
 
     /* If is there any LC which reqBO is not zero and there are remaining PRB,  allocate the remaing PRB to LC which has reqBO */
-   if(remainingLc > 0 && *availablePrb)
-   {
-      node = lcInfoList->first;
+//    if(remainingLc > 0 && *availablePrb)
+//    {
+//       node = lcInfoList->first;
 
-      while(node)
-      {
-         lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+//       while(node)
+//       {
+//          lcInfoNode = (SchSliceBasedLcInfo *)node->node;
 
-         if(*availablePrb == 0)
-         {
-#ifdef SLICE_BASED_DEBUG_LOG
-            DU_LOG("\nDennis  -->  SCH: Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
-#endif
-            return;
-         }
+//          if(*availablePrb == 0)
+//          {
+// #ifdef SLICE_BASED_DEBUG_LOG
+//             DU_LOG("\nDennis  -->  SCH: Dedicated resources exhausted for LC:%d",lcInfoNode->lcId);
+// #endif
+//             return;
+//          }
 
-         mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
-         if(lcInfoNode->reqBO != 0)
-         {
-            allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
-            lcInfoNode->allocBO += allocBO;
+//          mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+//          if(lcInfoNode->reqBO != 0)
+//          {
+//             allocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+//             lcInfoNode->allocBO += allocBO;
 
-            /*[Step6]:Re-adjust the availablePrb Count based on
-            * estimated PRB allocated*/
-            *availablePrb = *availablePrb - estPrb;
+//             /*[Step6]:Re-adjust the availablePrb Count based on
+//             * estimated PRB allocated*/
+//             *availablePrb = *availablePrb - estPrb;
             
-            /*[Step7]*/
-            lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
-            lcInfoNode->allocPRB += estPrb;
-         }
+//             /*[Step7]*/
+//             lcInfoNode->reqBO -= allocBO;  /*Update the reqBO with remaining bytes unallocated*/
+//             lcInfoNode->allocPRB += estPrb;
+//          }
 
-#ifdef SLICE_BASED_DEBUG_LOG
-         DU_LOG("\nDennis  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
-#endif
-         /*[Step8]:Next loop: Next LC to be picked from the list*/
-         node = node->next; 
-      }
-   }
+// #ifdef SLICE_BASED_DEBUG_LOG
+//          DU_LOG("\nDennis  -->  SCH: (Final) Allocate LC [Algorithm: RR, lcId: %d, allocBO: %d, estPRB: %d]",lcInfoNode->lcId, allocBO, estPrb);
+// #endif
+//          /*[Step8]:Next loop: Next LC to be picked from the list*/
+//          node = node->next; 
+//       }
+//    }
    /*[Exit2]: All LCs are allocated in current slice*/
    return;
 

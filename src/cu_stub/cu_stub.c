@@ -616,7 +616,8 @@ uint8_t startDlDataForExperiment12()
    uint16_t timerCnt = 0;
    EgtpTeIdCb *teidCb = NULLP;
    /*JOJO: initialize the interval of transmission.*/
-   uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {2, 2, 2, 2};
+   // uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {2, 2, 2, 2};
+   uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {2, 2, 2, 2, 2, 2, 2, 2};
 
    /*JOJO: The experiment runs for ten seconds.*/
    while(timerCnt < 2500)
