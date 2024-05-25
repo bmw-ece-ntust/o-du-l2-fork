@@ -86,6 +86,7 @@ typedef struct schSliceBasedUeCb
    SchSliceBasedHqCb   hqRetxCb;
    float_t prbWeight; /*  prbWeight (0 ~ 1) is used for calculate the number of PRB within this TTI */
    float_t weight; /*  Weight (0 ~ 1) which is used for WFQ algorithm */
+   uint8_t GBRWeight; /* The weight for retransmission. */
    bool isTxPayloadLenAdded;
    bool isDlMsgPending; /*JOJO: Flag for checking if there is DL data for UE.*/
    bool isDlMsgScheduled; /*JOJO: Flag for checking if DL data for UE is scheduled.*/
@@ -199,6 +200,10 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
 
 /*JOJO: Sorting algorithm based on priority.*/
 void schSortLcByPriority(CmLListCp *lcInfoList);
+void schSortUeByPriority(SchCellCb *cellCb, CmLListCp *ueDlRetransmission);
+void schSortUeByRtxTime(SchCellCb *cellCb, CmLListCp *ueDlRetransmission);
+
+bool schRetransmissionQueue(SchCellCb *cell, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, SlotTimingInfo pdcchTime, SlotTimingInfo pdschTime, SlotTimingInfo pucchTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP);
 
 uint8_t schSliceBasedRoundRobinAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);

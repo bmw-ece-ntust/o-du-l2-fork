@@ -162,7 +162,15 @@ uint8_t MacProcDlAlloc(Pst *pst, DlSchedInfo *dlSchedInfo)
                         DU_LOG("\nERROR  -->  MAC : Memory allocation failed in MacProcDlAlloc");
                         return RFAILED;
                      }   
-                     memcpy(txPdu, retxTb,  txPduLen);
+                     // memcpy(txPdu, retxTb,  txPduLen);
+
+                     if (retxTb != NULL) {
+                        memcpy(txPdu, retxTb, txPduLen);
+                        // DU_LOG("\nJOJO  -->  MAC : HARQ TB is not NULL");
+                     } else {
+                        // Handle the case where retxTb is NULL
+                        // DU_LOG("\nJOJO  -->  MAC : HARQ TB is NULL");
+                     }
 
                      currDlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPduLen = txPduLen;
                      currDlSlot->dlInfo.dlMsgAlloc[ueIdx]->dlMsgPdu = txPdu;

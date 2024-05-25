@@ -62,7 +62,7 @@
 #define SCH_MAX_NUM_UL_HQ_PROC 16
 #define SCH_MAX_NUM_DL_HQ_PROC 16
 #define SCH_MAX_NUM_MSG3_TX 2
-#define SCH_MAX_NUM_DL_HQ_TX 3
+#define SCH_MAX_NUM_DL_HQ_TX 5
 #define SCH_MAX_NUM_UL_HQ_TX 3
 #define SCH_MAX_NUM_MSG4_TX 2
 #define HQ_ACK 0

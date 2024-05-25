@@ -6,6 +6,7 @@
         "du_cfg.h": "c",
         "bitset": "c",
         "chrono": "c",
-        "algorithm": "c"
+        "algorithm": "c",
+        "lwr_mac_upr_inf.h": "c"
     }
 }

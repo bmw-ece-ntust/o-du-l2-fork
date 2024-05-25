@@ -56,9 +56,9 @@ extern "C" {
 
 /* rgu_h_001.main_3  Changing from 20 to 10 for optimization */
 #ifdef XEON_SPECIFIC_CHANGES   /* This change is done to avoid Heap allocation with 16UE/TTI config  */
-#define RGU_MAX_LC 8    /*!< Maximum Number of dedicated Logical Channels.*/
+#define RGU_MAX_LC 4    /*!< Maximum Number of dedicated Logical Channels.*/
 #else
-#define RGU_MAX_LC 8    /*!< Maximum Number of dedicated Logical Channels.*/
+#define RGU_MAX_LC 4    /*!< Maximum Number of dedicated Logical Channels.*/
 #endif
 
 /* Event corresponding to each primitive at this interface */

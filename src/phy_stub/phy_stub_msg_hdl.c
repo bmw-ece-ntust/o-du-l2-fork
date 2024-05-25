@@ -35,6 +35,7 @@
 #include "phy_stub.h"
 #include "phy_stub_utils.h"
 #include "lwr_mac_phy_stub_inf.h"
+#include "time.h"
 
 /*******************************************************************
  *
@@ -1036,6 +1037,15 @@ S16 l1HdlTxDataReq(uint16_t msgLen, void *msg)
  *         RFAILED - failure
  *
  * ****************************************************************/
+
+/*JOJO: Generate random seed every millisecond.*/
+void seed_rng() 
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    srand((unsigned int)(ts.tv_nsec / 1000000)); // Seed with milliseconds
+}
+
 uint8_t fillPucchF0F1PduInfo(fapi_uci_o_pucch_f0f1_t *pduInfo, fapi_ul_pucch_pdu_t pucchPdu)
 {
    uint8_t idx = 0;
@@ -1087,11 +1097,37 @@ uint8_t fillPucchF0F1PduInfo(fapi_uci_o_pucch_f0f1_t *pduInfo, fapi_ul_pucch_pdu
       pduInfo->harqInfo.harqConfidenceLevel = CONFDC_LEVEL_GOOD;
       for(idx = 0; idx < pduInfo->harqInfo.numHarq; idx++)
       {
-         pduInfo->harqInfo.harqValue[idx] = result[ind%50];
-         DU_LOG("\nJOJO  -->  PHY_STUB: HARQ indication: %d.", ind);
+         if(ind < 65)
+         // if(phyDb.ueDb.ueCb[MAX_NUM_UE - 1].msgRrcReconfigComp == false && ind < 15) // Not each UE finishes UE attachment.
+         {
+            pduInfo->harqInfo.harqValue[idx] = result[ind%50];
+            // ind = 0;
+         }
+         else
+         {
+            /*TBD: To use harq ind with random number and percentage*/
+            // Get the current time as the seed
+            seed_rng(); // Change the seed each millisecond
+
+            int random_seed = rand()%(100);
+
+            /*JOJO: Set different BLER to different UE.*/
+            uint8_t ueId, prob;
+            GET_UE_ID(pduInfo->rnti, ueId);
+            // if(ueId == 1)
+            //    prob = 90;
+            // else if(ueId == 2)
+            //    prob = 70;
+            // else if(ueId == 3)
+            //    prob = 50;
+            // else
+            //    prob = 50;
+            prob = 70;
+            pduInfo->harqInfo.harqValue[idx] = (prob >= random_seed)?HARQ_PASS:HARQ_FAIL;
+            // pduInfo->harqInfo.harqValue[idx] = (70 >= random_seed)?HARQ_PASS:HARQ_PASS;
+         }
+
          ind++;
-         /*TBD: To use harq ind with random number and percentage*/
-         //pduInfo->harqInfo.harqValue[idx] = (dlHqPassPer >= rand()%(100))?HARQ_PASS:HARQ_FAIL;
       }
    }
    return ROK;

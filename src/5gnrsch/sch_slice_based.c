@@ -49,6 +49,348 @@ File:     sch_slice_based.c
 #include "sch_drx.h"
 #endif
 
+bool schRetransmissionQueue(SchCellCb *cell, uint8_t pdschStartSymbol, uint8_t pdschNumSymbols, SlotTimingInfo pdcchTime, SlotTimingInfo pdschTime, SlotTimingInfo pucchTime, uint8_t ueId, bool isRetx, SchDlHqProcCb **hqP)
+{
+   uint8_t lcIdx = 0;
+   uint16_t startPrb = 0;
+   uint16_t crnti = 0;
+   uint32_t accumalatedSize = 0;
+   SchUeCb *ueCb = NULLP;
+   DlMsgSchInfo *dciSlotAlloc, *dlMsgAlloc;
+
+   GET_CRNTI(crnti,ueId);
+   ueCb = &cell->ueCb[ueId-1];
+   SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+   
+   /* allocate PDCCH and PDSCH resources for the ue */
+   if(cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] == NULL)
+   {
+
+      SCH_ALLOC(dciSlotAlloc, sizeof(DlMsgSchInfo));
+      if(!dciSlotAlloc)
+      {
+         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for ded DL msg alloc");
+         return false;
+      }
+      cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = dciSlotAlloc;
+      memset(dciSlotAlloc, 0, sizeof(DlMsgSchInfo));
+   }
+   else
+   {
+      dciSlotAlloc = cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1];
+   }
+   /* Dl ded Msg info is copied, this was earlier filled in macSchDlRlcBoInfo */
+   fillDlMsgInfo(dciSlotAlloc, crnti, isRetx, *hqP);
+   dciSlotAlloc->transportBlock[0].ndi = isRetx;
+
+   
+   accumalatedSize = cell->api->SchScheduleDlLc(pdcchTime, pdschTime, pdschNumSymbols, &startPrb, isRetx, hqP);
+
+   /*Below case will hit if NO LC(s) are allocated due to resource crunch*/
+   if (!accumalatedSize)
+   {
+      /*JOJO: Free DlMsgSchInfo, if UE is not scheduled.*/
+      SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+      cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = NULL;
+
+      return false;
+   }
+
+   /*[Step6]: pdcch and pdsch data is filled */
+   if((schDlRsrcAllocDlMsg(cell, pdschTime, crnti, accumalatedSize, dciSlotAlloc, startPrb, pdschStartSymbol, pdschNumSymbols, isRetx, *hqP)) != ROK)
+   {
+      DU_LOG("\nERROR  --> SCH : Scheduling of DL dedicated message failed");
+
+      /* Free the dl ded msg info allocated in macSchDlRlcBoInfo */
+      if(!dciSlotAlloc->dlMsgPdschCfg)
+      {
+         SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+         cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId -1] = NULL;
+      }
+      return false;
+   }
+
+   /* TODO : Update the scheduling byte report for multiple LC based on QCI
+    * and Priority */
+   /* As of now, the total number of bytes scheduled for a slot is divided
+    * equally amongst all LC with pending data. This is avoid starving of any
+    * LC 
+    * */
+#if 0
+   accumalatedSize = accumalatedSize/dlMsgAlloc->numLc;
+   for(lcIdx = 0; lcIdx < dlMsgAlloc->numLc; lcIdx ++)
+      dlMsgAlloc->lcSchInfo[lcIdx].schBytes = accumalatedSize;
+#endif
+   
+   /* Check if both DCI and DL_MSG are sent in the same slot.
+    * If not, allocate memory for DL_MSG PDSCH slot to store PDSCH info */
+
+   if(pdcchTime.slot == pdschTime.slot)
+   {
+      SCH_ALLOC(dciSlotAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
+      if(!dciSlotAlloc->dlMsgPdschCfg)
+      {
+         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dciSlotAlloc->dlMsgPdschCfg");
+         SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));
+         SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+         cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+         return false;
+      }
+      memcpy(dciSlotAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg,  sizeof(PdschCfg));
+   }
+   else
+   {
+      /* Allocate memory to schedule dlMsgAlloc to send DL_Msg, pointer will be checked at schProcessSlotInd() */
+      if(cell->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] == NULLP)
+      {
+         SCH_ALLOC(dlMsgAlloc, sizeof(DlMsgSchInfo));
+         if(dlMsgAlloc == NULLP)
+         {
+            DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dlMsgAlloc");
+            SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));
+            if(dciSlotAlloc->dlMsgPdschCfg == NULLP)
+            {
+               SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+               cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+            }
+            return false;
+         }
+         cell->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] = dlMsgAlloc;
+         memset(dlMsgAlloc, 0, sizeof(DlMsgSchInfo));
+      }
+      else
+         dlMsgAlloc = cell->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1];
+
+      /* Copy all DL_MSG info */
+      dlMsgAlloc->crnti =crnti;
+      dlMsgAlloc->bwp = dciSlotAlloc->bwp;
+      SCH_ALLOC(dlMsgAlloc->dlMsgPdschCfg, sizeof(PdschCfg));
+      if(dlMsgAlloc->dlMsgPdschCfg)
+      {
+         memcpy(dlMsgAlloc->dlMsgPdschCfg, &dciSlotAlloc->dlMsgPdcchCfg->dci.pdschCfg, sizeof(PdschCfg));
+      }
+      else
+      {
+         SCH_FREE(dciSlotAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));    
+         if(dciSlotAlloc->dlMsgPdschCfg == NULLP)
+         {
+            SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+            cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+
+         }
+         SCH_FREE(dlMsgAlloc, sizeof(DlMsgSchInfo));
+         cell->schDlSlotInfo[pdschTime.slot]->dlMsgAlloc[ueId-1] = NULLP;
+         DU_LOG("\nERROR  -->  SCH : Memory Allocation failed for dlMsgAlloc->dlMsgPdschCfg");
+         return false;
+      }
+   }
+
+   schAllocPucchResource(cell, pucchTime, crnti, ueCb, isRetx, *hqP);
+
+   /* JOJO: Store UE id into specific element in UE list.*/
+   cell->schDlSlotInfo[pdcchTime.slot]->pdcchUe[ueId-1] = ueId;
+   cell->schDlSlotInfo[pdschTime.slot]->pdschUe[ueId-1] = ueId;
+   cell->schUlSlotInfo[pucchTime.slot]->pucchUe[ueId-1] = ueId;
+
+   /*Re-setting the BO's of all DL LCs in this UE*/
+   for(lcIdx = 0; lcIdx < MAX_NUM_LC; lcIdx++)
+   {
+      ueCb->dlInfo.dlLcCtxt[lcIdx].bo = 0;
+   }
+
+   /* after allocation is done, unset the bo bit for that ue */
+   UNSET_ONE_BIT(ueId, cell->boIndBitMap);
+   schSpcUeCb->isDlMsgScheduled = true;
+
+   return true;
+}
+
+void schSortUeByPriority(SchCellCb *cell, CmLListCp *ueDlRetransmission)
+{
+   CmLList *outerNode = NULLP, *sortedList = NULLP, *sortedNode, *nextNode, *prevNode;
+   SchDlHqProcCb  *harqNode = NULLP;
+   uint8_t ueId;
+   SchSliceBasedUeCb *outerUeInfo = NULLP, *sortedUeInfo = NULLP;
+   double outerCoeff, sortedCoeff, outerDataAmount, sortedDataAmount;
+
+   /*JOJO: Start sorting. */
+   outerNode = ueDlRetransmission->first;
+   if(!outerNode)
+   {
+      DU_LOG("\nJOJO  -->  schSortUeByPriority(): LL is empty");
+      return RFAILED;
+   }
+   else
+   {
+      DU_LOG("\nJOJO  -->  Get into retransmission sorting function.");
+      /*JOJO: Sort based on priority level using Insertion sort (Since it is stable sorting algorithm).*/
+      while (outerNode != NULL) 
+      {
+         nextNode = outerNode->next;
+
+         /*JOJO: Find the appropriate position to insert the current node in the sorted list.*/
+         sortedNode = sortedList;
+         prevNode = NULL;
+
+         ueId = *(uint8_t *)outerNode->node;
+         outerUeInfo = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+         harqNode = (SchDlHqProcCb **) outerUeInfo->hqRetxCb.dlRetxHqList.first->node;
+         outerCoeff = outerUeInfo->GBRWeight;
+         outerDataAmount = harqNode->tbInfo[0].tbSzReq;
+
+         if(sortedNode != NULL)
+         {
+            ueId = *(uint8_t *)sortedNode->node;
+            sortedUeInfo = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+            harqNode = (SchDlHqProcCb **) sortedUeInfo->hqRetxCb.dlRetxHqList.first->node;
+            sortedCoeff = sortedUeInfo->GBRWeight;
+            sortedDataAmount = harqNode->tbInfo[0].tbSzReq;
+         }
+         
+         while (sortedNode != NULL && \
+            (outerCoeff < sortedCoeff || (outerCoeff == sortedCoeff && outerDataAmount < sortedDataAmount))) 
+         {
+            prevNode = sortedNode;
+            sortedNode = sortedNode->next;
+            if(sortedNode != NULL)
+            {
+               ueId = *(uint8_t *)sortedNode->node;
+               sortedUeInfo = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+               harqNode = (SchDlHqProcCb **) sortedUeInfo->hqRetxCb.dlRetxHqList.first->node;
+               sortedCoeff = sortedUeInfo->GBRWeight;
+               sortedDataAmount = harqNode->tbInfo[0].tbSzReq;
+            }
+         }
+
+         /*JOJO: Insert the current node in the sorted list.*/
+         if (prevNode == NULL)
+         {
+            outerNode->next = sortedList;
+            outerNode->prev = NULL;
+            if(sortedList != NULL)
+            {
+               sortedList->prev = outerNode;
+            }
+            sortedList = outerNode;
+         } 
+         else 
+         {
+            prevNode->next = outerNode;
+            outerNode->prev = prevNode;
+            outerNode->next = sortedNode;
+            if(sortedNode != NULL)
+            {
+               sortedNode->prev = outerNode;
+            }
+         }
+
+         outerNode = nextNode;
+      }
+
+      /*JOJO: Update the lcInfoList to point to the sorted list.*/
+      ueDlRetransmission->first = sortedList;
+
+      /*JOJO: Find the last node in the sorted list.*/
+      while (sortedList != NULL && sortedList->next != NULL) {
+         sortedList = sortedList->next;
+      }
+      ueDlRetransmission->last = sortedList;
+   }
+}
+
+void schSortUeByRtxTime(SchCellCb *cell, CmLListCp *ueDlRetransmission)
+{
+   CmLList *outerNode = NULLP, *sortedList = NULLP, *sortedNode, *nextNode, *prevNode;
+   uint8_t ueId;
+   SchDlHqProcCb  *harqNode = NULLP;
+   SchSliceBasedUeCb *outerUeInfo = NULLP, *sortedUeInfo = NULLP;
+   double outerCoeff, sortedCoeff, outerDataAmount, sortedDataAmount;
+
+   /*JOJO: Start sorting. */
+   outerNode = ueDlRetransmission->first;
+   if(!outerNode)
+   {
+      DU_LOG("\nJOJO  -->  schSortUeByPriority(): LL is empty");
+      return RFAILED;
+   }
+   else
+   {
+      DU_LOG("\nJOJO  -->  Get into retransmission sorting function.");
+      /*JOJO: Sort based on priority level using Insertion sort (Since it is stable sorting algorithm).*/
+      while (outerNode != NULL) 
+      {
+         nextNode = outerNode->next;
+
+         /*JOJO: Find the appropriate position to insert the current node in the sorted list.*/
+         sortedNode = sortedList;
+         prevNode = NULL;
+
+         ueId = *(uint8_t *)outerNode->node;
+         outerUeInfo = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+         harqNode = (SchDlHqProcCb **) outerUeInfo->hqRetxCb.dlRetxHqList.first->node;
+         outerCoeff = harqNode->tbInfo[0].txCntr;
+         outerDataAmount = harqNode->tbInfo[0].tbSzReq;
+
+         if(sortedNode != NULL)
+         {
+            ueId = *(uint8_t *)sortedNode->node;
+            sortedUeInfo = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+            harqNode = (SchDlHqProcCb **) sortedUeInfo->hqRetxCb.dlRetxHqList.first->node;
+            sortedCoeff = harqNode->tbInfo[0].txCntr;
+            sortedDataAmount = harqNode->tbInfo[0].tbSzReq;
+         }
+         
+         while (sortedNode != NULL && \
+            (outerCoeff < sortedCoeff || (outerCoeff == sortedCoeff && outerDataAmount < sortedDataAmount))) 
+         {
+            prevNode = sortedNode;
+            sortedNode = sortedNode->next;
+            if(sortedNode != NULL)
+            {
+               ueId = *(uint8_t *)sortedNode->node;
+               sortedUeInfo = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+               harqNode = (SchDlHqProcCb **) sortedUeInfo->hqRetxCb.dlRetxHqList.first->node;
+               sortedCoeff = harqNode->tbInfo[0].txCntr;
+               sortedDataAmount = harqNode->tbInfo[0].tbSzReq;
+            }
+         }
+
+         /*JOJO: Insert the current node in the sorted list.*/
+         if (prevNode == NULL)
+         {
+            outerNode->next = sortedList;
+            outerNode->prev = NULL;
+            if(sortedList != NULL)
+            {
+               sortedList->prev = outerNode;
+            }
+            sortedList = outerNode;
+         } 
+         else 
+         {
+            prevNode->next = outerNode;
+            outerNode->prev = prevNode;
+            outerNode->next = sortedNode;
+            if(sortedNode != NULL)
+            {
+               sortedNode->prev = outerNode;
+            }
+         }
+
+         outerNode = nextNode;
+      }
+
+      /*JOJO: Update the lcInfoList to point to the sorted list.*/
+      ueDlRetransmission->first = sortedList;
+
+      /*JOJO: Find the last node in the sorted list.*/
+      while (sortedList != NULL && sortedList->next != NULL) {
+         sortedList = sortedList->next;
+      }
+      ueDlRetransmission->last = sortedList;
+   }
+}
+
 /*******************************************************************
  *
  * @brief Function to handle Cell configuration request
@@ -1308,8 +1650,10 @@ uint32_t schSliceBasedScheduleDlLc(SlotTimingInfo pdcchTime, SlotTimingInfo pdsc
          /*Schedule the LC for next slot*/
          DU_LOG("\nDEBUG  -->  SCH : No LC has been scheduled");
       }
-      /* Not Freeing dlMsgAlloc as ZERO BO REPORT to be sent to RLC so that
-       * Allocation can be done in next slot*/
+      /*JOJO: Free DlMsgSchInfo, if UE is not scheduled.*/
+      SCH_FREE(dciSlotAlloc, sizeof(DlMsgSchInfo));
+      (*hqP)->hqEnt->cell->schDlSlotInfo[pdcchTime.slot]->dlMsgAlloc[ueCb->ueId -1] = NULL;
+
       accumalatedSize = 0;
    }
 
@@ -2167,8 +2511,6 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
          node = schSpcUeCb->hqRetxCb.dlRetxHqList.first;
       if(node != NULLP)
       {
-         if(ueId > UEWillBeScheduled)
-            UEWillBeScheduled = ueId;
          UENeedToBeScheduled++;
          schSpcUeCb->isDlMsgPending = true;
          schSpcUeCb->isDlMsgScheduled = false;
@@ -2239,10 +2581,33 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    //    ueNode = ueNode->next;
    // }
 
+   /*JOJO: Scheduling retransmission queue here.*/
+   // schSortUeByPriority(cell, &ueDlRetransmission);
+   schSortUeByRtxTime(cell, &ueDlRetransmission);
+   ueNode = ueDlRetransmission.first;
+
+   while(ueNode)
+   {
+      uint8_t ueId = *(uint8_t *)(ueNode->node);
+      SchSliceBasedUeCb *schSpcUeCb = (SchSliceBasedUeCb *)cell->ueCb[ueId-1].schSpcUeCb;
+      node = schSpcUeCb->hqRetxCb.dlRetxHqList.first;
+
+      SchDlHqProcCb  *harqNode = NULL;
+      harqNode = (SchDlHqProcCb **) schSpcUeCb->hqRetxCb.dlRetxHqList.first->node;
+      DU_LOG("\nJOJO --> UE %d do retransmission with TB %d, GBR weight %d and transmission times %d",\
+         ueId, harqNode->tbInfo[0].tbSzReq, schSpcUeCb->GBRWeight, harqNode->tbInfo[0].txCntr);
+
+      schSpcUeCb->isDlMsgScheduled = schRetransmissionQueue(cell, pdschStartSymbol, pdschNumSymbols, pdcchTime, pdschTime, pucchTime, ueId, TRUE, ((SchDlHqProcCb**) &(node->node)));
+      ueNode = ueNode->next;
+   }
+
    // if(false){ // testing for FCFS 
    schSpcCell = (SchSliceBasedCellCb *)cell->schSpcCell;
    sliceCbNode = schSpcCell->sliceCbList.first;
 
+   // Separate retransmission and new transmission
+   if(ueDlNewTransmission.first != NULLP)
+   {
    maxFreePRB = searchLargestFreeBlock((ueNewHarqList[UEWillBeScheduled-1])->hqEnt->cell, pdschTime, &startPrb, DIR_DL); /*JOJO: Choose one of UE for searching the largest PRB free block.*/
    totalRemainingPrb = maxFreePRB;
 
@@ -2328,6 +2693,8 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
       return false;
    }
 
+   } // For area of new transmission
+
    clock_gettime(1, &end);
    processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
    DU_LOG("\nJOJO processing time Measurement : Processing Time of slice scheduling: %f sec", processTime);
@@ -2380,11 +2747,9 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
 #ifdef NR_DRX 
          schDrxStopDlHqRetxTmr(cell, &cell->ueCb[ueId-1], ((SchDlHqProcCb**) &(node->node)));
 #endif
+         node = schSpcUeCb->hqRetxCb.dlRetxHqList.first;
          schSliceBasedRemoveFrmDlHqRetxList(&cell->ueCb[ueId-1], node);
       }
-      
-      schSpcUeCb->isDlMsgPending = false;
-      schSpcUeCb->isDlMsgScheduled = false;
 
       SCH_FREE(ueNode->node, sizeof(uint8_t));
       cmLListDelFrm(&ueDlRetransmission, ueNode);
