@@ -822,7 +822,7 @@ uint8_t schFcfsCalculateUlTbs(SchUeCb *ueCb, SlotTimingInfo puschTime, uint8_t s
          continue;
       }
 
-      /*TODO: lcgIdx and LCID has been implemented as one to one mapping.
+      /* TODO: lcgIdx and LCID has been implemented as one to one mapping.
        * Need to check the mapping to figure out the LCID and lcgIdx once L2
        * spec specifies any logic*/
       lcId = lcgIdx;

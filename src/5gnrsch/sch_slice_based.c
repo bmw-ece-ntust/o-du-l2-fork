@@ -1522,6 +1522,7 @@ uint32_t schSliceBasedScheduleDlLc(SlotTimingInfo pdcchTime, SlotTimingInfo pdsc
     * Following flag added to keep the record whether TX_PAYLOAD_HDR_LEN is added to the first Node getting allocated.
     * If both Dedicated and Default LC lists are present then First LC in Dedicated List will include this overhead
     * else if only Default list is present then first node in this List will add this overhead len*/
+
    bool isTxPayloadLenAdded = FALSE;
 
    ueCb = (*hqP)->hqEnt->ue;
@@ -1583,7 +1584,7 @@ uint32_t schSliceBasedScheduleDlLc(SlotTimingInfo pdcchTime, SlotTimingInfo pdsc
          return accumalatedSize;
       }
    }
-
+   
    /*[Step3]: Calculate Best FREE BLOCK with MAX PRB count*/
    maxFreePRB = searchLargestFreeBlock((*hqP)->hqEnt->cell, pdschTime, startPrb, DIR_DL);
 
@@ -2569,6 +2570,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    }
 
    // Testing for FCFS
+   // clock_gettime(1, &start);
    // ueNode = ueDlNewTransmission.first;
    // while(ueNode)
    // {
@@ -2580,6 +2582,9 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
    //    schSpcUeCb->isDlMsgScheduled = FCFSTesting(cell, pdschStartSymbol, pdschNumSymbols, pdcchTime, pdschTime, pucchTime, ueId, false, &(ueNewHarqList[ueId-1]));
    //    ueNode = ueNode->next;
    // }
+   // clock_gettime(1, &end);
+   // processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
+   // DU_LOG("\nJOJO processing time Measurement : Processing Time of slice scheduling: %f sec", processTime);
 
    /*JOJO: Scheduling retransmission queue here.*/
    // schSortUeByPriority(cell, &ueDlRetransmission);
@@ -3358,6 +3363,8 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
          * Allocation can be done in next slot*/
          accumalatedSize = 0;
          
+
+
          /*JOJO: If failed, traverse next UE.*/
          ueNode = ueNode->next;
          continue;
@@ -5149,9 +5156,9 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
 
    totalAvaiPrb = *availablePrb;
    
-   struct timespec start, end;
-   double processTime;
-   clock_gettime(1, &start);
+   // struct timespec start, end;
+   // double processTime;
+   // clock_gettime(1, &start);
 
    ueNode = ueList->first;
 
@@ -5206,9 +5213,6 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
    /* JOJO: Schedule LCs and also consider MFBR for all traffics. */
    schMFBRAlgoforLc(cellCb, &MFBRLcList, numSymbols, availablePrb, srRcvd);
 
-   // schSliceBasedRoundRobinAlgoforLc(&MFBRLcList, numSymbols, availablePrb, \
-                                          &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
-
    /* Free the GBR LC list */
    lcNode = GFBRLcList.first;
    while(lcNode)
@@ -5227,9 +5231,9 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
       lcNode = next;
    }
 
-   clock_gettime(1, &end);
-   processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000.0;
-   DU_LOG("\nJOJO processing time Measurement : Processing Time of QoS Scheduling Algorithm: %f us", processTime);
+   // clock_gettime(1, &end);
+   // processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000.0;
+   // DU_LOG("\nJOJO processing time Measurement : Processing Time of Scheduling Algorithm: %f us", processTime);
 }
 
 /*******************************************************************

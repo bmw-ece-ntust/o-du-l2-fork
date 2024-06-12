@@ -1122,7 +1122,7 @@ uint8_t fillPucchF0F1PduInfo(fapi_uci_o_pucch_f0f1_t *pduInfo, fapi_ul_pucch_pdu
             //    prob = 50;
             // else
             //    prob = 50;
-            prob = 70;
+            prob = 100;
             pduInfo->harqInfo.harqValue[idx] = (prob >= random_seed)?HARQ_PASS:HARQ_FAIL;
             // pduInfo->harqInfo.harqValue[idx] = (70 >= random_seed)?HARQ_PASS:HARQ_PASS;
          }

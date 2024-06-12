@@ -266,6 +266,9 @@ bool FCFSTesting(SchCellCb *cell, uint8_t pdschStartSymbol, uint8_t pdschNumSymb
    DlMsgSchInfo *dciSlotAlloc, *dlMsgAlloc;
    // SlotTimingInfo pdcchTime, pdschTime, pucchTime;
 
+   struct timespec start, start2, end;
+   double processTime;
+
    GET_CRNTI(crnti,ueId);
    ueCb = &cell->ueCb[ueId-1];
 
@@ -307,7 +310,13 @@ bool FCFSTesting(SchCellCb *cell, uint8_t pdschStartSymbol, uint8_t pdschNumSymb
    fillDlMsgInfo(dciSlotAlloc, crnti, isRetx, *hqP);
    dciSlotAlloc->transportBlock[0].ndi = isRetx;
 
+   clock_gettime(1, &start);
+
    accumalatedSize = cell->api->SchScheduleDlLc(pdcchTime, pdschTime, pdschNumSymbols, &startPrb, isRetx, hqP);
+
+   clock_gettime(1, &end);
+   processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000.0;
+   DU_LOG("\nJOJO processing time Measurement : Processing Time of Scheduling Algorithm: %f us", processTime);
 
    /*Below case will hit if NO LC(s) are allocated due to resource crunch*/
    // DU_LOG("\nJOJO  --> FCFS schedules %d for UE %d", accumalatedSize, ueId);

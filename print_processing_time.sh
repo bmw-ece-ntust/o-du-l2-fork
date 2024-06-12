@@ -1,5 +1,5 @@
 # Assuming the file name is data.txt
-file="log-du.txt"
+file="log-du-fcfs.txt"
 
 # Use grep to find the line containing the relevant information
 line=$(grep "JOJO processing time Measurement" "$file")
@@ -30,4 +30,4 @@ while IFS= read -r line; do
         # append the DL Tpt value to the csv file
         echo "$processing_time" >> $OUTPUT_FILE
     fi
-done < "$ODU_PATH/log-du.txt"
+done < "$ODU_PATH/log-du-fcfs.txt"
