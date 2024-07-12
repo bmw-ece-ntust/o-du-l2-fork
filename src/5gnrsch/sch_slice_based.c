@@ -1943,7 +1943,7 @@ uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb)
                tempLcInfo->isGFBRAchieved = false;
                tempLcInfo->isMFBRAchieved = false;
                tempLcInfo->avgTpt = 0; /* JOJO: initialize the measurement of average throughput.*/
-               tempLcInfo->avgDelay = 0; /* JOJO: initialize the measurement of average delay.*/
+               tempLcInfo->pfCoefficient = 0; /* JOJO: initialize the coefficient of each LC for PF algorithm.*/
                tempLcInfo->fiveQI = ueCb->dlInfo.dlLcCtxt[lcIdx].fiveQi; /* JOJO: attach 5QI to logical channel*/
                tempLcInfo->priorLevel = schSliceBasedCalculatePriorLevel(ueCb->dlInfo.dlLcCtxt[lcIdx].fiveQi);
                totalPriorLevel += tempLcInfo->priorLevel;
@@ -2136,11 +2136,11 @@ void schSortLcByCoefficient(CmLListCp *lcInfoList)
          prevNode = NULL;
 
          outerLcInfo = (SchSliceBasedLcInfo *)outerNode->node;
-         outerCoeff = (double) outerLcInfo->reqBO / outerLcInfo->avgTpt;
+         outerCoeff = outerLcInfo->pfCoefficient;
          if(sortedNode != NULL)
          {
             sortedLcInfo = (SchSliceBasedLcInfo *)sortedNode->node;
-            sortedCoeff = (double) sortedLcInfo->reqBO / sortedLcInfo->avgTpt;
+            sortedCoeff = sortedLcInfo->pfCoefficient;
          }
          
          while (sortedNode != NULL && outerCoeff <= sortedCoeff) 
@@ -2702,7 +2702,7 @@ bool schSliceBasedDlScheduling(SchCellCb *cell, SlotTimingInfo currTime, uint8_t
 
    clock_gettime(1, &end);
    processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
-   DU_LOG("\nJOJO processing time Measurement : Processing Time of slice scheduling: %f sec", processTime);
+   // DU_LOG("\nJOJO processing time Measurement : Processing Time of slice scheduling: %f sec", processTime);
 
    // } // testing for FCFS 
 
@@ -2877,11 +2877,13 @@ uint8_t schSliceBasedDlIntraSliceScheduling(SchCellCb *cellCb, SlotTimingInfo pd
    }
    else if(sliceCb->algorithm == QoS)
    {
-      DU_LOG("\nJOJO  -->  QoS based scheduling starts.");
+      // DU_LOG("\nJOJO  -->  QoS based scheduling starts.");
       if(minimumPrb != 0)
       {
          remainingPrb = minimumPrb;            
-         schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+         // schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+         //                   pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+         schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
                            pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
       }
 
@@ -3036,12 +3038,14 @@ void *schSliceBasedDlIntraSliceThreadScheduling(void *threadArg)
          }
          else if(sliceCb->algorithm == QoS)
          {
-            DU_LOG("\nJOJO  -->  QoS based scheduling starts.");
+            // DU_LOG("\nJOJO  -->  QoS based scheduling starts.");
             if(minimumPrb != 0)
             {
                remainingPrb = minimumPrb;            
-               schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
-                                 pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+               // schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+               //                   pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+               schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                           pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
             }
 
             sliceCb->allocatedPrb = minimumPrb - remainingPrb;
@@ -3244,7 +3248,7 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
       }
       else if(sliceCb->algorithm == QoS)
       {
-         DU_LOG("\nJOJO  -->  QoS based scheduling starts.");
+         // DU_LOG("\nJOJO  -->  QoS based scheduling starts.");
 #ifdef SLICE_BASED_DEBUG_LOG
          DU_LOG("\n\n===============Dennis  -->  SCH Final : Start to run FinalScheduling [SST:%d, Shared PRB Quota:%d, Remaining PRB:%d, Algo: WFQ]===============", \
          sliceCb->snssai.sst, sliceCb->sharedPrb, remainingPrb);
@@ -3257,6 +3261,8 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
                availablePrb = remainingPrb; 
                schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
                                     pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
+               // schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+               //             pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
                sliceCb->allocatedPrb += remainingPrb - availablePrb;
                remainingPrb = availablePrb;
             }
@@ -3265,6 +3271,8 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
                availablePrb = sliceCb->sharedPrb;
                schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
                                     pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
+               // schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+               //             pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
                sliceCb->allocatedPrb += sliceCb->sharedPrb - availablePrb;
                remainingPrb = remainingPrb - (sliceCb->sharedPrb - availablePrb);
             }
@@ -4413,10 +4421,11 @@ void schApproxMeasforLc(CmLListCp *lcInfoList)
 
       if(lcInfoNode->avgTpt == 0)
          lcInfoNode->avgTpt = lcInfoNode->allocBO;
-      const float_t alpha = 0.1;
+      const float_t alpha = 0.002;
       lcInfoNode->avgTpt = (1 - alpha) * lcInfoNode->avgTpt + alpha * lcInfoNode->allocBO;
+      lcInfoNode->pfCoefficient = 0; // reset the PF coefficient of each LC
 
-      DU_LOG("\nJOJO  -->  SCH: get average throughput UE:%d LC:%d avg tpt:%d allocated BO:%d",\
+      DU_LOG("\nJOJO  -->  SCH: get average throughput UE:%d LC:%d avg tpt:%.5lf allocated BO:%d",\
        lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->avgTpt, lcInfoNode->allocBO);
       node = node->next;
    }
@@ -4470,6 +4479,22 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
       return;
    }
 
+   /*JOJO: get PF coefficient for LC list*/
+   node = lcInfoList->first;
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+      mcsIdx = lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex;
+      uint32_t pfAllocBO = schSliceBasedcalculateEstimateTBSize(lcInfoNode->reqBO, mcsIdx, numSymbols, *availablePrb, &estPrb);
+      if(lcInfoNode->avgTpt == 0)
+         lcInfoNode->pfCoefficient = (double) pfAllocBO;
+      else
+         lcInfoNode->pfCoefficient = (double) pfAllocBO / lcInfoNode->avgTpt;
+      DU_LOG("\nJOJO  -->  PF: avgTpt: %f, PF coefficient: %f, PF allocBO: %d",\
+         lcInfoNode->avgTpt, lcInfoNode->pfCoefficient, pfAllocBO);
+      node = node->next; 
+   }
+
    /*JOJO: sort logical channel based on specified coefficient */
    schSortLcByCoefficient(lcInfoList);
 
@@ -4478,8 +4503,8 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
    while(node)
    {
       lcInfoNode = (SchSliceBasedLcInfo *)node->node;
-      DU_LOG("\nJOJO  -->  PF: order of LC list, ueId: %d, lcId: %d, Priority Level: %d, avgTpt: %f, MCS: %d",\
-         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->avgTpt, lcInfoNode->ueCb->ueCfg.dlModInfo.mcsIndex);
+      DU_LOG("\nJOJO  -->  PF: order of LC list, ueId: %d, lcId: %d, Priority Level: %d, avgTpt: %f, PF coefficient: %f",\
+         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->avgTpt, lcInfoNode->pfCoefficient);
       node = node->next; 
    }
 
@@ -4502,13 +4527,6 @@ void schPFAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availab
 
       if(lcInfoNode->reqBO != 0)
       {
-         /* JOJO: not consider quantum at this moment. */
-         // quantum = totalAvaiPrb * lcInfoNode->weight;
-         // if(quantum == 0)
-         // {
-         //    break;
-         // }
-
          /*JOJO: check the amount of BO we can allocate for each LC*/
          if((isTxPayloadLenAdded != NULLP) && (*isTxPayloadLenAdded == FALSE))
          {
@@ -5188,7 +5206,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
             }
             else
             {
-               // DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into GFBR list.", ueId, lcInfoNode->lcId);
+               DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into GFBR list.", ueId, lcInfoNode->lcId);
             }
          }
 
@@ -5198,7 +5216,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
          }
          else
          {
-            // DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into MFBR list.", ueId, lcInfoNode->lcId);
+            DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into MFBR list.", ueId, lcInfoNode->lcId);
          }
 
          lcNode = lcNode->next;
@@ -5279,19 +5297,20 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
    }
 
    /*JOJO: Sort logical channel based on priority level. */
-   schSortLcByPriority(lcInfoList);
+   // schSortLcByPriority(lcInfoList);
+   schSortLcByMCS(lcInfoList);
 
    /*JOJO: Check the result of sorting*/
-   // node = lcInfoList->first;
-   // while(node)
-   // {
-   //    lcInfoNode = (SchSliceBasedLcInfo *)node->node;
-   //    DU_LOG("\nJOJO  -->  GFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
-   //                Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
-   //       lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
-   //       lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
-   //    node = node->next; 
-   // }
+   node = lcInfoList->first;
+   while(node)
+   {
+      lcInfoNode = (SchSliceBasedLcInfo *)node->node;
+      DU_LOG("\nJOJO  -->  GFBR Algo.: order of LC list, ueId: %d, lcId: %d,\
+                  Priority Level: %d, req BO: %d, Accumulated BO: %d, GFBR: %d, MFBR: %d, counter: %d",\
+         lcInfoNode->ueCb->ueId, lcInfoNode->lcId, lcInfoNode->priorLevel, lcInfoNode->reqBO,\
+         lcInfoNode->accumulatedBO, lcInfoNode->gfbr, lcInfoNode->mfbr, lcInfoNode->avgWindowCnt);
+      node = node->next; 
+   }
 
    remainingLc = lcInfoList->count;
    node = lcInfoList->first;
@@ -5417,8 +5436,9 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
    }
 
    /*JOJO: Sort logical channel based on priority level. */
+   schSortLcByMCS(lcInfoList);
    schSortLcByPriority(lcInfoList);
-
+   
    /*JOJO: Check the result of sorting*/
    // node = lcInfoList->first;
    // while(node)
@@ -5991,6 +6011,7 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
 {
    CmLListCp GBRLcList; /*JOJO: Logical channel list for GBR traffic.*/
    CmLListCp nonGBRLcList; /*JOJO: Logical channel list for non-GBR traffic.*/
+   CmLListCp allLcList; /*JOJO: Logical channel list for each traffic.*/
    CmLListCp realTimeLcList; /*JOJO: Logical channel list for real time traffic.*/
    CmLListCp nonRealTimeLcList; /*JOJO: Logical channel list for non real time traffic.*/
    SchUeCb *ueCb = NULLP;
@@ -6009,6 +6030,7 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
 
    cmLListInit(&GBRLcList);
    cmLListInit(&nonGBRLcList);
+   cmLListInit(&allLcList);
 
    /* Cascade the LC Info List for GBR traffic and non GBR traffic */
    while(ueNode)
@@ -6046,18 +6068,24 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
                DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into non GBR LC list.");
             }
          }
+
+         if(addNodeToLList(&allLcList, lcNode->node, NULLP) != ROK)
+         {
+            DU_LOG("\nERROR  --> JOJO : Failed to add the LC Info into all LC list.");
+         }
+
          lcNode = lcNode->next;
       }
       ueNode = ueNode->next;
    }
 
    /* JOJO: Max Rate algorithm for GBR LC list. */
-   schSliceBasedSortLcByPriorLevel(&GBRLcList, totalPriorityLevel);
-   schMaxRateAlgoforLc(&GBRLcList, numSymbols, availablePrb, \
+   schSliceBasedSortLcByPriorLevel(&allLcList, totalPriorityLevel);
+   // schMaxRateAlgoforLc(&allLcList, numSymbols, availablePrb, \
                                        &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
    
    /* JOJO: Proportional Fair algorithm for non GBR LC list. */
-   schPFAlgoforLc(&nonGBRLcList, numSymbols, availablePrb, \
+   schPFAlgoforLc(&allLcList, numSymbols, availablePrb, \
                                        &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
 
    /* Free the GBR LC list */
@@ -6071,6 +6099,15 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
 
    /* Free the non-GBR LC list */
    lcNode = nonGBRLcList.first;
+   while(lcNode)
+   {
+      next = lcNode->next;
+      SCH_FREE(lcNode, sizeof(CmLList));
+      lcNode = next;
+   }
+
+   /* Free the all LC list */
+   lcNode = allLcList.first;
    while(lcNode)
    {
       next = lcNode->next;

@@ -76,7 +76,7 @@ void addDlHqProcInUe(SlotTimingInfo dlMsgTime, MacUeCb *ueCb, DlMsgSchInfo *sche
    {
       memcpy(&hqProcCb->tbInfo[hqProcCb->numTb].txTime, &dlMsgTime, sizeof(SlotTimingInfo));
       hqProcCb->tbInfo[hqProcCb->numTb].tbSize = schedInfo->dlMsgPdschCfg->codeword[cwIdx].tbSize;
-      DU_LOG("\nJOJO  -->  Add HARQ %d into UE %d control block with size %d.", hqProcId, ueCb->ueId, hqProcCb->tbInfo[hqProcCb->numTb].tbSize);
+      // DU_LOG("\nJOJO  -->  Add HARQ %d into UE %d control block with size %d.", hqProcId, ueCb->ueId, hqProcCb->tbInfo[hqProcCb->numTb].tbSize);
       hqProcCb->numTb++;
    }
    return;

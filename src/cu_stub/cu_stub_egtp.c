@@ -1409,7 +1409,7 @@ S16 BuildAppMsgForExperiment3(uint32_t duId, EgtpMsg  *egtpMsg)
    /*JOJO: Customize the data size for each channel based on tunnel ID.*/
    char *data = NULL;
    
-   data = (char *)malloc(2400 * sizeof(char));
+   data = (char *)malloc(8000 * sizeof(char));
    strncpy(data,
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // 40 elements per line
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -1471,8 +1471,8 @@ S16 BuildAppMsgForExperiment3(uint32_t duId, EgtpMsg  *egtpMsg)
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      2400);
-   datSize = 2400;
+      8000);
+   datSize = 8000;
  
    Buffer   *mBuf;
  

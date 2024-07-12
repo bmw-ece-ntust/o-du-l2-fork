@@ -1002,27 +1002,27 @@ void fillDefaultModulation(DuMacUeCfg *ueCfg)
 {
    ueCfg->dlModInfo.modOrder = MOD_ORDER_QPSK;
 
-   ueCfg->dlModInfo.mcsIndex = DEFAULT_MCS;
-   // if(ueCfg->ueId == 1)
-   // {
-   //    ueCfg->dlModInfo.mcsIndex = 5;
-   // }
-   // else if(ueCfg->ueId == 2)
-   // {
-   //    ueCfg->dlModInfo.mcsIndex = 4;
-   // }
-   // else if(ueCfg->ueId == 3)
-   // {
-   //    ueCfg->dlModInfo.mcsIndex = 6;
-   // }
-   // else if(ueCfg->ueId == 4)
-   // {
-   //    ueCfg->dlModInfo.mcsIndex = 3;
-   // }
-   // else
-   // {
-   //    ueCfg->dlModInfo.mcsIndex = 7;
-   // }
+   // ueCfg->dlModInfo.mcsIndex = DEFAULT_MCS;
+   if(ueCfg->ueId == 1)
+   {
+      ueCfg->dlModInfo.mcsIndex = 3;
+   }
+   else if(ueCfg->ueId == 2)
+   {
+      ueCfg->dlModInfo.mcsIndex = 4;
+   }
+   else if(ueCfg->ueId == 3)
+   {
+      ueCfg->dlModInfo.mcsIndex = 5;
+   }
+   else if(ueCfg->ueId == 4)
+   {
+      ueCfg->dlModInfo.mcsIndex = 6;
+   }
+   else
+   {
+      ueCfg->dlModInfo.mcsIndex = 7;
+   }
 
    ueCfg->dlModInfo.mcsTable = MCS_TABLE_QAM64; /* Spec 38.214-Table 5.1.3.1-1 */
 

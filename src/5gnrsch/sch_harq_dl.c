@@ -383,6 +383,8 @@ void schDlHqFeedbackUpdate(SchDlHqProcCb *hqP, uint8_t fdbk1, uint8_t fdbk2)
       {
          if (HQ_TB_ACKED == hqP->tbInfo[tbIdx].isAckNackDtx)
          {
+            if(tbIdx == 0 && hqP->tbInfo[tbIdx].txCntr >= 1)
+               DU_LOG("\nJOJO successful Tx -->  SCH: UE %d has real transmitted TB: %d with Tx times %d", hqP->hqEnt->ue->ueId, hqP->tbInfo[tbIdx].tbSzReq, hqP->tbInfo[tbIdx].txCntr);
             schDlReleaseHqPTb(hqP, tbIdx, TRUE);
          }
          else

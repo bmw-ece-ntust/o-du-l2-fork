@@ -316,7 +316,7 @@ bool FCFSTesting(SchCellCb *cell, uint8_t pdschStartSymbol, uint8_t pdschNumSymb
 
    clock_gettime(1, &end);
    processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000.0;
-   DU_LOG("\nJOJO processing time Measurement : Processing Time of Scheduling Algorithm: %f us", processTime);
+   // DU_LOG("\nJOJO processing time Measurement : Processing Time of Scheduling Algorithm: %f us", processTime);
 
    /*Below case will hit if NO LC(s) are allocated due to resource crunch*/
    // DU_LOG("\nJOJO  --> FCFS schedules %d for UE %d", accumalatedSize, ueId);
@@ -1093,7 +1093,7 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
 
    clock_gettime(1, &end);
    processTime = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION_NUM;
-   DU_LOG("\nJOJO processing time Measurement : Processing Time of whole scheduling: %f sec", processTime);
+   // DU_LOG("\nJOJO processing time Measurement : Processing Time of whole scheduling: %f sec", processTime);
 
    return ret;
 }

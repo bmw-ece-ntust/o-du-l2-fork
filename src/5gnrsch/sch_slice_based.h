@@ -51,6 +51,7 @@ typedef struct schSliceBasedLcInfo
    uint32_t accumulatedBO; /* JOJO: Accumated BO within an average window */
    uint8_t fiveQI; /* JOJO: 5QI which is associated with this LC */
    float_t avgTpt; /* JOJO: average throughput which is associated with this LC */
+   float_t pfCoefficient;
    float_t avgDelay; /* JOJO: average delay which is associated with this LC */
    float_t weight; /*  Weight (0 ~ 1) which is used for WFQ algorithm */
    uint32_t reqBO;    /*Size of the BO requested/to be allocated for this LC*/
