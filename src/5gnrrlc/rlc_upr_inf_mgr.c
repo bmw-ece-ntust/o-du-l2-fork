@@ -1328,7 +1328,8 @@ uint8_t rlcCalculateTputPerDrb(CmLListCp *drbList, Direction dir)
    }
    /*Traversing the LC LinkList*/
    DU_LOG("\nJOJO --> DRB throughput display.");
-   rlcSyncUpWithSch = true;
+   for(uint8_t ueIdx = 0; ueIdx < MAX_NUM_UE; ueIdx++)
+      rlcSyncUpWithSch[ueIdx] = true;
 
    while(node)
    {

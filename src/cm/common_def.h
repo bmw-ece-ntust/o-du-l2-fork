@@ -350,7 +350,7 @@ uint64_t gDlDataRcvdCnt;   /* Number of DL data received at EGTP */
 
 /*JOJO: For QoS-aware SCH.*/
 bool isMFBR[RGU_MAX_LC]; /*JOJO: Flag for stopping data transfer in RLC.*/
-bool rlcSyncUpWithSch; /*JOJO: Flag for synchronization between RLC timer and SCH counter.*/
+bool rlcSyncUpWithSch[MAX_NUM_UE]; /*JOJO: Flag for synchronization between RLC timer and SCH counter.*/
 
 void fillCoresetFeqDomAllocMap(uint16_t startPrb, uint16_t prbSize, uint8_t *freqDomain);
 void oduCpyFixBufToMsg(uint8_t *fixBuf, Buffer *mBuf, uint16_t len);

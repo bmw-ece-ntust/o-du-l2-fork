@@ -974,7 +974,7 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                            ueSliceBasedCb->GBRWeight++;
 
                         /*JOJO: If the size of average window is not as large as RIC timer interval.*/
-                        if(rlcSyncUpWithSch == true && lcInfoNode->avgWindow != 0)
+                        if(rlcSyncUpWithSch[ueIdx] == true && lcInfoNode->avgWindow != 0)
                         {
                            lcInfoNode->rlc_avgWindowCnt = lcInfoNode->rlc_avgWindowCnt - 1;
                            if(lcInfoNode->rlc_avgWindowCnt == 0)
@@ -985,17 +985,17 @@ uint8_t SchProcSlotInd(Pst *pst, SlotTimingInfo *slotInd)
                               isMFBR[lcInfoNode->lcId - 4] = false;
                               lcInfoNode->isGFBRAchieved = false;
                               lcInfoNode->isMFBRAchieved = false;
-                              DU_LOG("\nJOJO  --> LC %d average window %d  Accumulated BO is reset at slot %d",\
-                                 lcInfoNode->lcId, lcInfoNode->avgWindow, slot);
+                              DU_LOG("\nJOJO  --> UE %d LC %d average window %d  Accumulated BO is reset at slot %d",\
+                                 ueIdx+1, lcInfoNode->lcId, lcInfoNode->avgWindow, slot);
                            }
                         }
 
                         drb_cnt += 1;
                         lcNode = lcNode->next;
                      }
-                     if(rlcSyncUpWithSch == true)
+                     if(rlcSyncUpWithSch[ueIdx] == true)
                      {
-                        rlcSyncUpWithSch = false;
+                        rlcSyncUpWithSch[ueIdx] = false;
                      }
                   } 
                }

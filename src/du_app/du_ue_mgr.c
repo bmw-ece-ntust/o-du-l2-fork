@@ -1005,19 +1005,19 @@ void fillDefaultModulation(DuMacUeCfg *ueCfg)
    // ueCfg->dlModInfo.mcsIndex = DEFAULT_MCS;
    if(ueCfg->ueId == 1)
    {
-      ueCfg->dlModInfo.mcsIndex = 3;
+      ueCfg->dlModInfo.mcsIndex = 4;
    }
    else if(ueCfg->ueId == 2)
    {
-      ueCfg->dlModInfo.mcsIndex = 4;
+      ueCfg->dlModInfo.mcsIndex = 6;
    }
    else if(ueCfg->ueId == 3)
    {
-      ueCfg->dlModInfo.mcsIndex = 5;
+      ueCfg->dlModInfo.mcsIndex = 8;
    }
    else if(ueCfg->ueId == 4)
    {
-      ueCfg->dlModInfo.mcsIndex = 6;
+      ueCfg->dlModInfo.mcsIndex = 10;
    }
    else
    {

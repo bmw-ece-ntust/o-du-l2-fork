@@ -3052,8 +3052,8 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       fiveQI = 1;
       avgWindow = 1000;
       // GFBR = 0;
-      GFBR = 250000;
-      MFBR = 1000000;
+      GFBR = 1000000;
+      MFBR = 1500000;
       // }
 
       /*JOJO: Create GFBR & MFBR QoS info.*/

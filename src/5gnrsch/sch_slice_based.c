@@ -1896,7 +1896,8 @@ uint8_t schSliceBasedFillLcInfoToSliceCb(CmLListCp *sliceCbList, SchUeCb *ueCb)
    sliceCbNode = sliceCbList->first;
 
    /*JOJO: Initialize the flag for synchronization between RLC timer and SCH counter.*/
-   rlcSyncUpWithSch = false;
+   for(uint8_t ueIdx = 0; ueIdx < MAX_NUM_UE; ueIdx++)
+      rlcSyncUpWithSch[ueIdx] = false;
 
    while(sliceCbNode)
    {
@@ -3259,20 +3260,20 @@ uint8_t schSliceBasedDlFinalScheduling(SchCellCb *cellCb, SlotTimingInfo pdschTi
             if(sliceCb->sharedPrb >= remainingPrb)
             {
                availablePrb = remainingPrb; 
-               schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
-                                    pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
-               // schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
-               //             pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+               // schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+               //                      pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
+               schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                           pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
                sliceCb->allocatedPrb += remainingPrb - availablePrb;
                remainingPrb = availablePrb;
             }
             else
             {
                availablePrb = sliceCb->sharedPrb;
-               schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
-                                    pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
-               // schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
-               //             pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
+               // schQoSBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+               //                      pdschNumSymbols, &availablePrb, sliceCb->algoMethod, NULLP);
+               schFiveQIBasedAlgo(cellCb, ueDlNewTransmission, sliceCb->lcInfoList, \
+                           pdschNumSymbols, &remainingPrb, sliceCb->algoMethod, NULLP);
                sliceCb->allocatedPrb += sliceCb->sharedPrb - availablePrb;
                remainingPrb = remainingPrb - (sliceCb->sharedPrb - availablePrb);
             }
@@ -5206,7 +5207,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
             }
             else
             {
-               DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into GFBR list.", ueId, lcInfoNode->lcId);
+               // DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into GFBR list.", ueId, lcInfoNode->lcId);
             }
          }
 
@@ -5216,7 +5217,7 @@ uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoL
          }
          else
          {
-            DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into MFBR list.", ueId, lcInfoNode->lcId);
+            // DU_LOG("\nJOJO  --> Add UE: %d, LC: %d into MFBR list.", ueId, lcInfoNode->lcId);
          }
 
          lcNode = lcNode->next;
@@ -5292,7 +5293,7 @@ void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
 
    if(lcInfoList->count == 0 || lcInfoList == NULLP)
    {
-      // DU_LOG("\nJOJO --> SCH: GFBR traffics are satisfied.");
+      DU_LOG("\nJOJO --> SCH: GFBR traffics are satisfied.");
       return;
    }
 
@@ -5437,7 +5438,7 @@ void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbo
 
    /*JOJO: Sort logical channel based on priority level. */
    schSortLcByMCS(lcInfoList);
-   schSortLcByPriority(lcInfoList);
+   // schSortLcByPriority(lcInfoList);
    
    /*JOJO: Check the result of sorting*/
    // node = lcInfoList->first;
@@ -6081,11 +6082,11 @@ uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcIn
 
    /* JOJO: Max Rate algorithm for GBR LC list. */
    schSliceBasedSortLcByPriorLevel(&allLcList, totalPriorityLevel);
-   // schMaxRateAlgoforLc(&allLcList, numSymbols, availablePrb, \
+   schMaxRateAlgoforLc(&allLcList, numSymbols, availablePrb, \
                                        &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
    
    /* JOJO: Proportional Fair algorithm for non GBR LC list. */
-   schPFAlgoforLc(&allLcList, numSymbols, availablePrb, \
+   // schPFAlgoforLc(&allLcList, numSymbols, availablePrb, \
                                        &ueSliceBasedCb->isTxPayloadLenAdded, srRcvd);
 
    /* Free the GBR LC list */
