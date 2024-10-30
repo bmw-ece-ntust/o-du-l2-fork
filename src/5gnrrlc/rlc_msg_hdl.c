@@ -831,6 +831,43 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo)
    datReqInfo->lcType       = LCH_DTCH;
    datReqInfo->sduId        = ++(rlcCb[pst->dstInst]->dlSduId);
    mBuf = dlDataMsgInfo->dlMsg;
+
+   /* Avoid RLC BO overflow*/
+   RlcDlRbCb     *rbCb;
+   RlcCb         *tRlcCb;
+   tRlcCb = RLC_GET_RLCCB(pst->dstInst);
+   rlcDbmFetchDlRbCbByRbId(tRlcCb, &datReqInfo->rlcId, &rbCb);
+
+   if(rbCb)
+   {
+      // DU_LOG("\nINFO  -->  JOJO: The BO size for RB ID %d is: %d", dlDataMsgInfo->rbId, rbCb->m.umDl.bo);
+      // if(rbCb->m.umDl.bo>150000)
+      /************************
+      - Set the limitation of BO as five times of packet size.
+      - To make sure the accumulated BO will not exceed the difference between GFBR and MFBR.
+      - We can do adjustment based on the case.
+      *************************/
+   //   DU_LOG("\nINFO  -->  JOJO: RLC Msg. length: %d", dlDataMsgInfo->msgLen);
+      // if(isMFBR[dlDataMsgInfo->rbId - 1] || rbCb->m.umDl.bo > (6070230/RGU_MAX_LC))
+      if(rbCb->m.umDl.bo > (6070230/RGU_MAX_LC)) // for trTCM mechanism
+      {
+         DU_LOG("\nINFO  -->  JOJO: RLC dropped DL data request.");
+         RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_DL, RLC_POOL, datReqInfo, sizeof(RlcDatReqInfo));
+         ODU_PUT_MSG_BUF(dlDataMsgInfo->dlMsg);
+         RLC_SHRABL_STATIC_BUF_FREE(pst->region, pst->pool, dlDataMsgInfo, sizeof(RlcDlUserDataInfo));
+         --rlcCb[pst->dstInst]->dlSduId;
+         return ROK;
+      }
+      else
+      {
+         // DU_LOG("\nINFO  -->  JOJO: RLC sent DL data request %d.", dlDataMsgInfo->msgLen);
+      }
+   }
+   else
+   {
+      // DU_LOG("\nINFO  -->  JOJO: Failed to get RB control block.");
+   }
+
    if(rlcProcDlData(pst, datReqInfo, mBuf) != ROK)
    {
       return RFAILED;

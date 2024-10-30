@@ -2437,8 +2437,9 @@ uint8_t SchProcDlCqiInd(Pst *pst, SchDlCqiInd *dlCqiInd)
             {
                /*TODO: complete the processing of DL CQI Ind*/ 
                //Updating MCS value
-               DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> CQI in this slot: %d.", dlCqiInd->dlCqiRpt.cqi);
                ueCb->ueCfg.dlModInfo.mcsIndex = get_mcs_from_cqi(dlCqiInd->dlCqiRpt.cqi);
+               DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> CQI = %d and MCS index = %d for UE ID %d in this slot: %d.", \
+                  dlCqiInd->dlCqiRpt.cqi, ueCb->ueCfg.dlModInfo.mcsIndex, ueId);
                // ueCb->ueCfg.dlModInfo.mcsIndex = 4;
             }
          }

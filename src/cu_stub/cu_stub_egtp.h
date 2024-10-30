@@ -149,6 +149,7 @@ S16 cuEgtpEncodeHdr(uint8_t *preEncodedHdr, EgtpMsgHdr *preDefHdr, uint8_t *hdrI
 S16 cuEgtpHdlRecvMsg(Buffer *mBuf);
 uint16_t cuEgtpDatReq(uint32_t duId, uint8_t teId);
 S16 BuildAppMsg(uint32_t duId, EgtpMsg  *egtpMsg);
+S16 BuildAppMsg2(uint32_t duId, EgtpMsg  *egtpMsg);
 S16 BuildEgtpMsg(uint32_t duId, EgtpMsg *egtpMsg);
 S16 cuEgtpSendMsg(uint32_t duId, Buffer *mBuf);
 S16 cuEgtpDecodeHdr(Buffer *mBuf);

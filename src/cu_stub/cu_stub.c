@@ -616,10 +616,10 @@ uint8_t startDlDataForExperiment12()
    uint16_t timerCnt = 0;
    EgtpTeIdCb *teidCb = NULLP;
    /*JOJO: initialize the interval of transmission.*/
-   uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {4, 4, 4, 4};
+   uint8_t transmissionInterval[NUM_TUNNEL_TO_PUMP_DATA] = {1, 1, 1, 1};
 
    /*JOJO: The experiment runs for ten seconds.*/
-   while(timerCnt < 2000)
+   while(timerCnt < 10000)
    {
       for(duId = 1; duId <= cuCb.cuCfgParams.egtpParams.numDu; duId++)
       {
@@ -646,7 +646,7 @@ uint8_t startDlDataForExperiment12()
             }           
          }
       } 
-      usleep(4000); /*JOJO: Minimum of transmission duration.*/
+      usleep(1000); /*JOJO: Minimum of transmission duration.*/
       timerCnt++;
    }
    DU_LOG("\nJOJO  -->  Stop traffic.\n");

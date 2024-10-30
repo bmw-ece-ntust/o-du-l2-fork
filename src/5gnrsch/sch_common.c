@@ -1122,10 +1122,10 @@ uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t c
       numSymbol = pdsch->dmrs.nrOfDmrsSymbols + pdsch->pdschTimeAlloc.numSymb;
    }
 
-   DU_LOG("\n\nAKMAL --> *******************************************");
-   DU_LOG("\nAKMAL --> DL Transmission Mapping : allocating prb dl");
-   DU_LOG("\nAKMAL --> DL Transmission Mapping : slot=%d,sfn=%d,startSymbol=%d,numSymbol=%d,startPRB=%d,numPRB=%d",slotTime.slot,slotTime.sfn,startSymbol,numSymbol,pdsch->pdschFreqAlloc.startPrb,pdsch->pdschFreqAlloc.numPrb);
-   DU_LOG("\nAKMAL --> DL Transmission Mapping : pdsch startPRB=%d,pdsch numPrb=%d",pdsch->pdschFreqAlloc.startPrb,pdsch->pdschFreqAlloc.numPrb);
+   // DU_LOG("\n\nAKMAL --> *******************************************");
+   // DU_LOG("\nAKMAL --> DL Transmission Mapping : allocating prb dl");
+   // DU_LOG("\nAKMAL --> DL Transmission Mapping : slot=%d,sfn=%d,startSymbol=%d,numSymbol=%d,startPRB=%d,numPRB=%d",slotTime.slot,slotTime.sfn,startSymbol,numSymbol,pdsch->pdschFreqAlloc.startPrb,pdsch->pdschFreqAlloc.numPrb);
+   // DU_LOG("\nAKMAL --> DL Transmission Mapping : pdsch startPRB=%d,pdsch numPrb=%d",pdsch->pdschFreqAlloc.startPrb,pdsch->pdschFreqAlloc.numPrb);
 
    /* Allocate the number of PRBs required for DL PDSCH */
    if((allocatePrbDl(cell, slotTime, startSymbol, numSymbol,\
@@ -1135,9 +1135,10 @@ uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t c
       SCH_FREE(dlMsgAlloc->dlMsgPdcchCfg, sizeof(PdcchCfg));
       return RFAILED;
    }
-   DU_LOG("\nAKMAL --> DL Transmission Mapping : allocated prb dl");
-   DU_LOG("\nAKMAL --> DL Transmission Mapping : pdsch startPRB=%d,pdsch numPrb=%d",pdsch->pdschFreqAlloc.startPrb,pdsch->pdschFreqAlloc.numPrb);
-   DU_LOG("\nAKMAL --> *******************************************\n");
+   
+   // DU_LOG("\nAKMAL --> DL Transmission Mapping : allocated prb dl");
+   // DU_LOG("\nAKMAL --> DL Transmission Mapping : pdsch startPRB=%d,pdsch numPrb=%d",pdsch->pdschFreqAlloc.startPrb,pdsch->pdschFreqAlloc.numPrb);
+   // DU_LOG("\nAKMAL --> *******************************************\n");
 
 
    pdsch->beamPdschInfo.numPrgs = 1;
