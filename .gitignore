@@ -1,9 +1,18 @@
-# documentation
-.tox
+# Documentation
+.tox/
 docs/_build/
-bin
-libs
-build/odu/obj
-build/odu/lib
-build/odu/bin
-.vscode
+
+# Library files
+*.a
+
+# Build and binary files
+bin/odu/odu
+bin/cu_stub/cu_stub
+bin/ric_stub/ric_stub
+
+bin/
+libs/
+build/odu/obj/
+build/odu/lib/
+build/odu/bin/
+.vscode/
