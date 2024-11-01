@@ -1918,7 +1918,6 @@ void updateGrantSizeForBoRpt(CmLListCp *lcLL, DlMsgSchInfo *dlMsgAlloc,\
 *******************************************************************/
 void fillDlMsgInfo(DlMsgSchInfo *dlMsgSchInfo, uint8_t crnti, bool isRetx, SchDlHqProcCb *hqP)
 {
-   DU_LOG("\nAKMAL --> DL Transmission Mapping : insideFillDlMsgInfo");
    hqP->tbInfo[0].isEnabled = TRUE;
    hqP->tbInfo[0].state = HQ_TB_WAITING;
    hqP->tbInfo[0].txCntr++;
