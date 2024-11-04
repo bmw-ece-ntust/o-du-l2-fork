@@ -1474,7 +1474,7 @@ bool schCheckCsiRsOcc(SchUeCb ueCb, SlotTimingInfo slotTime, uint32_t numslots)
  *
  * ****************************************************************/
 uint8_t schSliceBasedScheduleCsiRs(SchCellCb *cell, SlotTimingInfo csiRsTiming, uint8_t ueId){
-   // DU_LOG("\nAKMAL SCHEDULING CSI-RS FOR SLOT %d, SFN %d",csiRsTiming.slot,csiRsTiming.sfn);
+   DU_LOG("\nAKMAL SCHEDULING CSI-RS for UE %d at SLOT %d, SFN %d", ueId, csiRsTiming.slot, csiRsTiming.sfn);
 
    uint8_t startSymbol0 = cell->ueCb[ueId-1].ueCfg.spCellCfg.servCellRecfg.csiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.firstOFDMSymbolInTimeDomain;
    uint8_t startSymbol1 = cell->ueCb[ueId-1].ueCfg.spCellCfg.servCellRecfg.csiMeasCfg.nzpCsiRsRsrcToAddModList[0].resourceMapping.firstOFDMSymbolInTimeDomain2;
