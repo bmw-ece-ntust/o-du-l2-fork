@@ -23,9 +23,13 @@ echo "time,ueId,lcId,tpt,gfbr,mfbr" >> $OUTPUT_FILE
 # run the odu command and continuously monitor its output
 while IFS= read -r line; do
     # check if the line contains "DL Tpt"
-    if [[ $line == *"DRB throughput display"* ]]; then
+    # if [[ $line == *"DRB throughput display"* ]]; then
+    #     second=$(bc <<< "$second + 1")
+    # fi
+    if [[ $line == *"DL Throughput Per UE"* ]]; then
         second=$(bc <<< "$second + 1")
     fi
+
     # check if the line contains "()"
     if [[ $line =~ $LC_setup_pattern ]]; then
         ue_id_jojo="${BASH_REMATCH[1]}"

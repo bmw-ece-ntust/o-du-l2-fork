@@ -3014,41 +3014,41 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
       long fiveQI = 0, avgWindow = 0;
       uint32_t GFBR = 0, MFBR = 0;
 
-      // if(ueId == 1 && drbSetItem->dRBID == 1)
-      // {
-      //    fiveQI = 1;
-      //    avgWindow = 1000;
-      //    GFBR = 0;
-      //    MFBR = 20000;
-      // }
-      // else if(ueId == 2 && drbSetItem->dRBID == 1)
-      // {
-      //    fiveQI = 2;
-      //    avgWindow = 1000;
-      //    GFBR = 0;
-      //    MFBR = 20000;
-      // }
-      // else if(ueId == 3 && drbSetItem->dRBID == 1)
-      // {
-      //    fiveQI = 65;
-      //    avgWindow = 1000;
-      //    GFBR = 0;
-      //    MFBR = 20000;
-      // }
-      // else if(ueId == 4 && drbSetItem->dRBID == 1)
-      // {
-      //    fiveQI = 7;
-      //    avgWindow = 1000;
-      //    GFBR = 0;
-      //    MFBR = 0;
-      // }
-      // else
-      // {
-      fiveQI = 1;
-      avgWindow = 1000;
-      GFBR = 0;
-      MFBR = 50000;
-      // }
+      if(ueId == 1 && drbSetItem->dRBID == 1)
+      {
+         fiveQI = 1;
+         avgWindow = 1000;
+         GFBR = 200000;
+         MFBR = 500000;
+      }
+      else if(ueId == 2 && drbSetItem->dRBID == 1)
+      {
+         fiveQI = 2;
+         avgWindow = 1000;
+         GFBR = 200000;
+         MFBR = 500000;
+      }
+      else if(ueId == 3 && drbSetItem->dRBID == 1)
+      {
+         fiveQI = 65;
+         avgWindow = 1000;
+         GFBR = 200000;
+         MFBR = 500000;
+      }
+      else if(ueId == 4 && drbSetItem->dRBID == 1)
+      {
+         fiveQI = 7;
+         avgWindow = 1000;
+         GFBR = 200000;
+         MFBR = 500000;
+      }
+      else
+      {
+         fiveQI = 1;
+         avgWindow = 1000;
+         GFBR = 200000;
+         MFBR = 500000;
+      }
 
       /*JOJO: Create GFBR & MFBR QoS info.*/
       drbQos->qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = fiveQI;
