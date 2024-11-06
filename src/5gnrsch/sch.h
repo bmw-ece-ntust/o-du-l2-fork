@@ -381,6 +381,9 @@ typedef struct schLcCtxt
    uint8_t lcId;     // logical Channel ID
    uint8_t lcp;      // logical Channel Prioritization
    uint16_t   fiveQi; // 5QI
+   uint32_t   gfbr;  /* JOJO: GFBR which is associated with this LC */
+   uint32_t   mfbr;  /* JOJO: MFBR which is associated with this LC */
+   uint16_t   avgWindow; /* JOJO: Average window which is associated with this LC */
    SchLcState lcState;
    uint32_t bo;
    uint16_t   pduSessionId; /*Pdu Session Id*/

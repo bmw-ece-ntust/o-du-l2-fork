@@ -31,7 +31,7 @@ typedef enum
 {
    RR, /* Round Robin */
    WFQ, /* Weight Fair Queue */
-   fiveQI /* JOJO: 5QI based scheduling algorithm*/
+   QoS /* JOJO: 5QI based scheduling algorithm*/
 }SchAlgorithm;
 
 /*Following structures to keep record and estimations of PRB allocated for each
@@ -41,6 +41,14 @@ typedef struct schSliceBasedLcInfo
    uint8_t  lcId;     /*LCID for which BO are getting recorded*/
    SchUeCb *ueCb;    /* To store which UE this LC belongs to */
    uint16_t priorLevel; /* Priority Level which is associated with this LC */
+   uint32_t gfbr;  /* JOJO: GFBR which is associated with this LC */
+   uint32_t mfbr;  /* JOJO: MFBR which is associated with this LC */
+   uint16_t   avgWindow; /* JOJO: Average window which is associated with this LC */
+   uint16_t   avgWindowCnt; /* JOJO: The counter for average window */
+   uint16_t   rlc_avgWindowCnt; /* JOJO: The counter for average window */
+   bool isGFBRAchieved; /* JOJO: Check if GFBR is achieved. */
+   bool isMFBRAchieved; /* JOJO: Check if MFBR is achieved. */
+   uint32_t accumulatedBO; /* JOJO: Accumated BO within an average window */
    uint8_t fiveQI; /* JOJO: 5QI which is associated with this LC */
    float_t avgTpt; /* JOJO: average throughput which is associated with this LC */
    float_t avgDelay; /* JOJO: average delay which is associated with this LC */
@@ -186,9 +194,23 @@ uint8_t schSliceBasedRoundRobinAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLLis
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
 uint8_t schSliceBasedWeightedFairQueueAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
+
 /*JOJO: 5QI based scheduling algorithm*/
 uint8_t schFiveQIBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
                                  uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
+
+/*JOJO: QoS based scheduling algorithm*/
+uint8_t schQoSBasedAlgo(SchCellCb *cellCb, CmLListCp *ueList, CmLListCp *lcInfoList, uint8_t numSymbols, \
+                                 uint16_t *availablePrb, SchAlgoMethod algoMethod, bool *srRcvd);
+/* Scheduling Algorithm for Logical Channel Level */
+void schGFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, bool *srRcvd);
+void schMFBRAlgoforLc(SchCellCb *cellCb, CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, bool *srRcvd);
+
+/*JOJO: Sorting algorithm based on priority.*/
+void schSortLcByPriority(CmLListCp *lcInfoList);
+
+/*JOJO: get resource type from 5QI table*/
+uint16_t schGetResourceTypeFromFiveQI(uint16_t fiveQi);
 
 /* Scheduling Algorithm for Logical Channel Level */
 void schMaxRateAlgoforLc(CmLListCp *lcInfoList, uint8_t numSymbols, uint16_t *availablePrb, \

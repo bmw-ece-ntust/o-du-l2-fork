@@ -848,8 +848,8 @@ uint8_t RlcProcDlUserDataTransfer(Pst *pst, RlcDlUserDataInfo *dlDataMsgInfo)
       - We can do adjustment based on the case.
       *************************/
    //   DU_LOG("\nINFO  -->  JOJO: RLC Msg. length: %d", dlDataMsgInfo->msgLen);
-      // if(isMFBR[dlDataMsgInfo->rbId - 1] || rbCb->m.umDl.bo > (6070230/RGU_MAX_LC))
-      if(rbCb->m.umDl.bo > (6070230/RGU_MAX_LC)) // for trTCM mechanism
+      if(isMFBR[dlDataMsgInfo->rbId - 1] || rbCb->m.umDl.bo > (6070230/RGU_MAX_LC))
+      // if(rbCb->m.umDl.bo > (6070230/RGU_MAX_LC)) // for trTCM mechanism
       {
          DU_LOG("\nINFO  -->  JOJO: RLC dropped DL data request.");
          RLC_SHRABL_STATIC_BUF_FREE(RLC_MEM_REGION_DL, RLC_POOL, datReqInfo, sizeof(RlcDatReqInfo));

@@ -724,7 +724,7 @@ uint8_t rlcProcDlData(Pst *pst, RlcDatReqInfo *datReq, Buffer *mBuf)
    RlcDlRbCb     *rbCb;       /* RB Control Block */
    RlcCb         *tRlcCb;
 
-   DU_LOG("\nDEBUG  -->  RLC_DL : Received DL Data");
+   // DU_LOG("\nDEBUG  -->  RLC_DL : Received DL Data");
 
 #if (ERRCLASS & ERRCLS_INT_PAR)
    if(pst->dstInst >= MAX_RLC_INSTANCES)
@@ -1326,6 +1326,11 @@ uint8_t rlcCalculateTputPerDrb(CmLListCp *drbList, Direction dir)
       DU_LOG("\n No DRB in list");
       return(drbCnt);
    }
+
+   DU_LOG("\nJOJO --> DRB throughput display.");
+   for(uint8_t ueIdx = 0; ueIdx < MAX_NUM_UE; ueIdx++)
+      rlcSyncUpWithSch[ueIdx] = true;
+
    /*Traversing the LC LinkList*/
    while(node)
    {

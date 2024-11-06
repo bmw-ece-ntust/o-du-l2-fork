@@ -98,6 +98,19 @@ void SchSendUeRecfgRspToMac(SchUeRecfgReq *ueRecfgReq, Inst inst,\
     MacMessageRouter(&rspPst, (void *)reCfgRsp);
 }
 
+uint8_t getQoSFlowResourceType(uint16_t fiveQI)
+{
+   uint8_t fiveQiIdx;
+   for(fiveQiIdx = 0; fiveQiIdx < MAX_5QI_TABLE_IDX; fiveQiIdx++)
+   {
+      /* JOJO: Get the corresponding 5QI Index */
+      if(fiveQiIdxTable[fiveQiIdx] == fiveQI)
+         break;
+   }
+
+   return fiveQiTable[fiveQiIdx][0];
+}
+
 /*******************************************************************
  
  *
@@ -117,6 +130,8 @@ void SchSendUeRecfgRspToMac(SchUeRecfgReq *ueRecfgReq, Inst inst,\
 
 void fillSchDlLcCtxt(SchDlLcCtxt *ueCbLcCfg, SchLcCfg *lcCfg)
 {
+   uint8_t resourceType; /*JOJO: Check resource type for LC. */
+
    ueCbLcCfg->lcId = lcCfg->lcId;
    ueCbLcCfg->lcp = lcCfg->dlLcCfg.lcp;
    ueCbLcCfg->lcState = SCH_LC_STATE_ACTIVE;  
@@ -128,11 +143,22 @@ void fillSchDlLcCtxt(SchDlLcCtxt *ueCbLcCfg, SchLcCfg *lcCfg)
      if(lcCfg->drbQos->fiveQiType == SCH_QOS_NON_DYNAMIC) /* Non-Dynamic 5QI */
      {
          ueCbLcCfg->fiveQi = lcCfg->drbQos->u.nonDyn5Qi.fiveQi;
+         ueCbLcCfg->avgWindow = lcCfg->drbQos->u.nonDyn5Qi.avgWindow; /*JOJO: Extend average window for QoS traffic. */
      }
      else /* Dynamic 5QI */
      {
          ueCbLcCfg->fiveQi = lcCfg->drbQos->u.dyn5Qi.fiveQi;
      }
+
+      /*JOJO: Extend GFBR and MFBR for QoS traffic. */
+      ueCbLcCfg->gfbr = 0;
+      ueCbLcCfg->mfbr = lcCfg->drbQos->grbQosFlowInfo.maxFlowBitRateDl;
+      
+      resourceType = getQoSFlowResourceType(ueCbLcCfg->fiveQi);
+      if(resourceType == 0 || resourceType == 2)
+      {
+         ueCbLcCfg->gfbr = lcCfg->drbQos->grbQosFlowInfo.guarFlowBitRateDl;
+      }
    }
    else /* DRB has no 5QI */
    {

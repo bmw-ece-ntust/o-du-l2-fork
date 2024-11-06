@@ -4543,6 +4543,7 @@ uint8_t DuProcMacUeSyncStatusInd(Pst *pst, MacUeSyncStatusInd *ueSyncStatusInd)
    }
    return ret;
 }
+
 /**********************************************************************
   End of file
 ***********************************************************************/

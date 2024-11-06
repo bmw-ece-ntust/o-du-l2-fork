@@ -4482,8 +4482,8 @@ void fillPucchPdu(fapi_ul_tti_req_pdu_t *ulTtiReqPdu, fapi_vendor_ul_tti_req_pdu
 {
    if(ulTtiReqPdu != NULLP)
    {
-      DU_LOG("\nAKMAL PRINT LWR MAC --> LWR MAC FILL PUCCH PDU for UE ID: %d", ueIdx+1);
-      DU_LOG("\nAKMAL PRINT LWR MAC --> RECEIVED PUCCH FORMAT %d at slot %d sfn %d",currUlSlot->ulInfo[ueIdx].schPucchInfo[pucchIdx].pucchFormat, currUlSlot->ulInfo[ueIdx].slotIndInfo.slot,currUlSlot->ulInfo[ueIdx].slotIndInfo.sfn);
+      // DU_LOG("\nAKMAL PRINT LWR MAC --> LWR MAC FILL PUCCH PDU for UE ID: %d", ueIdx+1);
+      // DU_LOG("\nAKMAL PRINT LWR MAC --> RECEIVED PUCCH FORMAT %d at slot %d sfn %d",currUlSlot->ulInfo[ueIdx].schPucchInfo[pucchIdx].pucchFormat, currUlSlot->ulInfo[ueIdx].slotIndInfo.slot,currUlSlot->ulInfo[ueIdx].slotIndInfo.sfn);
       ulTtiReqPdu->pduType                  = PUCCH_PDU_TYPE;
       memset(&ulTtiReqPdu->pdu.pucch_pdu, 0, sizeof(fapi_ul_pucch_pdu_t));
       ulTtiReqPdu->pdu.pucch_pdu.rnti         = currUlSlot->ulInfo[ueIdx].crnti;

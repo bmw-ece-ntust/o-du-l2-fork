@@ -1019,7 +1019,7 @@ uint8_t schFillRar(SchCellCb *cell, SlotTimingInfo rarTime, uint16_t ueId, RarAl
       numSymbol = pdsch->dmrs.nrOfDmrsSymbols + pdsch->pdschTimeAlloc.numSymb;
    }
 
-   DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schFillRar",startSymbol, numSymbol);
+   // DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schFillRar",startSymbol, numSymbol);
 
    /* Allocate the number of PRBs required for RAR PDSCH */
    if((allocatePrbDl(cell, rarTime, startSymbol, numSymbol,\

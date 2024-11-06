@@ -92,7 +92,7 @@ uint8_t schBroadcastSsbAlloc(SchCellCb *cell, SlotTimingInfo slotTime, DlBrdcstA
       schDlSlotInfo->ssbInfo[idx] = ssbInfo;
    }
    
-   DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schBroadcastSsbAlloc",ssbStartSymb, SCH_SSB_NUM_SYMB);
+   // DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schBroadcastSsbAlloc",ssbStartSymb, SCH_SSB_NUM_SYMB);
 
    if((allocatePrbDl(cell, slotTime, ssbStartSymb, SCH_SSB_NUM_SYMB, &ssbInfo.fdAlloc.startPrb, ssbInfo.fdAlloc.numPrb)) != ROK)
    {
@@ -161,7 +161,7 @@ uint8_t schBroadcastSib1Alloc(SchCellCb *cell, SlotTimingInfo slotTime, DlBrdcst
       numSymbol = dmrs.nrOfDmrsSymbols + timeAlloc.numSymb;
    }
 
-   DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schBroadcastSib1Alloc %d - %d",startSymbol, numSymbol, freqAlloc.startPrb, freqAlloc.numPrb);
+   // DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schBroadcastSib1Alloc %d - %d",startSymbol, numSymbol, freqAlloc.startPrb, freqAlloc.numPrb);
 
    /* Allocate PRB */
    if((allocatePrbDl(cell, slotTime, startSymbol, numSymbol, &freqAlloc.startPrb, freqAlloc.numPrb)) != ROK)
@@ -379,7 +379,7 @@ uint8_t fillUlSchedPucchDedicatedCfg(SchCellCb *cell, SchPucchCfg *pucchDedCfg,\
                if(pucchDedCfg->resrcSet->resrcSetToAddModList[resrcSetIdx].resrcList[resrcSetRsrcIdx] ==\
                      pucchDedCfg->resrc->resrcToAddModList[resrcIdx].resrcId)
                {
-                  DU_LOG("\nPUCCH COUNT = %d",pucchCount);
+                  // DU_LOG("\nPUCCH COUNT = %d",pucchCount);
                   ret=RFAILED;
                   ulSchedPucch[pucchCount].intraFreqHop = pucchDedCfg->resrc->resrcToAddModList[resrcIdx].intraFreqHop;
                   ulSchedPucch[pucchCount].secondPrbHop = pucchDedCfg->resrc->resrcToAddModList[resrcIdx].secondPrbHop;
@@ -392,7 +392,7 @@ uint8_t fillUlSchedPucchDedicatedCfg(SchCellCb *cell, SchPucchCfg *pucchDedCfg,\
                      return ret;
                   }
                   pucchStartPrb = pucchDedCfg->resrc->resrcToAddModList[resrcIdx].startPrb;
-                  DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> start PRB PUCCH Count %d of format %d is %d", pucchCount, ulSchedPucch[pucchCount].pucchFormat, pucchStartPrb);
+                  // DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> start PRB PUCCH Count %d of format %d is %d", pucchCount, ulSchedPucch[pucchCount].pucchFormat, pucchStartPrb);
                   if(ulSchedPucch[pucchCount].pucchFormat==PUCCH_FORMAT_2){
                      // format2Alloc = allocatePrbUl(cell, *slotInfo, ulSchedPucch[pucchCount].tdAlloc.startSymb, ulSchedPucch[pucchCount].tdAlloc.numSymb, &pucchStartPrb, pucchDedCfg->resrc->resrcToAddModList[resrcIdx].SchPucchFormat.format2->numPrbs);
                      format2Alloc = ROK;
@@ -478,7 +478,7 @@ uint16_t fillPucchResourceInfo(uint8_t ueId, SchPucchInfo *schPucchInfo, Inst in
 #endif
    if(cell->ueCb[ueIdx].ueCfg.spCellCfg.servCellRecfg.initUlBwp.pucchCfgPres)
    {
-      DU_LOG("\nAKMAL PRINT --> DEDICATED PUCCH SCHEDULING");
+      // DU_LOG("\nAKMAL PRINT --> DEDICATED PUCCH SCHEDULING");
       /* fill pucch dedicated cfg */
       ret = fillUlSchedPucchDedicatedCfg(cell,\
        &cell->ueCb[ueIdx].ueCfg.spCellCfg.servCellRecfg.initUlBwp.pucchCfg, &slotInfo, schPucchInfo);
@@ -491,7 +491,7 @@ uint16_t fillPucchResourceInfo(uint8_t ueId, SchPucchInfo *schPucchInfo, Inst in
    }
    else
    {
-      DU_LOG("\nAKMAL PRINT --> COMMON PUCCH SCHEDULING");
+      // DU_LOG("\nAKMAL PRINT --> COMMON PUCCH SCHEDULING");
       /* fill pucch common cfg */
       /* derive pucchResourceSet from schCellCfg */
       pucchCfg = &cell->cellCfg.ulCfgCommon.schInitialUlBwp.pucchCommon;
@@ -798,7 +798,7 @@ uint8_t schDlRsrcAllocMsg4(SchCellCb *cell, SlotTimingInfo msg4Time, uint8_t ueI
       numSymbol = pdsch->dmrs.nrOfDmrsSymbols + pdsch->pdschTimeAlloc.numSymb;
    }
 
-   DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schDlRsrcAllocMsg4",startSymbol, numSymbol);
+   // DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schDlRsrcAllocMsg4",startSymbol, numSymbol);
 
    /* Allocate the number of PRBs required for RAR PDSCH */
    if((allocatePrbDl(cell, msg4Time, startSymbol, numSymbol,\
@@ -1000,7 +1000,7 @@ uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t c
                 uint32_t tbSize, DlMsgSchInfo *dlMsgAlloc, uint16_t startPRB, uint8_t pdschStartSymbol,
                 uint8_t pdschNumSymbols, bool isRetx, SchDlHqProcCb *hqP)
 {
-   DU_LOG("\nAKMAL --> DL Transmission Mapping : Inside SchDlRsrcAllocDlMsg %d", tbSize);
+   // DU_LOG("\nAKMAL --> DL Transmission Mapping : Inside SchDlRsrcAllocDlMsg %d", tbSize);
    uint8_t ueId=0;
    uint8_t cwCount = 0;
    PdcchCfg *pdcch = NULLP;
@@ -1103,7 +1103,7 @@ uint8_t schDlRsrcAllocDlMsg(SchCellCb *cell, SlotTimingInfo slotTime, uint16_t c
    pdsch->pdschFreqAlloc.startPrb = startPRB; /*Start PRB will be already known*/
 
    pdsch->pdschFreqAlloc.numPrb = schCalcNumPrb(tbSize, ueCb.ueCfg.dlModInfo.mcsIndex, pdschNumSymbols);
-   DU_LOG("\nJOJO Akmal Wilfrid Debug --> numPRB %d = MCS Index %d + num of symbols %d + TBS size %d\n",\
+   // DU_LOG("\nJOJO Akmal Wilfrid Debug --> numPRB %d = MCS Index %d + num of symbols %d + TBS size %d\n",\
       pdsch->pdschFreqAlloc.numPrb, ueCb.ueCfg.dlModInfo.mcsIndex, pdschNumSymbols, tbSize);
 
    /* Find total symbols occupied including DMRS */
@@ -2347,7 +2347,7 @@ uint8_t schFillPagePdschCfg(SchCellCb *cell, PageDlSch *pageDlSch, SlotTimingInf
       numSymbol = pageDlSch->dmrs.nrOfDmrsSymbols + pageDlSch->timeAlloc.numSymb;
    }
 
-   DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schFillPagePdschCfg",startSymbol, numSymbol);
+   // DU_LOG("\n AKMAL JOJO WILFRID DEBUG -> %d %d inside schFillPagePdschCfg",startSymbol, numSymbol);
 
    /* Allocate the number of PRBs required for DL PDSCH */
    if((allocatePrbDl(cell, slotTime, startSymbol, numSymbol,\

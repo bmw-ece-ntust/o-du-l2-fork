@@ -52,12 +52,13 @@
 #include "cm_lte.x"
 #include "cm_lib.x"
 #include "du_log.h"
+#include "rgu.h"
 
 #define RADIO_FRAME_DURATION 10 /* Time duration of a radio frame in ms */
 /* MAX values */
 #define MAX_NUM_CELL 2 /* Changed to 2 to support cell Id 2 even if there is only one cell in DU */
 #define MAX_NUM_MU   5
-#define MAX_NUM_UE 4
+#define MAX_NUM_UE 1
 #define MAX_NUM_UE_PER_TTI 1
 #define MAX_NUM_LC   MAX_DRB_LCID + 1   /*Spec 38.331: Sec 6.4: maxLC-ID Keyword*/
 #define MAX_NUM_SRB  3    /* Max. no of Srbs */
@@ -113,9 +114,9 @@
 #define MAX_NUM_RB TOTAL_PRB_20MHZ_MU0 /* value for numerology 0, 20 MHz */
 #endif
 
-#define ODU_UE_THROUGHPUT_PRINT_TIME_INTERVAL      500     /* in milliseconds */
-#define ODU_SNSSAI_THROUGHPUT_PRINT_TIME_INTERVAL  500     /* in milliseconds */
-#define ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL     500      /* in milliseconds */
+#define ODU_UE_THROUGHPUT_PRINT_TIME_INTERVAL      1000     /* in milliseconds */
+#define ODU_SNSSAI_THROUGHPUT_PRINT_TIME_INTERVAL  1000     /* in milliseconds */
+#define ODU_DRB_THROUGHPUT_PRINT_TIME_INTERVAL     1000      /* in milliseconds */
 
 /*Spec 38.331 Sec 6.4: Maximum number of paging occasion per paging frame*/
 #define MAX_PO_PER_PF 4
@@ -346,6 +347,8 @@ typedef struct tddCfg
 OduCellStatus gCellStatus;
 uint64_t gSlotCount;
 uint64_t gDlDataRcvdCnt;   /* Number of DL data received at EGTP */
+bool isMFBR[RGU_MAX_LC];
+bool rlcSyncUpWithSch[MAX_NUM_UE];
 
 void fillCoresetFeqDomAllocMap(uint16_t startPrb, uint16_t prbSize, uint8_t *freqDomain);
 void oduCpyFixBufToMsg(uint8_t *fixBuf, Buffer *mBuf, uint16_t len);

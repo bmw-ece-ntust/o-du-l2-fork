@@ -143,6 +143,7 @@
 #include "PagingCell-Item.h"
 #include "UL-DCCH-Message.h"
 #include "DRX-ConfigRrc.h"
+#include "GBR-QoSFlowInformation.h"
 
 #include "cu_stub_sctp.h"
 #include "cu_stub_egtp.h"
@@ -3006,39 +3007,82 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
          BuildQOSInforet =  BuildQOSInfo(&ueCb->drbList[idx].qos, &drbSetItem->qoSInformation.choice.\
                choice_extension->value.choice.DRB_Information.dRB_QoS, ProtocolIE_ID_id_DRBs_ToBeSetup_Item, PDU_SESSION_ID_1, TRUE);
 
-      /*JOJO: Assign pre-determined 5QI to specific DRB.*/
+      /*JOJO: Assign pre-determined QoS Info. to specific DRB.*/
+      QoSFlowLevelQoSParameters_t *drbQos = &drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS;
       uint8_t ueId = 0;
       GET_UE_ID(ueCb->crnti, ueId);
+      long fiveQI = 0, avgWindow = 0;
+      uint32_t GFBR = 0, MFBR = 0;
 
-      if(ueId == 1 && drbSetItem->dRBID == 1)
+      // if(ueId == 1 && drbSetItem->dRBID == 1)
+      // {
+      //    fiveQI = 1;
+      //    avgWindow = 1000;
+      //    GFBR = 0;
+      //    MFBR = 20000;
+      // }
+      // else if(ueId == 2 && drbSetItem->dRBID == 1)
+      // {
+      //    fiveQI = 2;
+      //    avgWindow = 1000;
+      //    GFBR = 0;
+      //    MFBR = 20000;
+      // }
+      // else if(ueId == 3 && drbSetItem->dRBID == 1)
+      // {
+      //    fiveQI = 65;
+      //    avgWindow = 1000;
+      //    GFBR = 0;
+      //    MFBR = 20000;
+      // }
+      // else if(ueId == 4 && drbSetItem->dRBID == 1)
+      // {
+      //    fiveQI = 7;
+      //    avgWindow = 1000;
+      //    GFBR = 0;
+      //    MFBR = 0;
+      // }
+      // else
+      // {
+      fiveQI = 1;
+      avgWindow = 1000;
+      GFBR = 0;
+      MFBR = 50000;
+      // }
+
+      /*JOJO: Create GFBR & MFBR QoS info.*/
+      drbQos->qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = fiveQI;
+      *(drbQos->qoS_Characteristics.choice.non_Dynamic_5QI->averagingWindow) = avgWindow;
+
+      CU_ALLOC(drbQos->gBR_QoS_Flow_Information, sizeof(GBR_QoSFlowInformation_t));
+      if(drbQos->gBR_QoS_Flow_Information == NULLP)
       {
-         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
-               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 1;
-      }
-      else if(ueId == 2 && drbSetItem->dRBID == 1)
-      {
-         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
-               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 2;
-      }
-      else if(ueId == 3 && drbSetItem->dRBID == 1)
-      {
-         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
-               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 6;
-      }
-      else if(ueId == 4 && drbSetItem->dRBID == 1)
-      {
-         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
-               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 7;
-      }
-      else
-      {
-         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
-               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI = 7;
+         DU_LOG("\nJOJO  -->  Allocate GBR QoS info. failed.");
+         return RFAILED;
       }
 
-      DU_LOG("\nJOJO  -->  F1AP : DRB ID: %d is assigned 5QI = %d", drbSetItem->dRBID,\
-         drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
-               qoS_Characteristics.choice.non_Dynamic_5QI->fiveQI);
+      drbQos->gBR_QoS_Flow_Information->maxFlowBitRateDownlink.size = sizeof(uint32_t);
+      drbQos->gBR_QoS_Flow_Information->maxFlowBitRateUplink.size = sizeof(uint32_t);
+      drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateDownlink.size = sizeof(uint32_t);
+      drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.size = sizeof(uint32_t);
+
+      CU_ALLOC(drbQos->gBR_QoS_Flow_Information->maxFlowBitRateDownlink.buf,\
+         drbQos->gBR_QoS_Flow_Information->maxFlowBitRateDownlink.size);
+      CU_ALLOC(drbQos->gBR_QoS_Flow_Information->maxFlowBitRateUplink.buf,\
+         drbQos->gBR_QoS_Flow_Information->maxFlowBitRateUplink.size);
+      CU_ALLOC(drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateDownlink.buf,\
+         drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateDownlink.size);
+      CU_ALLOC(drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.buf,\
+         drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.size);
+
+      memcpy(drbQos->gBR_QoS_Flow_Information->maxFlowBitRateDownlink.buf, &MFBR,\
+         drbQos->gBR_QoS_Flow_Information->maxFlowBitRateDownlink.size);
+      memset(drbQos->gBR_QoS_Flow_Information->maxFlowBitRateUplink.buf, 0,\
+         drbQos->gBR_QoS_Flow_Information->maxFlowBitRateUplink.size);
+      memcpy(drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateDownlink.buf, &GFBR,\
+         drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateDownlink.size);
+      memset(drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.buf, 0,\
+         drbQos->gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.size);
       
       if(BuildQOSInforet != ROK)
       {
@@ -3454,6 +3498,47 @@ void FreeDRBSetup(DRBs_ToBeSetup_List_t *drbSet)
 		         CU_FREE(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
 			               qoS_Characteristics.choice.non_Dynamic_5QI, sizeof(NonDynamic5QIDescriptor_t));
              }
+             if(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information != NULLP)
+            {
+               DU_LOG("\nJOJO  -->  Release GBR Info.");
+               if(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->guaranteedFlowBitRateDownlink.buf!=NULLP)
+               {
+                  CU_FREE(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->guaranteedFlowBitRateDownlink.buf,\
+                     drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->guaranteedFlowBitRateDownlink.size);
+               }
+               if(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.buf!=NULLP)
+               {
+                  CU_FREE(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.buf,\
+                     drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->guaranteedFlowBitRateUplink.size);
+               }
+               if(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->maxFlowBitRateDownlink.buf!=NULLP)
+               {
+                  CU_FREE(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->maxFlowBitRateDownlink.buf,\
+                     drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->maxFlowBitRateDownlink.size);
+               }
+               if(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->maxFlowBitRateUplink.buf!=NULLP)
+               {
+                  CU_FREE(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->maxFlowBitRateUplink.buf,\
+                     drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information->maxFlowBitRateUplink.size);
+               }
+               CU_FREE(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
+                     gBR_QoS_Flow_Information, sizeof(GBR_QoSFlowInformation_t));
+            }
+
+            CU_FREE(drbSetItem->qoSInformation.choice.choice_extension,sizeof(QoSInformation_ExtIEs_t));
              if(drbSetItem->qoSInformation.choice.choice_extension->value.choice.DRB_Information.dRB_QoS.\
                         iE_Extensions != NULLP)
              {
