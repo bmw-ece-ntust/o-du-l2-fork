@@ -61,4 +61,4 @@ while IFS= read -r line; do
         # append the DL Tpt value to the csv file
         echo "$second,$ue_id,$lc_id,$dl_tpt,${gfbr_array["$ue_id,$lc_id"]},${mfbr_array["$ue_id,$lc_id"]}" >> $OUTPUT_FILE
     fi
-done < "$ODU_PATH/log-du.txt"
+done < "$ODU_PATH/log-du (GFBR testing).txt"

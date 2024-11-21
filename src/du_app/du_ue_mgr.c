@@ -738,9 +738,9 @@ uint8_t fillReportConfigPeriodicityAndOffset(PeriodicCsiReportConfig *periodicRe
    uint8_t idealPeriod;
 
    // Assume FDD for now
-#ifdef NR_TDD
-   return RFAILED
-#endif
+// #ifdef NR_TDD
+//    return RFAILED;
+// #endif
 
    if(periodicReportConfig)
    {

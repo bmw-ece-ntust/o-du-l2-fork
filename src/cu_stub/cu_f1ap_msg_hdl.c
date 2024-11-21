@@ -3019,35 +3019,35 @@ uint8_t BuildDRBSetup(uint32_t duId, CuUeCb *ueCb, DRBs_ToBeSetup_List_t *drbSet
          fiveQI = 1;
          avgWindow = 1000;
          GFBR = 200000;
-         MFBR = 500000;
+         MFBR = 5000000;
       }
       else if(ueId == 2 && drbSetItem->dRBID == 1)
       {
          fiveQI = 2;
          avgWindow = 1000;
          GFBR = 200000;
-         MFBR = 500000;
+         MFBR = 5000000;
       }
       else if(ueId == 3 && drbSetItem->dRBID == 1)
       {
          fiveQI = 65;
          avgWindow = 1000;
          GFBR = 200000;
-         MFBR = 500000;
+         MFBR = 5000000;
       }
       else if(ueId == 4 && drbSetItem->dRBID == 1)
       {
          fiveQI = 7;
          avgWindow = 1000;
          GFBR = 200000;
-         MFBR = 500000;
+         MFBR = 5000000;
       }
       else
       {
          fiveQI = 1;
          avgWindow = 1000;
          GFBR = 200000;
-         MFBR = 500000;
+         MFBR = 5000000;
       }
 
       /*JOJO: Create GFBR & MFBR QoS info.*/

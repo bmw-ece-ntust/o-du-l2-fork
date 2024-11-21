@@ -218,7 +218,8 @@ uint8_t readMacCfg()
    duCfgParam.macCellCfg.tddCfg.nrOfDlSymbols = NUM_DL_SYMBOLS;
    duCfgParam.macCellCfg.tddCfg.nrOfUlSlots = NUM_UL_SLOTS;
    duCfgParam.macCellCfg.tddCfg.nrOfUlSymbols = NUM_UL_SYMBOLS;
-
+   
+   DU_LOG("\nJOJO  -->  Setting TDD configuration.");
    //FillSlotConfig();
 
 #endif
