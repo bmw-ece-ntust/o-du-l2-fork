@@ -101,6 +101,7 @@ void MacHdlDuappEvents(Pst *pst, Buffer *mBuf)
       case EVENT_MAC_VNF_CONFIG_REQ:
          {
             /* Process VNF Start Event */
+            DU_LOG("\nINFO   -->  [NFAPI] case EVENT_MAC_VNF_CONFIG_REQ");
             unpackDuMacVnfCfg(MacProcVnfCfgReq, pst, mBuf);
             break;
          }
@@ -202,22 +203,7 @@ void MacHdlDuappEvents(Pst *pst, Buffer *mBuf)
          {
             /* Process Statistics Request */
             unpackMacStatsReq(MacProcStatsReq, pst, mBuf);
-            break;
          }
-      
-      case EVENT_MAC_STATS_DELETE_REQ:
-         {
-            /* Process Statistics Delete Request */
-            unpackMacStatsDeleteReq(MacProcStatsDeleteReq, pst, mBuf);
-            break;
-         }
-      case EVENT_MAC_STATISTICS_MODIFY_REQ:
-         {
-            /* Process Statistics modification Request */
-            unpackMacStatsModificationReq(MacProcStatsModificationReq, pst, mBuf);
-            break;
-         }
-
 
       default:
          RG_FREE_MSG(mBuf);
@@ -277,9 +263,11 @@ void MacHdlRlcEvents(Pst *pst, Buffer *mBuf)
  **/
 void MacHdlLwrMacEvents(Pst *pst, Buffer *mBuf)
 {
+   printf("\nMacHdlLwrMacEvents: pst->event = %d\n", pst->event);
    switch(pst->event)
    {
       case EVENT_SLOT_IND_TO_MAC:
+         DU_LOG("\nINFO   -->  [MAC] received EVENT_SLOT_IND_TO_MAC");
          unpackSlotInd(fapiMacSlotInd, pst, mBuf);
          break;
       case EVENT_STOP_IND_TO_MAC:
@@ -371,12 +359,6 @@ void callFlowMacActvTsk(Pst *pst)
                   break;
                case EVENT_MAC_STATISTICS_REQ:
                   strcpy(message,"EVENT_MAC_STATISTICS_REQ");
-                  break;
-               case EVENT_MAC_STATS_DELETE_REQ:
-                  strcpy(message,"EVENT_MAC_STATS_DELETE_REQ");
-                  break;
-               case EVENT_MAC_STATISTICS_MODIFY_REQ:
-                  strcpy(message,"EVENT_MAC_STATISTICS_MODIFY_REQ");
                   break;
                default:
                   strcpy(message,"Invalid Event");
@@ -517,16 +499,6 @@ void callFlowMacActvTsk(Pst *pst)
                         strcpy(message,"EVENT_STATISTICS_IND_TO_MAC");
                         break;
                      }
-                  case EVENT_STATISTICS_DELETE_RSP_TO_MAC:
-                     {
-                        strcpy(message,"EVENT_STATISTICS_DELETE_RSP_TO_MAC");
-                        break;
-                     }
-                  case EVENT_STATISTICS_MODIFY_RSP_TO_MAC:
-                     {
-                        strcpy(message,"EVENT_STATISTICS_MODIFY_RSP_TO_MAC");
-                        break;
-                     }
                   default:
                      strcpy(message,"Invalid Event");
                      break;
@@ -569,16 +541,18 @@ uint8_t macActvTsk(Pst *pst, Buffer *mBuf)
 #ifdef CALL_FLOW_DEBUG_LOG
    callFlowMacActvTsk(pst);
 #endif
-
+   printf("\n[MacActvTsk] Recieved pst from %x\n", pst->srcEnt);
    switch(pst->srcEnt)
    {
       case ENTDUAPP:
+         printf("[MacActvTsk] Recieved pst from DUAPP, event is %d\n", pst->event);
          MacHdlDuappEvents(pst, mBuf);
          break;
       case ENTRLC:
          MacHdlRlcEvents(pst, mBuf);
          break;
       case ENTLWRMAC:
+         printf("[MacActvTsk] Recieved pst from LWRMAC, event is %d\n", pst->event);
          MacHdlLwrMacEvents(pst, mBuf);
          break;
       default:
@@ -679,16 +653,6 @@ uint8_t MacMessageRouter(Pst *pst, void *msg)
       case EVENT_STATISTICS_IND_TO_MAC:
          {
             MacProcSchStatsInd(pst, (SchStatsInd *)msg);
-            break;
-         }
-      case EVENT_STATISTICS_DELETE_RSP_TO_MAC:
-         {
-            MacProcSchStatsDeleteRsp(pst, (SchStatsDeleteRsp *)msg);
-            break;
-         }
-      case EVENT_STATISTICS_MODIFY_RSP_TO_MAC:
-         {
-            MacProcSchStatsModificationRsp(pst, (SchStatsModificationRsp *)msg);
             break;
          }
       default:

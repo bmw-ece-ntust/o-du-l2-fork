@@ -30,16 +30,16 @@
 #define MAX_SLIV_CONFIG_IDX 105
 
 /* Events */
-#define EVTCFG 0
-#define EVTSCTPSTRT  1
-#define EVENT_CU_DATA  2
-#define EVENT_SCTP_NTFY  3
-#define EVTSRVOPENREQ  4
-#define EVTSRVOPENCFM  5
-#define EVTTNLMGMTREQ  6
-#define EVTTNLMGMTCFM  7
-#define EVTSLOTIND    8
-#define EVTSTARTPOLL  9
+#define EVTCFG          0
+#define EVTSCTPSTRT     1
+#define EVENT_CU_DATA   2
+#define EVENT_SCTP_NTFY 3
+#define EVTSRVOPENREQ   4
+#define EVTSRVOPENCFM   5
+#define EVTTNLMGMTREQ   6
+#define EVTTNLMGMTCFM   7
+#define EVTSLOTIND      8
+#define EVTSTARTPOLL    9
 #define EVENT_RIC_DATA  10
 
 /* ======== small cell integration ======== */
@@ -92,6 +92,7 @@
    if(SGetStaticBuffer(DU_APP_MEM_REGION, DU_POOL,           \
       (Data **)&_buf, (Size) _size, 0) == ROK)               \
    {                                                         \
+      DU_LOG("\n[DU UTILS] --> Gen Buffer");                 \             
       DU_MEM_LOG("DU,ALLOC_SHRABL_BUF", __FILE__, __LINE__, __FUNCTION__, _size, _buf);\
       memset((_buf), 0, _size);                      \
    }                                                         \

@@ -1215,10 +1215,8 @@ uint8_t fillInitDlBwpPdcchCfg(PdcchConfig macPdcchCfg, SchPdcchConfig *schPdcchC
          macPdcchCfg.searchSpcToAddModList[idx].searchSpaceId;
       schPdcchCfg->searchSpcToAddModList[idx].cRSetId = \
 	 macPdcchCfg.searchSpcToAddModList[idx].cRSetId;
-     schPdcchCfg->searchSpcToAddModList[idx].mSlotPeriodicityAndOffset.mSlotPeriodicity = \
-        macPdcchCfg.searchSpcToAddModList[idx].mSlotPeriodicityAndOffset.mSlotPeriodicity;
-     schPdcchCfg->searchSpcToAddModList[idx].mSlotPeriodicityAndOffset.mSlotOffset =
-        macPdcchCfg.searchSpcToAddModList[idx].mSlotPeriodicityAndOffset.mSlotOffset;
+      schPdcchCfg->searchSpcToAddModList[idx].mSlotPeriodicityAndOffset = \
+	 macPdcchCfg.searchSpcToAddModList[idx].mSlotPeriodicityAndOffset;
       memcpy(&schPdcchCfg->searchSpcToAddModList[idx].mSymbolsWithinSlot,
 	 &macPdcchCfg.searchSpcToAddModList[idx].mSymbolsWithinSlot, \
 	 MONITORING_SYMB_WITHIN_SLOT_SIZE);
@@ -1843,6 +1841,7 @@ uint8_t fillSchUeCfg(SchUeCfgReq *schUeCfg, MacUeCreateReq *ueCfg)
    uint8_t ret = ROK;
 
    schUeCfg->cellId = ueCfg->cellId;
+   schUeCfg->ueId = ueCfg->ueId;
    schUeCfg->crnti = ueCfg->crnti;
    /* Copy MAC cell group config */
    if(ueCfg->macCellGrpCfgPres == true)
@@ -1933,6 +1932,7 @@ uint8_t fillSchUeRecfg(SchUeRecfgReq *schUeRecfg, MacUeRecfg *ueRecfg)
    uint8_t ret = ROK;
 
    schUeRecfg->cellId = ueRecfg->cellId;
+   schUeRecfg->ueId = ueRecfg->ueId;
    schUeRecfg->crnti = ueRecfg->crnti;
    schUeRecfg->dataTransmissionInfo = ueRecfg->transmissionAction;
    /* Copy MAC cell group config */
@@ -2838,7 +2838,7 @@ uint8_t MacSendUeCreateRsp(MacRsp result, SchUeCfgRsp *schCfgRsp)
    /* Filling UE Config response */
    memset(cfgRsp, 0, sizeof(MacUeCreateRsp));
    cfgRsp->cellId = schCfgRsp->cellId;
-   GET_UE_ID(schCfgRsp->crnti, cfgRsp->ueId);
+   cfgRsp->ueId = schCfgRsp->ueId;
    cfgRsp->result = result;
 
    /* Fill Post structure and send UE Create response*/
@@ -2878,7 +2878,7 @@ uint8_t MacSendUeReconfigRsp(MacRsp result, SchUeRecfgRsp *schCfgRsp)
    /* Filling UE Config response */
    memset(recfgRsp, 0, sizeof(MacUeRecfgRsp));
    recfgRsp->cellId = schCfgRsp->cellId;
-   GET_UE_ID(schCfgRsp->crnti, recfgRsp->ueId);
+   recfgRsp->ueId = schCfgRsp->ueId;
    recfgRsp->result = result;
 
    /* Fill Post structure and send UE Create response*/
@@ -2973,7 +2973,7 @@ uint8_t MacProcSchUeCfgRsp(Pst *pst, SchUeCfgRsp *schCfgRsp)
 {
    uint8_t result = MAC_DU_APP_RSP_NOK;
    uint8_t ret = ROK;
-   uint16_t cellIdx = 0, ueId = 0;
+   uint16_t cellIdx;
    MacUeCreateReq *ueCfg = NULLP;
 
 #ifdef CALL_FLOW_DEBUG_LOG
@@ -2992,8 +2992,7 @@ uint8_t MacProcSchUeCfgRsp(Pst *pst, SchUeCfgRsp *schCfgRsp)
 #endif
 
    GET_CELL_IDX(schCfgRsp->cellId, cellIdx);
-   GET_UE_ID(schCfgRsp->crnti, ueId);
-   ueCfg = getMacUeCfg(cellIdx, ueId);
+   ueCfg = getMacUeCfg(cellIdx, schCfgRsp->ueId);
    if(ueCfg == NULLP)
    {
       DU_LOG("\nERROR  -->  MAC : Failed to find the Mac Ue Cfg for event [%d] in MacProcSchUeCfgRsp()", pst->event);
@@ -3044,7 +3043,7 @@ uint8_t MacProcSchUeRecfgRsp(Pst *pst, SchUeRecfgRsp *schRecfgRsp)
 {
    uint8_t result = MAC_DU_APP_RSP_NOK;
    uint8_t ret = ROK;
-   uint16_t cellIdx = 0, ueId = 0;
+   uint16_t cellIdx;
    MacUeRecfg *ueRecfg = NULLP;
    
 #ifdef CALL_FLOW_DEBUG_LOG
@@ -3060,8 +3059,7 @@ uint8_t MacProcSchUeRecfgRsp(Pst *pst, SchUeRecfgRsp *schRecfgRsp)
 #endif
 
    GET_CELL_IDX(schRecfgRsp->cellId, cellIdx);
-   GET_UE_ID(schRecfgRsp->crnti, ueId);
-   ueRecfg = getMacUeRecfg(cellIdx, ueId);
+   ueRecfg = getMacUeRecfg(cellIdx, schRecfgRsp->ueId);
    if(ueRecfg == NULLP)
    {
       DU_LOG("\nERROR  -->  MAC : Failed to find the Mac Ue Cfg for event [%d] in MacProcSchUeCfgRsp()", pst->event);

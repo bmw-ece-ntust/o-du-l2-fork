@@ -26,13 +26,11 @@
 #define NUM_SSB		1	/* max value is 64 */
 #define SSB_MASK_SIZE	1	/* SSB mask size is 32bit for sub6 */
 #define SIB1_REPETITION_PERIOD   20
-/* ======== small cell integration ======== */
 #ifdef NFAPI
 #define CORESET_0_INDEX      12
 #else
 #define CORESET_0_INDEX      0
 #endif
-/* ======================================== */
 #define CORESET_1_INDEX      1
 #define CORESET_2_INDEX      2
 #define CORESET_3_INDEX      3
@@ -98,10 +96,6 @@
 #define EVENT_MAC_STATISTICS_REQ     229
 #define EVENT_MAC_STATISTICS_RSP     230
 #define EVENT_MAC_STATISTICS_IND     231
-#define EVENT_MAC_STATS_DELETE_REQ   232
-#define EVENT_MAC_STATS_DELETE_RSP   233
-#define EVENT_MAC_STATISTICS_MODIFY_REQ     234
-#define EVENT_MAC_STATISTICS_MODIFY_RSP     235
 
 /* ======== small cell integration ======== */
 #ifdef NFAPI
@@ -377,22 +371,22 @@ typedef enum
 
 typedef enum
 {
-   SLOTPERIODICITY_PR_SL1 = 1,
-   SLOTPERIODICITY_PR_SL2,
-   SLOTPERIODICITY_PR_SL4,
-   SLOTPERIODICITY_PR_SL5,
-   SLOTPERIODICITY_PR_SL8,
-   SLOTPERIODICITY_PR_SL10,
-   SLOTPERIODICITY_PR_SL16,
-   SLOTPERIODICITY_PR_SL20,
-   SLOTPERIODICITY_PR_SL40,
-   SLOTPERIODICITY_PR_SL80,
-   SLOTPERIODICITY_PR_SL160,
-   SLOTPERIODICITY_PR_SL320,
-   SLOTPERIODICITY_PR_SL640,
-   SLOTPERIODICITY_PR_SL1280,
-   SLOTPERIODICITY_PR_SL2560
-}MSlotPeriodicity;
+   SLOTPERIODICITYANDOFFSET_PR_SL1 = 1,
+   SLOTPERIODICITYANDOFFSET_PR_SL2,
+   SLOTPERIODICITYANDOFFSET_PR_SL4,
+   SLOTPERIODICITYANDOFFSET_PR_SL5,
+   SLOTPERIODICITYANDOFFSET_PR_SL8,
+   SLOTPERIODICITYANDOFFSET_PR_SL10,
+   SLOTPERIODICITYANDOFFSET_PR_SL16,
+   SLOTPERIODICITYANDOFFSET_PR_SL20,
+   SLOTPERIODICITYANDOFFSET_PR_SL40,
+   SLOTPERIODICITYANDOFFSET_PR_SL80,
+   SLOTPERIODICITYANDOFFSET_PR_SL160,
+   SLOTPERIODICITYANDOFFSET_PR_SL320,
+   SLOTPERIODICITYANDOFFSET_PR_SL640,
+   SLOTPERIODICITYANDOFFSET_PR_SL1280,
+   SLOTPERIODICITYANDOFFSET_PR_SL2560
+}MSlotPeriodAndOffset;
 
 typedef enum
 {
@@ -624,10 +618,8 @@ typedef struct failureCause
 typedef struct carrierCfg
 {
    uint32_t   dlBw;                          /* DL bandwidth */
-   uint32_t   arfcnDL;                 /* Absolute frequency Number of DL */   
    uint32_t   dlFreq;                        /* Absolute frequency of DL point A in KHz */
    uint32_t   ulBw;                          /* UL bandwidth */
-   uint32_t   arfcnUL;                 /* Absolute frequency Number of UL */   
    uint32_t   ulFreq;                        /* Absolute frequency of UL point A in KHz */
    uint16_t   dlgridSize[NUM_NUMEROLOGY];    /* DL Grid size for each numerologies */
    uint16_t   ulgridSize[NUM_NUMEROLOGY];    /* UL Grid size for each numerologies */   
@@ -668,7 +660,8 @@ typedef enum
 typedef struct plmnInfoList
 {
    Plmn           plmn;
-   SupportedSliceList suppSliceList;
+   uint8_t        numSupportedSlice; /* Total slice supporting */
+   Snssai         **snssai;         /* List of supporting snssai*/
 }PlmnInfoList;
 
 typedef struct schPageCfg
@@ -1027,12 +1020,6 @@ typedef struct controlRsrcSet
    PrecoderGranul precoderGranularity;
    uint16_t    dmrsScramblingId;
 }ControlRsrcSet;
-
-typedef struct mSlotPeriodAndOffset
-{
-   MSlotPeriodicity  mSlotPeriodicity;
-   uint16_t          mSlotOffset;
-}MSlotPeriodAndOffset;
 
 /* Search Space info */
 typedef struct searchSpace
@@ -1497,6 +1484,7 @@ typedef struct spCellRecfg
    ServCellRecfgInfo   servCellCfg;
 }SpCellRecfg;
 
+
 typedef struct ambrCfg
 {
    uint32_t ulBr;   /* UL Bit rate */
@@ -1927,32 +1915,6 @@ typedef struct macStatsInd
    MacStats    measuredStatsList[MAX_NUM_STATS];
 }MacStatsInd;
 
-typedef struct macStatsDeleteReq
-{
-   uint64_t    subscriptionId;
-   uint8_t     numStatsGroupToBeDeleted;
-   uint8_t     statsGrpIdToBeDelList[MAX_NUM_STATS_GRP];
-}MacStatsDeleteReq;
-
-typedef struct macStatsDeleteInfo
-{
-   uint8_t       groupId;
-   MacRsp        statsGrpDelRsp;
-   CauseOfResult statsGrpDelCause;
-}MacStatsDeleteInfo;
-
-typedef struct macStatsDeleteRsp
-{
-   uint64_t           subscriptionId; /* subscription Id */
-   MacRsp             subsDelRsp;    /* deletion status of all statsGrp with given subscriptionId */
-   CauseOfResult      subsDelCause;  /* cause of failure in deletion of all statsGrp with given subscriptionId */
-   uint8_t            numStatsGroupDeleted; /* number of actions to deleted */ 
-   MacStatsDeleteInfo statsGrpDelInfo[MAX_NUM_STATS_GRP]; /*list of the deletion statuses for specific actions */
-}MacStatsDeleteRsp;
-
-typedef struct macStatsReq MacStatsModificationReq;
-typedef struct macStatsRsp MacStatsModificationRsp;
-
 /****************** FUNCTION POINTERS ********************************/
 
 /* DL broadcast req from DU APP to MAC*/
@@ -2138,25 +2100,6 @@ typedef uint8_t (*DuMacVnfCfgReq) ARGS((
 #endif
 /* ======================================== */
 
-/* Statitics Delete Request from DU APP to MAC */
-typedef uint8_t (*DuMacStatsDeleteReqFunc) ARGS((
-         Pst *pst,
-         MacStatsDeleteReq *statsDeleteReq));
-
-/* Statistics Delete Response from MAC to DU APP */
-typedef uint8_t (*MacDuStatsDeleteRspFunc) ARGS((
-         Pst *pst,
-         MacStatsDeleteRsp *statsDeleteRsp));
-
-/* Statitics Modification Request from DU APP to MAC */
-typedef uint8_t (*DuMacStatsModificationReqFunc) ARGS((
-      Pst *pst,
-      MacStatsModificationReq *statsModificationReq));
-
-/* Statistics Modification Response from MAC to DU APP */
-typedef uint8_t (*MacDuStatsModificationRspFunc) ARGS((
-      Pst *pst,
-      MacStatsModificationRsp *statsModificationRsp));
 
 /******************** FUNCTION DECLARATIONS ********************************/
 uint8_t packMacCellUpInd(Pst *pst, OduCellId *cellId);
@@ -2300,27 +2243,7 @@ uint8_t MacProcVnfCfgReq(Pst* pst, vnf_cfg_t* vnf_config);
 #endif
 /* ======================================== */
 
-
-uint8_t packDuMacStatsDeleteReq(Pst *pst, MacStatsDeleteReq *statsDeleteReq);
-uint8_t MacProcStatsDeleteReq(Pst *pst, MacStatsDeleteReq *statsDeleteReq);
-uint8_t unpackMacStatsDeleteReq(DuMacStatsDeleteReqFunc func, Pst *pst, Buffer *mBuf);
-
-uint8_t packDuMacStatsDeleteRsp(Pst *pst, MacStatsDeleteRsp *statsDeleteRsp);
-uint8_t DuProcMacStatsDeleteRsp(Pst *pst, MacStatsDeleteRsp *statsDeleteRsp);
-uint8_t unpackDuMacStatsDeleteRsp(MacDuStatsDeleteRspFunc func, Pst *pst, Buffer *mBuf);
-
-uint8_t packDuMacStatsModificationReq(Pst *pst, MacStatsModificationReq *statsModificationReq);
-uint8_t MacProcStatsModificationReq(Pst *pst, MacStatsModificationReq *statsModificationReq);
-uint8_t unpackMacStatsModificationReq(DuMacStatsModificationReqFunc func, Pst *pst, Buffer *mBuf);
-
-uint8_t packDuMacStatsModificationRsp(Pst *pst, MacStatsModificationRsp *statsModificationRsp);
-uint8_t DuProcMacStatsModificationRsp(Pst *pst, MacStatsModificationRsp *statsModificationRsp);
-uint8_t unpackDuMacStatsModificationRsp(MacDuStatsModificationRspFunc func, Pst *pst, Buffer *mBuf);
-
-
 #endif
-
-
 /**********************************************************************
   End of file
  **********************************************************************/

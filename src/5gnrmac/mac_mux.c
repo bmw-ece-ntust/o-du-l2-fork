@@ -117,11 +117,6 @@ void fillRarPdu(RarInfo *rarInfo)
     */
    uint8_t   paddingSize = 8;
 
-   /* Fill RAR pdu fields */
-   EBit = 0;
-   TBit = 1;
-   RBit = 0;
-
    rarInfo->rarPduLen = RAR_PAYLOAD_SIZE;
 
    /* Initialize buffer */
@@ -130,6 +125,22 @@ void fillRarPdu(RarInfo *rarInfo)
 
    bytePos = 0;
    bitPos = 7;
+
+   /* Fill BI-RAR pdu fields */
+   EBit = 1;
+   TBit = 0;
+   RBit = 0;
+   uint8_t BI = 0;
+
+   packBytes(rarPdu, &bytePos, &bitPos, EBit, 1); 
+   packBytes(rarPdu, &bytePos, &bitPos, TBit, 1);
+   packBytes(rarPdu, &bytePos, &bitPos, RBit, 2);
+   packBytes(rarPdu, &bytePos, &bitPos, BI, 4);
+
+   /* Fill RAR pdu fields */
+   EBit = 0;
+   TBit = 1;
+   RBit = 0;
 
    /* Packing fields into RAR PDU */
    packBytes(rarPdu, &bytePos, &bitPos, EBit, E_BIT_SIZE); 
@@ -147,9 +158,10 @@ void fillRarPdu(RarInfo *rarInfo)
     * RBLen = length of contiguously allocted RBs
     * Spec 38.214 Sec 6.1.2.2.2
     */
-   bwpSize = rarInfo->ulGrant.bwpSize;
-   rbStart = rarInfo->ulGrant.msg3FreqAlloc.startPrb;
-   rbLen = rarInfo->ulGrant.msg3FreqAlloc.numPrb;
+   
+      bwpSize = rarInfo->ulGrant.bwpSize;
+      rbStart = rarInfo->ulGrant.msg3FreqAlloc.startPrb;
+      rbLen = rarInfo->ulGrant.msg3FreqAlloc.numPrb;
 
    if((rbLen >=1) && (rbLen <= bwpSize - rbStart))
    {

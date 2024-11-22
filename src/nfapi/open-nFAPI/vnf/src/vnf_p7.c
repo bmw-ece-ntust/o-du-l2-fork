@@ -2184,7 +2184,7 @@ void vnf_nr_dispatch_p7_message(void *pRecvMsg, int recvMsgLen, vnf_p7_t* vnf_p7
 		NFAPI_TRACE(NFAPI_TRACE_WARN, "Invalid message size: %d, ignoring\n", recvMsgLen);
 		return;
 	}
-	printf("\n[NTUST] header.message_id:%d",header.message_id);
+	printf("[NTUST] (p7) header.message_id:%d\n",header.message_id);
 
 	switch (header.message_id)
 	{
@@ -2389,13 +2389,9 @@ void vnf_nr_handle_p7_message(void *pRecvMsg, int recvMsgLen, vnf_p7_t* vnf_p7)
 	uint8_t m = NFAPI_P7_GET_MORE(messageHeader.m_segment_sequence);
 	uint8_t segment_num = NFAPI_P7_GET_SEGMENT(messageHeader.m_segment_sequence);
 	uint8_t sequence_num = NFAPI_P7_GET_SEQUENCE(messageHeader.m_segment_sequence);
-	printf("\n[NTUST] segment_num: %d",segment_num);
-	printf("\n[NTUST] sequence_num: %d",sequence_num);
-
 	if(m == 0 && segment_num == 0)
 	{
 		// we have a complete message
-		printf("\n[NTUST] we have a complete message");
 		// ensure the message is sensible
 		if (recvMsgLen < 8 || pRecvMsg == NULL)
 		{
@@ -2510,6 +2506,7 @@ int vnf_nr_p7_read_dispatch_message(vnf_p7_t* vnf_p7)
 
 			// read the segment
 			recvfrom_result = recvfrom(vnf_p7->socket, vnf_p7->rx_message_buffer, header.message_length, MSG_WAITALL | MSG_TRUNC, (struct sockaddr*)&remote_addr, &remote_addr_size);
+			printf("\n\nrecvfrom() len %d\n", recvfrom_result);
 			NFAPI_TRACE(NFAPI_TRACE_DEBUG, "recvfrom_result = %d from %s():%d\n", recvfrom_result, __FUNCTION__, __LINE__);
 
 			// todo : how to handle incomplete readfroms, need some sort of buffer/select

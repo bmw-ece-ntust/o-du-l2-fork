@@ -1158,13 +1158,12 @@ void schFcfsScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst schInst)
    bool           isMsg4Pending = false, isMsg4Scheduled = false;
    bool           isDlMsgPending = false, isDlMsgScheduled = false;
    bool           isUlGrantPending = false, isUlGrantScheduled = false;
-   bool           isNodeFreed = false;
 
    fcfsCell = (SchFcfsCellCb *)cell->schSpcCell;
    
    /* Select first UE in the linked list to be scheduled next */
    pendingUeNode = fcfsCell->ueToBeScheduled.first;
-   while(pendingUeNode)
+   if(pendingUeNode)
    {
       if(pendingUeNode->node)
       {
@@ -1216,7 +1215,6 @@ void schFcfsScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst schInst)
             if(isRarScheduled || isMsg4Scheduled)
             {
                schFcfsRemoveUeFrmScheduleLst(cell, pendingUeNode);
-               isNodeFreed = true;
             }
             /* If RAR/MSG4 is pending but couldnt be scheduled then,
              * put this UE at the end of linked list to be scheduled later */
@@ -1321,22 +1319,8 @@ void schFcfsScheduleSlot(SchCellCb *cell, SlotTimingInfo *slotInd, Inst schInst)
             else
             {
                schFcfsRemoveUeFrmScheduleLst(cell, pendingUeNode);
-               isNodeFreed = true;
             }
          }
-      }
-      if(cell->schDlSlotInfo[slotInd->slot]->prbAlloc.numPrbAlloc >= MAX_NUM_RB)
-      {
-        DU_LOG("\nINFO   -->  SCH: No PRB available to proceed with next UE");
-        return;     
-      }
-      if(isNodeFreed == false)
-      {
-         pendingUeNode= pendingUeNode->next;
-      }
-      else
-      {
-        pendingUeNode = fcfsCell->ueToBeScheduled.first;
       }
    }
 }

@@ -45,9 +45,9 @@ PARALLEL_COMP=-j $(NUM_PARALLEL)
 # # These should be made available appropriately to the builds
 ifeq ($(MACHINE),BIT64)
 ifeq ($(COVERAGE),ENABLE)
-CC          =gcc -m64 --coverage
+CC          =gcc -m64 --coverage -fsanitize=bounds
 else
-CC          =gcc -m64
+CC          =gcc -m64 -fsanitize=bounds
 endif
 CC_STRIP    =strip --strip-all
 CC_LINKER   =gcc -m64
@@ -117,11 +117,7 @@ export BUILD
 export I_OPTS
 
 # Add to the linker options the platform specific components
-L_OPTS+=-lnsl -lrt -lm -lpthread -lsctp
-ifdef XML_BASED_CONFIG
-L_OPTS+=-lxml2
-endif
-
+L_OPTS+=-lnsl -lrt -lm -lpthread -lsctp 
 ifeq ($(PHY), INTEL_L1)
 	L_OPTS+=-L/root/Intel-L1-20.11.1/phy/wls_lib/ -lwls                         \
         -lhugetlbfs -lnuma -ldl -L/root/Intel-L1-20.11.1/dpdk-20.11.1/build/lib                        \
@@ -138,7 +134,7 @@ endif
 ifeq ($(O1_ENABLE),YES)
   L_OPTS+=-lsysrepo -lyang
   L_OPTS+=-lsysrepo-cpp -lyang-cpp
-L_OPTS+= -lnetconf2 -lcjson -lcurl
+  L_OPTS+= -lnetconf2 -lcjson -lcurl
   L_OPTS+=-lstdc++
 endif
 

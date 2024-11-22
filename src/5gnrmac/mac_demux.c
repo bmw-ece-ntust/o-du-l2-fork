@@ -88,6 +88,7 @@ uint8_t unpackRxData(uint16_t cellId, SlotTimingInfo slotInfo, RxDataIndPdu *rxD
       pdu = NULLP;
       switch(lcId)
       {
+         case MAC_LCID_CCCH_48BIT :
          case MAC_LCID_CCCH :
             {
                pduLen--;
@@ -149,9 +150,6 @@ uint8_t unpackRxData(uint16_t cellId, SlotTimingInfo slotInfo, RxDataIndPdu *rxD
                break;
             }
          case MAC_LCID_RESERVED_MIN ... MAC_LCID_RESERVED_MAX :
-            break;
-
-         case MAC_LCID_CCCH_48BIT :
             break;
 
          case MAC_LCID_BIT_RATE_QUERY :

@@ -54,10 +54,6 @@
 #define EVENT_STATISTICS_REQ_TO_SCH  35
 #define EVENT_STATISTICS_RSP_TO_MAC  36
 #define EVENT_STATISTICS_IND_TO_MAC  37
-#define EVENT_STATISTICS_DELETE_REQ_TO_SCH  38
-#define EVENT_STATISTICS_DELETE_RSP_TO_MAC  39
-#define EVENT_STATISTICS_MODIFY_REQ_TO_SCH  40
-#define EVENT_STATISTICS_MODIFY_RSP_TO_MAC  41
 
 /*macros*/
 #define MAX_SSB_IDX 1 /* forcing it as 1 for now. Right value is 64 */
@@ -101,14 +97,14 @@
 #define MAX_NUM_DL_DATA_TO_UL_ACK 15
 #define QPSK_MODULATION 2
 
-#define RAR_PAYLOAD_SIZE 10             /* As per spec 38.321, sections 6.1.5 and 6.2.3, RAR PDU is 8 bytes long and 2 bytes of padding */
-#define TX_PAYLOAD_HDR_LEN 32           /* Intel L1 requires adding a 32 byte header to transmitted payload */
+#define RAR_PAYLOAD_SIZE 11             /* As per spec 38.321, sections 6.1.5 and 6.2.3, RAR PDU is 8 bytes long and 2 bytes of padding */
+#define TX_PAYLOAD_HDR_LEN 0           /* Intel L1 requires adding a 32 byte header to transmitted payload */
 #define UL_TX_BUFFER_SIZE 5
 
 #define MAX_NUM_CONFIG_SLOTS 160  /*Max number of slots as per the numerology*/
 #define MAX_NUM_K0_IDX 16 /* Max number of pdsch time domain downlink allocation */
 #define MAX_NUM_K1_IDX 8  /* As per spec 38.213 section 9.2.3 Max number of PDSCH-to-HARQ resource indication */
-#define MIN_NUM_K1_IDX 4  /* Min K1 values */
+#define MIN_NUM_K1_IDX 0  /* Min K1 values */
 #define MAX_NUM_K2_IDX 16 /* PUSCH time domain UL resource allocation list */
 #define DEFAULT_K0_VALUE 0 /* As per 38.331, PDSCH-TimeDomainResourceAllocation field descriptions */
 /* As per 38.331, PUSCH-TimeDomainResourceAllocationList field descriptions */
@@ -118,17 +114,15 @@
 #define DEFAULT_K2_VALUE_FOR_SCS120 3 
 
 #define MAX_PLMN 2
-#define DL_DMRS_SYMBOL_POS 4 /* Bitmap value 00000000000100 i.e. using 3rd symbol for PDSCH DMRS */
+#define SIB1_DMRS_SYMBOL_POS 580 
+#ifdef NFAPI
+   #define DL_DMRS_SYMBOL_POS 2180
+#else
+   #define DL_DMRS_SYMBOL_POS 4 /* Bitmap value 00000000000100 i.e. using 3rd symbol for PDSCH DMRS */
+#endif
 
 #define MAX_PHR_REPORT 1 /*TODO: Range of PHR reports in multiple PHR.*/
 #define MAX_FAILURE_DET_RESOURCES 10 /*Spec 38.331 'maxNrofFailureDetectionResources'*/
-
-/*As per SCF222_5GFAPI, 'MaxDciPerSlot' defines this value but this parameter value is missing in Spec.*/
-#ifdef INTEL_FAPI
-   #define MAX_NUM_PDCCH 1
-#else
-   #define MAX_NUM_PDCCH 2 
-#endif
 
 #define ADD_DELTA_TO_TIME(crntTime, toFill, incr, numOfSlot)          \
 {                                                          \
@@ -299,22 +293,22 @@ typedef enum
 
 typedef enum
 {
-   SLOT_PERIODICITY_SL_1 = 1,
-   SLOT_PERIODICITY_SL_2,
-   SLOT_PERIODICITY_SL_4,
-   SLOT_PERIODICITY_SL_5,
-   SLOT_PERIODICITY_SL_8,
-   SLOT_PERIODICITY_SL_10,
-   SLOT_PERIODICITY_SL_16,
-   SLOT_PERIODICITY_SL_20,
-   SLOT_PERIODICITY_SL_40,
-   SLOT_PERIODICITY_SL_80,
-   SLOT_PERIODICITY_SL_160,
-   SLOT_PERIODICITY_SL_320,
-   SLOT_PERIODICITY_SL_640,
-   SLOT_PERIODICITY_SL_1280,
-   SLOT_PERIODICITY_SL_2560
-}SchMSlotPeriodicity;
+   SLOT_PERIODICITY_AND_OFFSET_SL_1 = 1,
+   SLOT_PERIODICITY_AND_OFFSET_SL_2,
+   SLOT_PERIODICITY_AND_OFFSET_SL_4,
+   SLOT_PERIODICITY_AND_OFFSET_SL_5,
+   SLOT_PERIODICITY_AND_OFFSET_SL_8,
+   SLOT_PERIODICITY_AND_OFFSET_SL_10,
+   SLOT_PERIODICITY_AND_OFFSET_SL_16,
+   SLOT_PERIODICITY_AND_OFFSET_SL_20,
+   SLOT_PERIODICITY_AND_OFFSET_SL_40,
+   SLOT_PERIODICITY_AND_OFFSET_SL_80,
+   SLOT_PERIODICITY_AND_OFFSET_SL_160,
+   SLOT_PERIODICITY_AND_OFFSET_SL_320,
+   SLOT_PERIODICITY_AND_OFFSET_SL_640,
+   SLOT_PERIODICITY_AND_OFFSET_SL_1280,
+   SLOT_PERIODICITY_AND_OFFSET_SL_2560
+}SchMSlotPeriodAndOffset;
 
 typedef enum
 {
@@ -624,7 +618,7 @@ typedef struct pdcchCfg
    /* coreset-0 configuration */
    CoresetCfg coresetCfg;
    uint16_t   numDlDci;
-   DlDCI      dci[MAX_NUM_PDCCH]; 
+   DlDCI      dci; /* as of now its only one DCI, later it will be numDlCi */
 } PdcchCfg;
 /* end of SIB1 PDCCH structures */
 
@@ -789,7 +783,8 @@ typedef struct schBwpUlCfg
 typedef struct schPlmnInfoList
 {
    Plmn           plmn;
-   SupportedSliceList suppSliceList;
+   uint8_t        numSliceSupport; /* Total slice supporting */
+   Snssai         **snssai;         /* List of supporting snssai*/
 }SchPlmnInfoList;
 
 #ifdef NR_DRX
@@ -1448,13 +1443,6 @@ typedef struct schControlRsrcSet
    uint16_t            dmrsScramblingId;
 }SchControlRsrcSet;
 
-/*Slot Perioicity and Offset*/
-typedef struct schMSlotPeriodAndOffset
-{
-   SchMSlotPeriodicity  mSlotPeriodicity;
-   uint16_t             mSlotOffset;
-}SchMSlotPeriodAndOffset;
-
 /* Search Space info */
 typedef struct schSearchSpace
 {
@@ -1989,6 +1977,7 @@ typedef struct schModulationInfo
 typedef struct schUeCfgReq
 {
    uint16_t           cellId;
+   uint8_t            ueId;
    uint8_t            beamIdx; 
    uint16_t           crnti;
    bool               macCellGrpCfgPres;
@@ -2008,6 +1997,7 @@ typedef struct schUeCfgReq
 typedef struct schUeRecfgReq
 {
    uint16_t         cellId;
+   uint8_t          ueId;
    uint8_t          beamIdx;
    uint16_t         crnti;
    bool             macCellGrpRecfgPres;
@@ -2036,6 +2026,7 @@ typedef struct schUeCfgRsp
 {
    uint16_t   cellId;
    uint8_t    beamIdx;
+   uint16_t   ueId;
    uint16_t   crnti;
    SchMacRsp  rsp;
    CauseOfResult cause;
@@ -2278,9 +2269,6 @@ typedef struct schStatsReq
    SchStatsGrpInfo   statsGrpList[MAX_NUM_STATS_GRP];
 }SchStatsReq;
 
-typedef struct schStatsReq SchStatsModificationReq;
-typedef struct schStatsRsp SchStatsModificationRsp;
-
 /* Statistics Response from SCH to MAC */
 typedef struct schStatsGrpRejected
 {
@@ -2312,28 +2300,6 @@ typedef struct schStatsInd
    SchStats    measuredStatsList[MAX_NUM_STATS];
 }SchStatsInd;
 
-typedef struct schStatsDeleteReq
-{
-   uint64_t  subscriptionId;
-   uint8_t   numStatsGroupToBeDeleted;
-   uint8_t   statsGrpIdToBeDelList[MAX_NUM_STATS_GRP];
-}SchStatsDeleteReq;
-
-typedef struct statsDeleteResult
-{
-   uint8_t       groupId;
-   SchMacRsp     statsGrpDelRsp;
-   CauseOfResult statsGrpDelCause;
-}StatsDeleteResult;
-
-typedef struct schStatsDeleteRsp
-{
-   uint64_t          subscriptionId; /* subscription Id */
-   SchMacRsp         subsDelRsp;    /* deletion status of all statsGrp with given subscriptionId */
-   CauseOfResult     subsDelCause;  /* cause of failure in deletion of all statsGrp with given subscriptionId*/
-   uint8_t           numStatsGroupDeleted; /* num of action deleted */ 
-   StatsDeleteResult statsGrpDelInfo[MAX_NUM_STATS_GRP]; /* list of the deletion status for specific actions */
-}SchStatsDeleteRsp;
 
 /* function declarations */
 uint8_t MacMessageRouter(Pst *pst, void *msg);

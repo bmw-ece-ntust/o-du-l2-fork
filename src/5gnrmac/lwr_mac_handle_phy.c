@@ -366,7 +366,7 @@ uint8_t SCF_procUciInd(nfapi_nr_uci_indication_t  *nfapiUciInd)
    macUciInd->slotInd.sfn = nfapiUciInd->sfn; 
    macUciInd->slotInd.slot = nfapiUciInd->slot;
    macUciInd->numUcis = nfapiUciInd->num_ucis;
-   DU_LOG("\nINFO  -->  LWR_MAC: Number of UCI PDUs %d", macUciInd->numUcis);
+   DU_LOG("\nINFO  -->  LWR_MAC: Number of UCI PDUs %d\n", macUciInd->numUcis);
 
    for(pduIdx = 0; pduIdx < macUciInd->numUcis; pduIdx++)
    {
@@ -402,7 +402,6 @@ uint8_t SCF_procUciInd(nfapi_nr_uci_indication_t  *nfapiUciInd)
    {
       DU_LOG("\nERROR  -->  LWR_MAC: Failed sending UCI Ind to MAC");
    }
-   free(macUciInd);
    return ret;
 }
 
@@ -505,7 +504,7 @@ uint8_t procSlotInd(fapi_slot_ind_t *fapiSlotInd)
    }
    else
    {
-      DU_LOG("\nERROR  -->  LWR_MAC: Memory allocation failed in procSlotInd");
+      DU_LOG("\nERROR in function %s  -->  LWR_MAC: Memory allocation failed in procSlotInd", __FUNCTION__);
       ret = RFAILED;
    }
    return ret;

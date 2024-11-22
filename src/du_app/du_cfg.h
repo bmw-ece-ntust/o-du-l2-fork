@@ -39,19 +39,28 @@
 #endif
 
 #define F1_EGTP_PORT  2152  /* As per the spec 29.281, the registered port number for GTP-U is 2152 */
-/* ======== small cell integration ======== */
-#ifdef NFAPI
-#define NR_PCI 0
-#else
 #define NR_PCI 1
-#endif
-/* ======================================== */
 #define NR_CELL_ID 1
 
 #define DU_NAME "ORAN OAM DU"
 #define CELL_TYPE SMALL
 
 //TODO: while testing for TDD, Mu1 and 100 MHz, this flag must be enabled
+// #ifdef NR_TDD
+// #define DUPLEX_MODE DUP_MODE_TDD
+// #define NR_DL_ARFCN 623400 //OAI 640008
+// #define NR_UL_ARFCN 623400 //OAI 640008
+// #define NR_FREQ_BAND 78
+// #define NR_SCS SCS_30KHZ
+// #define NR_BANDWIDTH BANDWIDTH_100MHZ
+// #endif //FDD
+// #define DUPLEX_MODE DUP_MODE_FDD
+// #define NR_DL_ARFCN 428000
+// #define NR_UL_ARFCN 390000
+// #define NR_FREQ_BAND 1
+// #define NR_SCS SCS_15KHZ
+// #define NR_BANDWIDTH BANDWIDTH_20MHZ
+
 /* ======== small cell integration ======== */
 #ifdef NFAPI
    #ifdef NR_TDD
@@ -79,32 +88,16 @@
       #define NR_DL_FREQ 2160000 //kHz
       #define NR_UL_FREQ 1760000 //kHz
    #endif
-#else
-   #ifdef NR_TDD
-      #define DUPLEX_MODE DUP_MODE_TDD
-      #define NR_DL_ARFCN 623400
-      #define NR_UL_ARFCN 623400
-      #define NR_FREQ_BAND 78
-      #define NR_SCS SCS_30KHZ
-      #define NR_BANDWIDTH BANDWIDTH_100MHZ
-   #else
-      #define DUPLEX_MODE DUP_MODE_FDD
-      #define NR_DL_ARFCN 428000
-      #define NR_UL_ARFCN 390000
-      #define NR_FREQ_BAND 1
-      #define NR_SCS SCS_15KHZ
-      #define NR_BANDWIDTH BANDWIDTH_20MHZ
-   #endif
 #endif
 /* ======================================== */
 
 #define TRANS_ID 1
 #define DU_TAC 1
-#define PLMN_MCC0 4
-#define PLMN_MCC1 6
-#define PLMN_MCC2 6
-#define PLMN_MNC0 9
-#define PLMN_MNC1 2
+#define PLMN_MCC0 0
+#define PLMN_MCC1 0
+#define PLMN_MCC2 1
+#define PLMN_MNC0 0
+#define PLMN_MNC1 1
 #define PLMN_MNC2 0
 #define PLMN_SIZE 3
 
@@ -143,7 +136,13 @@
 #define SSB_MULT_CARRIER_BAND FALSE
 #define MULT_CELL_CARRIER FALSE
 #define FREQ_LOC_BW  28875             /* DL frequency location and bandwidth. Spec 38.508 Table 4.3.1.0B-1*/
-#define UL_P_MAX  23
+/* ======== small cell integration ======== */
+#ifdef NFAPI
+#define UL_P_MAX  20                
+#else 
+#define UL_P_MAX  23                   
+#endif
+/* ======================================== */
 #define DMRS_TYPE_A_POS 2
 #define NUM_SYMBOLS_PER_SLOT 14       /* Number of symbols within a slot */
 #define CORESET0_END_PRB   48
@@ -160,7 +159,7 @@
    #endif
 #endif
 #define PRACH_MAX_PRB  24  /* As per (spec 38.211-Table 6.3.3.2-1), max allocated PRBs can go upto 24 */
-#define PRACH_FREQ_START  (MAX_NUM_RB - PRACH_MAX_PRB) /* In order to allocate PRACH from end of the resource grid */
+#define PRACH_FREQ_START  0//(MAX_NUM_RB - PRACH_MAX_PRB) /* In order to allocate PRACH from end of the resource grid */
 #define PRACH_SEQ_LEN SHORT_SEQUENCE
 #define PRACH_SUBCARRIER_SPACING NR_SCS
 #define PRACH_RESTRICTED_SET_CFG 0
@@ -178,14 +177,23 @@
 #define UNUSED_ROOT_SEQ 1
 #ifdef NFAPI
 #define SSB_PER_RACH 3
+#define CB_PREAMBLE_PER_SSB 60
 #else 
 #define SSB_PER_RACH 1
-#endif
 #define CB_PREAMBLE_PER_SSB 8
+#endif
 #define PRACH_MULT_CARRIER_BAND FALSE
+#ifdef NFAPI
+#define PRACH_PREAMBLE_RCVD_TGT_PWR  -96   
+#else 
 #define PRACH_PREAMBLE_RCVD_TGT_PWR  -74   
+#endif
 #define NUM_RA_PREAMBLE  63
+#ifdef NFAPI
+#define RSRP_THRESHOLD_SSB   19
+#else
 #define RSRP_THRESHOLD_SSB   31
+#endif
 
 #ifdef NR_TDD
 #define TDD_PERIODICITY TX_PRDCTY_MS_5 
@@ -218,13 +226,17 @@
 #define SIB1_VALUE_TAG 10
 
 /* MACRO Ddefine for PDSCH Configuration */
-#define NUM_TIME_DOM_RSRC_ALLOC 2
+#define NUM_TIME_DOM_RSRC_ALLOC 3
 #define PDSCH_K0_CFG1  0
-#define PDSCH_K0_CFG2  1
+#define PDSCH_K0_CFG2  0
 /* ======== small cell integration ======== */
 #ifdef NFAPI
 #define PDSCH_START_SYMBOL  1
-#define PDSCH_LENGTH_SYMBOL 5
+#define PDSCH_LENGTH_SYMBOL 13
+#define PDSCH_START_SYMBOL_2  1
+#define PDSCH_LENGTH_SYMBOL_2 12
+#define PDSCH_START_SYMBOL_3  1
+#define PDSCH_LENGTH_SYMBOL_3 5
 #else
 #define PDSCH_START_SYMBOL  3
 #define PDSCH_LENGTH_SYMBOL 11
@@ -237,13 +249,28 @@
 
 /* MACRO Define for PUSCH Configuration */
 #define MAX_UL_ALLOC 16
+#define PUSCH_K2_NUM  4
+#ifdef NFAPI
+#define PUSCH_K2_CFG1  4
+#define PUSCH_K2_CFG2  6
+#define PUSCH_K2_CFG3  6
+#define PUSCH_K2_CFG4  6
+#define PUSCH_START_SYMBOL_CFG1  0
+#define PUSCH_LENGTH_SYMBOL_CFG1 13
+#define PUSCH_START_SYMBOL_CFG2  0
+#define PUSCH_LENGTH_SYMBOL_CFG2 12
+#define PUSCH_START_SYMBOL  0
+#define PUSCH_LENGTH_SYMBOL 13
+#define PUSCH_MSG3_DELTA_PREAMBLE 0
+#define PUSCH_P0_NOMINAL_WITH_GRANT -90
+#else
 #define PUSCH_K2_CFG1  4
 #define PUSCH_K2_CFG2  5
 #define PUSCH_START_SYMBOL  3
 #define PUSCH_LENGTH_SYMBOL 11
-
 #define PUSCH_MSG3_DELTA_PREAMBLE 0
 #define PUSCH_P0_NOMINAL_WITH_GRANT -70
+#endif
 #define PUSCH_TRANSFORM_PRECODER    1      /* 1: Disabled */
 #define PUSCH_MAX_MIMO_LAYERS       1
 #define PUSCH_PROCESS_TYPE2_ENABLED false
@@ -251,8 +278,11 @@
 /* Macro define for PUCCH Configuration */
 #define PUCCH_RSRC_COMMON  0
 #define PUCCH_GROUP_HOPPING 0 /* Neither sequence hopping nor group hopping */
+#ifdef NFAPI
+#define PUCCH_P0_NOMINAL   -90
+#else
 #define PUCCH_P0_NOMINAL   -74
-
+#endif
 /* MACRO defines for TDD DL-UL Configuration */
 #define NUM_DL_SLOTS 7
 #define NUM_DL_SYMBOLS 6 
@@ -758,11 +788,17 @@ typedef struct epIpAddrPort
    char   port[2];
 }EpIpAddrPort;
 
+typedef struct f1TaiSliceSuppLst
+{
+   uint8_t    numSupportedSlices;
+   Snssai    **snssai;   
+}F1TaiSliceSuppLst;
+
 typedef struct f1SrvdPlmn
 {
    Plmn   plmn;
    Plmn   extPlmn;    /* Extended available PLMN list */
-   SupportedSliceList taiSliceSuppLst;
+   F1TaiSliceSuppLst taiSliceSuppLst;
 }F1SrvdPlmn;
 
 typedef struct f1BrdcstPlmnInfo
@@ -1319,14 +1355,12 @@ typedef struct sib1Params
 }Sib1Params;
 
 typedef struct duCfgParams
-{  
-   uint32_t           duId;
-   char               *duName;
-   uint16_t           maxNumDrb;
-   uint16_t           maxSupportedUes;
-   uint32_t           maxUe;
+{
    SctpParams         sctpParams;                  /* SCTP Params */
    F1EgtpParams       egtpParams;                  /* EGTP Params */
+   uint32_t           maxUe;
+   uint32_t           duId;
+   char               *duName;
    SchedulerCfg       schedCfg;
    F1DuSrvdCellInfo   srvdCellLst[MAX_NUM_CELL];  /* Serving cell list *///TODO: this must be removed eventually
    F1RrcVersion       rrcVersion;                 /* RRC version */
@@ -1374,10 +1408,6 @@ DuCfgParams duCfgParam;
 uint8_t readClCfg();
 uint8_t readCfg();
 uint8_t duReadCfg(); 
-void printDuConfig();
-
-uint8_t fillDuSrvdCellSysInfo(F1DuSysInfo *sysInfo);
-
 uint16_t calcSliv(uint8_t startSymbol, uint8_t lengthSymbol);
 uint8_t cpyRrmPolicyInDuCfgParams(RrmPolicyList rrmPolicy[], uint8_t policyNum, MacSliceCfgReq *tempSliceCfg);
 

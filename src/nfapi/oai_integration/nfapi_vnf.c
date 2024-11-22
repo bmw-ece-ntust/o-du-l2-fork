@@ -286,9 +286,7 @@ int phy_nr_rach_indication(nfapi_nr_rach_indication_t *ind)
     AssertFatal(rach_ind->pdu_list != NULL, "Memory not allocated for rach_ind->pdu_list in phy_nr_rach_indication.");
     for (int i = 0; i < ind->number_of_pdus; i++)
     {
-      rach_ind->pdu_list[i].num_preamble = ind->pdu_list[i].num_preamble;
-      rach_ind->pdu_list[i].freq_index = ind->pdu_list[i].freq_index;
-      rach_ind->pdu_list[i].symbol_index = ind->pdu_list[i].symbol_index;
+      rach_ind->pdu_list[i] = ind->pdu_list[i];
       rach_ind->pdu_list[i].preamble_list = calloc(ind->pdu_list[i].num_preamble, sizeof(nfapi_nr_prach_indication_preamble_t));
       AssertFatal(rach_ind->pdu_list[i].preamble_list != NULL, "Memory not allocated for rach_ind->pdu_list[i].preamble_list  in phy_nr_rach_indication.");
       for (int j = 0; j < ind->number_of_pdus; j++)
@@ -297,8 +295,10 @@ int phy_nr_rach_indication(nfapi_nr_rach_indication_t *ind)
         rach_ind->pdu_list[i].preamble_list[j].timing_advance = ind->pdu_list[i].preamble_list[j].timing_advance;
       }
     }
+    printf("[NTUST]	put_queue gnb_rach_ind_queue\n");
     if (!put_queue(&gnb_rach_ind_queue, rach_ind))
     {
+      DU_LOG("\nINFO   --> [VNF] Put_queue failed for rach_ind\n");
       for (int i = 0; i < ind->number_of_pdus; i++)
       {
         free(rach_ind->pdu_list[i].preamble_list);
@@ -410,7 +410,7 @@ int phy_crc_indication(struct nfapi_vnf_p7_config *config, nfapi_crc_indication_
 
 int phy_nr_crc_indication(nfapi_nr_crc_indication_t *ind) {
 
-  DU_LOG("\nINFO   --> [VNF] In %s() NFAPI SFN/SF: %d/%d number_of_pdus :%u\n",
+  DU_LOG("INFO   --> [VNF] In %s() NFAPI SFN/SF: %d/%d number_of_pdus :%u\n",
           __FUNCTION__,ind->sfn, ind->slot, ind->number_crcs);
 
   /* ======== small cell integration ======= */
@@ -439,7 +439,7 @@ int phy_nr_crc_indication(nfapi_nr_crc_indication_t *ind) {
       crc_ind->crc_list[j].tb_crc_status = ind->crc_list[j].tb_crc_status;
       crc_ind->crc_list[j].timing_advance = ind->crc_list[j].timing_advance;
       crc_ind->crc_list[j].ul_cqi = ind->crc_list[j].ul_cqi;
-      DU_LOG("\nINFO   --> [VNF] Received crc_ind.harq_id = %d for %d index SFN SLot %u %u with rnti %x\n",
+      DU_LOG("INFO   --> [VNF] Received crc_ind.harq_id = %d for %d index SFN SLot %u %u with rnti %x\n",
                     ind->crc_list[j].harq_id, j, ind->sfn, ind->slot, ind->crc_list[j].rnti);
     }
     if (!put_queue(&gnb_crc_ind_queue, crc_ind))
@@ -462,7 +462,7 @@ int phy_rx_indication(struct nfapi_vnf_p7_config *config, nfapi_rx_indication_t 
 
 int phy_nr_rx_data_indication(nfapi_nr_rx_data_indication_t *ind) {
 
-  DU_LOG("\nINFO   --> [VNF] In %s() NFAPI SFN/SF: %d/%d number_of_pdus :%u, and pdu %p\n",
+  DU_LOG("INFO   --> [VNF] In %s() NFAPI SFN/SF: %d/%d number_of_pdus :%u, and pdu %p\n",
           __FUNCTION__,ind->sfn, ind->slot, ind->number_of_pdus, ind->pdu_list[0].pdu);
 
   /* ======== small cell integration ======= */
@@ -583,7 +583,7 @@ int phy_nr_slot_indication(nfapi_nr_slot_indication_scf_t *ind) {
   uint32_t vnf_sfn_slot = sfnslot_add_slot(ind->sfn, ind->slot, vnf_slot_ahead);
   uint16_t vnf_sfn = NFAPI_SFNSLOT2SFN(vnf_sfn_slot);
   uint8_t vnf_slot = NFAPI_SFNSLOT2SLOT(vnf_sfn_slot);
-  DU_LOG("\nINFO   --> VNF SFN/Slot %d.%d \n", vnf_sfn, vnf_slot);
+  DU_LOG("INFO   --> [slot_indication] VNF SFN/Slot %d.%d \n", vnf_sfn, vnf_slot);
 
   nfapi_nr_slot_indication_scf_t *nr_slot_ind = calloc(1, sizeof(*nr_slot_ind));
   nr_slot_ind->header = ind->header;

@@ -297,16 +297,6 @@ void callFlowduActvTsk(Pst *pst)
                      strcpy(message,"EVENT_MAC_STATISTICS_IND");
                      break;
                   }
-               case EVENT_MAC_STATS_DELETE_RSP:
-                  {
-                     strcpy(message,"EVENT_MAC_STATS_DELETE_RSP");
-                     break;
-                  }
-               case EVENT_MAC_STATISTICS_MODIFY_RSP:
-                  {
-                     strcpy(message,"EVENT_MAC_STATISTICS_MODIFY_RSP");
-                     break;
-                  }
                default:
                   {
                      strcpy(message,"Invalid Event");
@@ -623,16 +613,6 @@ uint8_t duActvTsk(Pst *pst, Buffer *mBuf)
                case EVENT_MAC_STATISTICS_IND:
                   {
                      ret = unpackDuMacStatsInd(DuProcMacStatsInd, pst, mBuf);
-                     break;
-                  }
-               case EVENT_MAC_STATS_DELETE_RSP:
-                  {
-                     ret = unpackDuMacStatsDeleteRsp(DuProcMacStatsDeleteRsp, pst, mBuf);
-                     break;
-                  }
-               case EVENT_MAC_STATISTICS_MODIFY_RSP:
-                  {
-                     ret = unpackDuMacStatsModificationRsp(DuProcMacStatsModificationRsp, pst, mBuf);
                      break;
                   }
                default:

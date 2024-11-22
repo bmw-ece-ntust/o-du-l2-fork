@@ -63,8 +63,8 @@
 /* MAX values */
 #define MAX_NUM_CELL 2 /* Changed to 2 to support cell Id 2 even if there is only one cell in DU */
 #define MAX_NUM_MU   4
-#define MAX_NUM_UE   3
-#define MAX_NUM_UE_PER_TTI 1 //I-release is 2
+#define MAX_NUM_UE   1
+#define MAX_NUM_UE_PER_TTI 1
 #define MAX_NUM_LC   MAX_DRB_LCID + 1   /*Spec 38.331: Sec 6.4: maxLC-ID Keyword*/
 #define MAX_NUM_SRB  3    /* Max. no of Srbs */
 #define MAX_NUM_DRB  29   /* spec 38.331, maxDRB */
@@ -75,7 +75,7 @@
 /* 5G ORAN phy delay */
 #ifdef NR_TDD
 #define PHY_DELTA_DL 2
-#define PHY_DELTA_UL 0
+#define PHY_DELTA_UL 1
 #else
 #define PHY_DELTA_DL 1
 #define PHY_DELTA_UL 0
@@ -104,9 +104,10 @@
 #define PUCCH_FORMAT_3 3 
 #define PUCCH_FORMAT_4 4
 
+#define SIB1_MCS 5
 /* ======== small cell integration ======== */
 #ifdef NFAPI
-#define DEFAULT_MCS 5
+#define DEFAULT_MCS 0
 #else
 #define DEFAULT_MCS 4
 #endif
@@ -118,7 +119,6 @@
 
 /* PRB allocation as per 38.101, Section 5.3.2 */
 #define TOTAL_PRB_20MHZ_MU0 106
-#define TOTAL_PRB_40MHZ_MU1 106 //OAI
 #define TOTAL_PRB_100MHZ_MU1 273
 #ifdef NR_TDD
    #ifdef NFAPI
@@ -278,8 +278,7 @@ typedef enum
    RESOURCE_UNAVAILABLE,  
    SLICE_NOT_FOUND,
    DUPLICATE_ENTRY,
-   PARAM_INVALID,
-   STATS_ID_NOT_FOUND
+   PARAM_INVALID
 }CauseOfResult ;
 
 typedef enum
@@ -415,12 +414,6 @@ typedef struct snssai
    uint8_t   sst;
    uint8_t   sd[SD_SIZE];
 }Snssai;
-
-typedef struct supportedSliceList
-{
-   uint8_t    numSupportedSlices;
-   Snssai    **snssai;
-}SupportedSliceList;
 
 typedef struct oduCellId
 {

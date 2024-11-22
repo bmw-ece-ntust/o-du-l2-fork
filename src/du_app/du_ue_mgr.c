@@ -375,7 +375,7 @@ uint8_t duBuildAndSendDlCcchInd(uint16_t *cellId, uint16_t *crnti, \
    DlCcchIndInfo *dlCcchIndInfo = NULLP;
    Pst pst;
 
-   DU_LOG("\nDEBUG   -->  DU APP : Building and Sending DL CCCH Ind to MAC");
+   DU_LOG("\nDEBUG   -->  DU APP : Building and Sending DL CCCH Ind to MAC\n");
 
    DU_ALLOC_SHRABL_BUF(dlCcchIndInfo, sizeof(DlCcchIndInfo));
 
@@ -737,9 +737,7 @@ uint8_t fillDefaultInitDlBwp(InitialDlBwp *initDlBwp)
          {
             initDlBwp->pdcchCfg.searchSpcToAddModList[idx].searchSpaceId = PDCCH_SRCH_SPC_TWO_ID;
             initDlBwp->pdcchCfg.searchSpcToAddModList[idx].cRSetId = PDCCH_CTRL_RSRC_SET_ONE_ID;
-            initDlBwp->pdcchCfg.searchSpcToAddModList[idx].mSlotPeriodicityAndOffset.mSlotPeriodicity\
-                                                                   = SLOTPERIODICITY_PR_SL1;
-            initDlBwp->pdcchCfg.searchSpcToAddModList[idx].mSlotPeriodicityAndOffset.mSlotOffset = 0;
+            initDlBwp->pdcchCfg.searchSpcToAddModList[idx].mSlotPeriodicityAndOffset = SLOTPERIODICITYANDOFFSET_PR_SL1;
             memset(initDlBwp->pdcchCfg.searchSpcToAddModList[idx].mSymbolsWithinSlot, 0, MONITORING_SYMB_WITHIN_SLOT_SIZE);
             initDlBwp->pdcchCfg.searchSpcToAddModList[idx].mSymbolsWithinSlot[idx] = PDCCH_SYMBOL_WITHIN_SLOT;
             initDlBwp->pdcchCfg.searchSpcToAddModList[idx].numCandidatesAggLevel1 = AGGREGATIONLEVEL_N8; 

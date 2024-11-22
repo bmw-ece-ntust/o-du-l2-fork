@@ -518,15 +518,16 @@ uint8_t macProcSlotInd(SlotTimingInfo slotInd)
  *      -# ROK 
  *      -# RFAILED 
  **/
+
 uint8_t fapiMacSlotInd(Pst *pst, SlotTimingInfo *slotInd)
 {
    uint8_t               ret = ROK;
    uint16_t              cellIdx;
    volatile uint32_t     startTime=0;
-
-#ifdef ODU_SLOT_IND_DEBUG_LOG
-   DU_LOG("\nDEBUG  -->  MAC : Slot Indication received. [%d : %d]", slotInd->sfn, slotInd->slot);
-#endif
+   printf("\nINFO  --> %s Received slot indication from PHY\n", __FUNCTION__);
+//#ifdef ODU_SLOT_IND_DEBUG_LOG
+   printf("\nDEBUG  -->  MAC : Slot Indication received. [%d : %d]", slotInd->sfn, slotInd->slot);
+//#endif
    /*starting Task*/
    ODU_START_TASK(&startTime, PID_MAC_TTI_IND);
    gSlotCount++;
@@ -618,8 +619,7 @@ uint8_t OAI_OSC_nfapiMacSlotInd(Pst *pst, SlotTimingInfo *slotInd)
    uint16_t              cellIdx;
    volatile uint32_t     startTime=0;
 #ifdef ODU_SLOT_IND_DEBUG_LOG
-   DU_LOG("\nINFO  -->  %s() Received slot indication from PHY\n", __FUNCTION__);
-   DU_LOG("\nDEBUG  -->  MAC : Slot Indication received. cellID:%d [%d : %d]",slotInd->cellId ,slotInd->sfn, slotInd->slot);
+   printf("\nDEBUG  -->  MAC : Slot Indication received. cellID:%d [%d : %d]",slotInd->cellId ,slotInd->sfn, slotInd->slot);
 #endif
    /*starting Task*/
    ODU_START_TASK(&startTime, PID_MAC_TTI_IND);

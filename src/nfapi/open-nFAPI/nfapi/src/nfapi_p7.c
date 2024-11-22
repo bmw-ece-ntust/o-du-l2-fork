@@ -328,8 +328,8 @@ static uint8_t pack_dl_tti_pdsch_pdu_rel15_value(void *tlv, uint8_t **ppWritePac
   }
   // TODO Add TX power info
   // Hardcoded values that represent 0db
-  if (!(push8(8, ppWritePackedMsg, end) && // powerControlOffset
-        push8(1, ppWritePackedMsg, end))) { // powerControlOffsetSS
+  if (!(push8(0, ppWritePackedMsg, end) && // powerControlOffset
+        push8(0, ppWritePackedMsg, end))) { // powerControlOffsetSS
     return 0;
   }
 
@@ -344,7 +344,6 @@ static uint8_t pack_dl_tti_ssb_pdu_rel15_value(void *tlv, uint8_t **ppWritePacke
 {
   NFAPI_TRACE(NFAPI_TRACE_DEBUG, "Packing ssb. \n");
   nfapi_nr_dl_tti_ssb_pdu_rel15_t *value = (nfapi_nr_dl_tti_ssb_pdu_rel15_t *)tlv;
-
   if (!(push16(value->PhysCellId, ppWritePackedMsg, end) && push8(value->BetaPss, ppWritePackedMsg, end)
         && push8(value->SsbBlockIndex, ppWritePackedMsg, end) && push8(value->SsbSubcarrierOffset, ppWritePackedMsg, end)
         && push16(value->ssbOffsetPointA, ppWritePackedMsg, end) && push8(value->bchPayloadFlag, ppWritePackedMsg, end)
@@ -659,7 +658,7 @@ static uint8_t pack_dl_tti_request_body_value(void *tlv, uint8_t **ppWritePacked
   uint8_t *pPackedLengthField = *ppWritePackedMsg;
   if (!push16(value->PDUSize, ppWritePackedMsg, end))
     return 0;
-  printf("\n%s() PDU Type: %d\n",__FUNCTION__,value->PDUType);
+  printf("%s() PDU Type: %d\n",__FUNCTION__,value->PDUType);
   // first match the pdu type, then call the respective function
   switch (value->PDUType) {
     case NFAPI_NR_DL_TTI_CSI_RS_PDU_TYPE: {
@@ -846,7 +845,6 @@ static uint8_t pack_dl_tti_request(void *msg, uint8_t **ppWritePackedMsg, uint8_
     if (!pack_dl_tti_request_body_value(&pNfapiMsg->dl_tti_request_body.dl_tti_pdu_list[i], ppWritePackedMsg, end))
       return 0;
   }
-  printf("\nNumber of pNfapiMsg->dl_tti_request_body.nGroup %d\n",pNfapiMsg->dl_tti_request_body.nGroup);
   for (int i = 0; i < pNfapiMsg->dl_tti_request_body.nGroup; i++) {
     if (!push8(pNfapiMsg->dl_tti_request_body.nUe[i], ppWritePackedMsg, end))
       return 0;

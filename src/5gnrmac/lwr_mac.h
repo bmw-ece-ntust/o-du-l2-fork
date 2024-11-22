@@ -37,6 +37,7 @@ typedef enum
    PHY_STATE_IDLE,
    PHY_STATE_CONFIGURED,
    PHY_STATE_RUNNING,
+
    MAX_STATE   
 }PhyState;
 

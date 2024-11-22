@@ -1189,13 +1189,13 @@ static uint8_t pack_nr_config_request(void *msg, uint8_t **ppWritePackedMsg, uin
     }
   }
 
-  printf("\n[NFAPI P5]p7_vnf_address_ipv4: %u.%u.%u.%u\n",
+  printf("\n[NTUST]p7_vnf_address_ipv4: %u.%u.%u.%u\n",
         pNfapiMsg->nfapi_config.p7_vnf_address_ipv4.address[0],
         pNfapiMsg->nfapi_config.p7_vnf_address_ipv4.address[1],
         pNfapiMsg->nfapi_config.p7_vnf_address_ipv4.address[2],
         pNfapiMsg->nfapi_config.p7_vnf_address_ipv4.address[3]);
 
-  printf("\n[NFAPI P5]p7_vnf_port: %u\n",
+  printf("\n[NTUST]p7_vnf_port: %u\n",
         pNfapiMsg->nfapi_config.p7_vnf_port.value);
 
   return (

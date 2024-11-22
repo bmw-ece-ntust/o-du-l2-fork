@@ -62,7 +62,7 @@ asn_TYPE_member_t asn_MBR_CellAccessRelatedInfo_1[] = {
 		0,
 		{ 0, 0, 0 },
 		0, 0, /* No default value */
-		"plmn-IdentityList"
+		"plmn-IdentityInfoList"
 		},
 	{ ATF_POINTER, 1, offsetof(struct CellAccessRelatedInfo, cellReservedForOtherUse),
 		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
