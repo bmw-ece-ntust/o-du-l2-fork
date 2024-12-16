@@ -14,17 +14,26 @@ l2
 |__ docs #contains README and other configuration files for building docs
 |__ releases
 |__ src #contains layer specific source code
-|   |__ 5gnrmac : #MAC source code
-|   |__ 5gnrrlc : #RLC source code
-|   |__ cm : #common, environment and interface files
-|   |__ cu_stub : #Stub code for CU
-|   |__ du_app : #DU application and F1 code 
-|   |__ mt : #wrapper functions over OS
-|   |__ phy_stub : #Stub code for Physical layer
-|   |__ rlog : #logging module
-|   |__ O1 : #O1 module
+|   |__ 5gnrmac #MAC source code
+|   |__ 5gnrrlc #RLC source code
+|   |__ cm #common, environment and interface files
+|   |__ cu_stub #Stub code for CU
+|   |__ du_app #DU application and F1 code 
+|   |__ mt #wrapper functions over OS
+|   |__ phy_stub #Stub code for Physical layer
+|   |__ rlog #logging module
+|   |__ O1 #O1 module
 |__ test
 |__ tools
+|__ experiment_of_algorithm_comparison #Performance comparison with other benchmarked algorithms in terms of overall throughput
+|__ experiment_of_avg_win #The effect of different average window value.
+|__ experiment_of_processing_time_test #The comparison of processing time between BMW MU SCH and OSC MU SCH
+|__ experiment_of_slice #Experiment for throughput fluctuation
+|__ experiment_of_SU_vs_MU #Downlink overall throughput and PRB usage between SU and MU
+scheduling per TTI
+|__ experiment_of_TDD_testing #Stress testing for TDD mode in terms of throughput
+|__ LCtpt-gfbr #Downlink Throughput of GBR and Non-GBR Traffic for GFBR Testing Experiment.
+|__ LCtpt-mfbr #Downlink Throughput of GBR and Non-GBR Traffic for MFBR Testing Experiment.
 ```
 
 ## II. Pre-requisite for Compilation
@@ -50,9 +59,19 @@ l2
         sudo yum install -y libpcap-devel
         ```
 
-
 ## III. How to Clean and Build:
 - **If you just wanna build the odu quickly, please go to [6. Quick Build](#6-Quick-Build)**
+- or you can use scripts for running and plotting performance measurement values
+    - `build_both.sh` - build CU stub, PHY stub and O-DU High
+    - `build_cu.sh` - build CU stub
+    - `build_odu.sh` - build PHY stub and O-DU High
+    - `change_ues_lcs.sh` - change the amount of UEs and logical channels
+    - `print_overall_tpt_slice1.sh` - print the overall throughput of slice 1
+    - `print_overall_tpt.sh` - print the overall throughput
+    - `print_lc_tpt.sh` - print the throughput of each logical channel
+    - `print_tpt.sh` - print the throughput of each UE
+    - `run_cu_stub.sh` - run CU stub
+    - `run_odu.sh` - run O-DU High and PHY stub
 
 ### 1. Build commands:
 - ```odu```       - Builds all components of ODU
@@ -446,3 +465,7 @@ else if(sliceCb->algorithm == New Algorithm)
     sliceCbToStore->algorithm = RR;
     sliceCbToStore->algoMethod = FLAT;
 ```
+
+## 3. Additional features
+- [MU per TTI scheduling](https://hackmd.io/@JoJoWei/rkCkRi_Bh)
+- [QoS-aware scheduling](https://hackmd.io/@JoJoWei/Hy0oo-yt3)
