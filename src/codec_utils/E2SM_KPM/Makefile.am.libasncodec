@@ -1,330 +1,487 @@
 ASN_MODULE_SRCS=	\
-	./../../E2_output/E2SM_KPM_v3.0_output/CGI.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NR-CGI.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/PLMNIdentity.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NRCellIdentity.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/EUTRACellIdentity.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/EUTRA-CGI.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/SD.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/S-NSSAI.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/SST.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/FiveQI.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/QCI.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/QosFlowIdentifier.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RANfunction-Name.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-Format-Type.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-Style-Type.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-Style-Name.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-NG-ENB-DU.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-EN-GNB.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-ENB.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GUMMEI.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MME-Group-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MME-Code.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GlobalENB-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/ENB-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MME-UE-S1AP-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/ENB-UE-X2AP-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/ENB-UE-X2AP-ID-Extension.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-DU.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-UP.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-NG-ENB.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NGENB-CU-UE-W1AP-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/AMF-UE-NGAP-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GUAMI.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/AMFRegionID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/AMFSetID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/AMFPointer.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-F1AP-ID-List.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-CP-F1AP-ID-Item.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GNB-CU-UE-F1AP-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-CP-E1AP-ID-List.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-CP-E1AP-ID-Item.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GNB-CU-CP-UE-E1AP-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RANUEID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NG-RANnodeUEXnAPID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GlobalGNB-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GNB-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GlobalNGRANNodeID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GlobalNgENB-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NgENB-ID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TimeStamp.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinIndex.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinRangeValue.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GranularityPeriod.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/LogicalOR.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementType.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementTypeName.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementTypeID.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementLabel.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TestCondInfo.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TestCond-Type.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TestCond-Expression.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TestCond-Value.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinRangeDefinition.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinRangeList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinRangeItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/DistMeasurementBinRangeList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/DistMeasurementBinRangeItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementInfoList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementInfoItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/LabelInfoList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/LabelInfoItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementData.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementDataItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementRecord.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementRecordItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementInfo-Action-List.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementInfo-Action-Item.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementCondList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementCondItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementCondUEidList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementCondUEidItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingCondList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingCondItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingCondItem-Choice.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidPerGP.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidPerGP-Item.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidList-PerGP.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidItem-PerGP.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUeCondPerSubList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUeCondPerSubItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidPerSubList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidPerSubItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEMeasurementReportList.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEMeasurementReportItem.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-EventTriggerDefinition.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-EventTriggerDefinition-Format1.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format1.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format2.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format3.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format4.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format5.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationHeader.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationHeader-Format1.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationMessage.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationMessage-Format1.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationMessage-Format2.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationMessage-Format3.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-RANfunction-Description.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-EventTriggerStyle-Item.c	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-ReportStyle-Item.c
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TimeStamp.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinIndex.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinRangeValue.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GranularityPeriod.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/LogicalOR.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementType.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementTypeName.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementTypeID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementLabel.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TestCondInfo.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TestCond-Type.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TestCond-Expression.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TestCond-Value.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinRangeDefinition.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinRangeList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinRangeItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/DistMeasurementBinRangeList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/DistMeasurementBinRangeItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementInfoList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementInfoItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/LabelInfoList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/LabelInfoItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementData.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementDataItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementRecord.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementRecordItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementInfo-Action-List.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementInfo-Action-Item.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementCondList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementCondItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementCondUEidList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementCondUEidItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingCondList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingCondItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingCondItem-Choice.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidPerGP.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidPerGP-Item.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidList-PerGP.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidItem-PerGP.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUeCondPerSubList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUeCondPerSubItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidPerSubList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidPerSubItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEMeasurementReportList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEMeasurementReportItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-EventTriggerDefinition.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-EventTriggerDefinition-Format1.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format1.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format2.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format3.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format4.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format5.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationHeader.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationHeader-Format1.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationMessage.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationMessage-Format1.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationMessage-Format2.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationMessage-Format3.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-RANfunction-Description.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-EventTriggerStyle-Item.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-ReportStyle-Item.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/CGI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/CoreCPID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceIdentifier.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-NG.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-Xn.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-F1.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-E1.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-S1.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-X2.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-W1.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/Interface-MessageID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceType.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GroupID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/QoSID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RANfunction-Name.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-Format-Type.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-Style-Type.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-Style-Name.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RRC-MessageID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RRCclass-LTE.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RRCclass-NR.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ServingCell-ARFCN.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ServingCell-PCI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-CP-E1AP-ID-List.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-CP-E1AP-ID-Item.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-F1AP-ID-List.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-CP-F1AP-ID-Item.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-DU.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-UP.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-NG-ENB.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-NG-ENB-DU.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-EN-GNB.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-ENB.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENB-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalENB-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GUMMEI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MME-Group-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MME-Code.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MME-UE-S1AP-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/QCI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SubscriberProfileIDforRFP.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/EN-GNB-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENB-UE-X2AP-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENB-UE-X2AP-ID-Extension.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E-UTRA-ARFCN.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E-UTRA-PCI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E-UTRA-TAC.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalenGNB-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NGENB-CU-UE-W1AP-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NGENB-DU-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/AMFPointer.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/AMFRegionID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/AMFSetID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/AMF-UE-NGAP-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/EUTRACellIdentity.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/EUTRA-CGI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/FiveQI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalGNB-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalNgENB-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GUAMI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/IndexToRFSP.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NgENB-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRCellIdentity.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NR-CGI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/PLMNIdentity.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/QosFlowIdentifier.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SD.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/S-NSSAI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SST.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NG-RANnodeUEXnAPID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalNGRANNodeID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-CU-CP-UE-E1AP-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-CU-UP-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/FiveGS-TAC.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/FreqBandNrItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-CU-UE-F1AP-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-DU-ID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NR-PCI.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NR-ARFCN.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRFrequencyBand-List.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRFrequencyBandItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRFrequencyInfo.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRFrequencyShift7p5khz.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RANUEID.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SupportedSULBandList.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SupportedSULFreqBandItem.c	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/EXTERNAL.c
 
 ASN_MODULE_HDRS=	\
-	./../../E2_output/E2SM_KPM_v3.0_output/CGI.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NR-CGI.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/PLMNIdentity.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NRCellIdentity.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/EUTRACellIdentity.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/EUTRA-CGI.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/SD.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/S-NSSAI.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/SST.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/FiveQI.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/QCI.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/QosFlowIdentifier.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RANfunction-Name.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-Format-Type.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-Style-Type.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-Style-Name.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-NG-ENB-DU.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-EN-GNB.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-ENB.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GUMMEI.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MME-Group-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MME-Code.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GlobalENB-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/ENB-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MME-UE-S1AP-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/ENB-UE-X2AP-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/ENB-UE-X2AP-ID-Extension.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-DU.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-UP.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-NG-ENB.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NGENB-CU-UE-W1AP-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/AMF-UE-NGAP-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GUAMI.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/AMFRegionID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/AMFSetID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/AMFPointer.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-F1AP-ID-List.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-CP-F1AP-ID-Item.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GNB-CU-UE-F1AP-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-CP-E1AP-ID-List.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEID-GNB-CU-CP-E1AP-ID-Item.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GNB-CU-CP-UE-E1AP-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RANUEID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NG-RANnodeUEXnAPID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GlobalGNB-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GNB-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GlobalNGRANNodeID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GlobalNgENB-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/NgENB-ID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TimeStamp.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinIndex.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinRangeValue.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/GranularityPeriod.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/LogicalOR.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementType.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementTypeName.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementTypeID.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementLabel.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TestCondInfo.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TestCond-Type.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TestCond-Expression.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/TestCond-Value.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinRangeDefinition.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinRangeList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/BinRangeItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/DistMeasurementBinRangeList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/DistMeasurementBinRangeItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementInfoList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementInfoItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/LabelInfoList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/LabelInfoItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementData.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementDataItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementRecord.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementRecordItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementInfo-Action-List.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementInfo-Action-Item.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementCondList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementCondItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementCondUEidList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MeasurementCondUEidItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingCondList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingCondItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingCondItem-Choice.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidPerGP.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidPerGP-Item.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidList-PerGP.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidItem-PerGP.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUeCondPerSubList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUeCondPerSubItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidPerSubList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/MatchingUEidPerSubItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEMeasurementReportList.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/UEMeasurementReportItem.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-EventTriggerDefinition.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-EventTriggerDefinition-Format1.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format1.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format2.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format3.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format4.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-ActionDefinition-Format5.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationHeader.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationHeader-Format1.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationMessage.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationMessage-Format1.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationMessage-Format2.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-IndicationMessage-Format3.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/E2SM-KPM-RANfunction-Description.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-EventTriggerStyle-Item.h	\
-	./../../E2_output/E2SM_KPM_v3.0_output/RIC-ReportStyle-Item.h
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TimeStamp.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinIndex.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinRangeValue.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GranularityPeriod.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/LogicalOR.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementType.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementTypeName.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementTypeID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementLabel.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TestCondInfo.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TestCond-Type.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TestCond-Expression.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/TestCond-Value.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinRangeDefinition.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinRangeList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BinRangeItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/DistMeasurementBinRangeList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/DistMeasurementBinRangeItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementInfoList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementInfoItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/LabelInfoList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/LabelInfoItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementData.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementDataItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementRecord.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementRecordItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementInfo-Action-List.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementInfo-Action-Item.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementCondList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementCondItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementCondUEidList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MeasurementCondUEidItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingCondList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingCondItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingCondItem-Choice.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidPerGP.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidPerGP-Item.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidList-PerGP.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidItem-PerGP.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUeCondPerSubList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUeCondPerSubItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidPerSubList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MatchingUEidPerSubItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEMeasurementReportList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEMeasurementReportItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-EventTriggerDefinition.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-EventTriggerDefinition-Format1.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format1.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format2.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format3.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format4.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-ActionDefinition-Format5.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationHeader.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationHeader-Format1.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationMessage.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationMessage-Format1.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationMessage-Format2.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-IndicationMessage-Format3.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E2SM-KPM-RANfunction-Description.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-EventTriggerStyle-Item.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-ReportStyle-Item.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/CGI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/CoreCPID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceIdentifier.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-NG.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-Xn.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-F1.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-E1.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-S1.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-X2.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceID-W1.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/Interface-MessageID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/InterfaceType.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GroupID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/QoSID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RANfunction-Name.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-Format-Type.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-Style-Type.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RIC-Style-Name.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RRC-MessageID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RRCclass-LTE.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RRCclass-NR.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ServingCell-ARFCN.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ServingCell-PCI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-CP-E1AP-ID-List.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-CP-E1AP-ID-Item.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-F1AP-ID-List.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-CP-F1AP-ID-Item.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-DU.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-GNB-CU-UP.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-NG-ENB.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-NG-ENB-DU.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-EN-GNB.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/UEID-ENB.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENB-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalENB-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GUMMEI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MME-Group-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MME-Code.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/MME-UE-S1AP-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/QCI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SubscriberProfileIDforRFP.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/EN-GNB-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENB-UE-X2AP-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENB-UE-X2AP-ID-Extension.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E-UTRA-ARFCN.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E-UTRA-PCI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/E-UTRA-TAC.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalenGNB-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NGENB-CU-UE-W1AP-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NGENB-DU-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/AMFPointer.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/AMFRegionID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/AMFSetID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/AMF-UE-NGAP-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/EUTRACellIdentity.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/EUTRA-CGI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/FiveQI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalGNB-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalNgENB-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GUAMI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/IndexToRFSP.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NgENB-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRCellIdentity.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NR-CGI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/PLMNIdentity.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/QosFlowIdentifier.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SD.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/S-NSSAI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SST.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NG-RANnodeUEXnAPID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GlobalNGRANNodeID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-CU-CP-UE-E1AP-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-CU-UP-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/FiveGS-TAC.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/FreqBandNrItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-CU-UE-F1AP-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GNB-DU-ID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NR-PCI.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NR-ARFCN.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRFrequencyBand-List.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRFrequencyBandItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRFrequencyInfo.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NRFrequencyShift7p5khz.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/RANUEID.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SupportedSULBandList.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/SupportedSULFreqBandItem.h	\
+	/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/EXTERNAL.h
 
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/OPEN_TYPE.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/OPEN_TYPE.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_CHOICE.h
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/BOOLEAN.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/BOOLEAN.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/INTEGER.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/INTEGER.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/NULL.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/NULL.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/NativeEnumerated.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/NativeEnumerated.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/NativeInteger.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/NativeInteger.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/NativeReal.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/NativeReal.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/REAL.h
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/PrintableString.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/PrintableString.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/OCTET_STRING.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/REAL.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_SEQUENCE_OF.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_SEQUENCE_OF.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_SET_OF.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_SET_OF.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_CHOICE.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_SEQUENCE.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_SEQUENCE.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_SEQUENCE_OF.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_SEQUENCE_OF.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_SET_OF.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_SET_OF.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_application.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_application.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_ioc.h
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_system.h
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_codecs.h
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_internal.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_internal.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_random_fill.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_random_fill.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_bit_data.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_bit_data.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/OCTET_STRING.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/BIT_STRING.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/BIT_STRING.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_codecs_prim.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/asn_codecs_prim.h
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/ber_tlv_length.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/ber_tlv_length.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/ber_tlv_tag.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/ber_tlv_tag.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/ber_decoder.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/ber_decoder.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/der_encoder.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/der_encoder.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_TYPE.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_TYPE.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/constraints.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constraints.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/xer_support.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/xer_support.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/xer_decoder.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/xer_decoder.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/xer_encoder.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/xer_encoder.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/per_support.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/per_support.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/per_decoder.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/per_decoder.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/per_encoder.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/per_encoder.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/per_opentype.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/per_opentype.c
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/oer_decoder.h
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/oer_encoder.h
-ASN_MODULE_HDRS+=./../../E2_output/E2SM_KPM_v3.0_output/oer_support.h
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/oer_decoder.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/oer_encoder.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/oer_support.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/OPEN_TYPE_oer.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/INTEGER_oer.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/BIT_STRING_oer.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/OCTET_STRING_oer.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/NativeInteger_oer.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/NativeEnumerated_oer.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_CHOICE_oer.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_SEQUENCE_oer.c
-ASN_MODULE_SRCS+=./../../E2_output/E2SM_KPM_v3.0_output/constr_SET_OF_oer.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ANY.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ANY.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OCTET_STRING.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OPEN_TYPE.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OPEN_TYPE.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_CHOICE.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BOOLEAN.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BOOLEAN.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENUMERATED.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENUMERATED.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/INTEGER.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeEnumerated.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GraphicString.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/GraphicString.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/INTEGER.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NULL.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NULL.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeEnumerated.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeInteger.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeInteger.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeReal.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeReal.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/REAL.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OBJECT_IDENTIFIER.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OBJECT_IDENTIFIER.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_codecs_prim.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ObjectDescriptor.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ObjectDescriptor.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/PrintableString.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/PrintableString.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/REAL.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_SET_OF.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_SET_OF.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_CHOICE.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SET_OF.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SET_OF.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_application.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_application.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_ioc.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_system.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_codecs.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_internal.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_internal.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_bit_data.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_bit_data.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OCTET_STRING.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BIT_STRING.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BIT_STRING.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_codecs_prim.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ber_tlv_length.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ber_tlv_length.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ber_tlv_tag.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ber_tlv_tag.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_TYPE.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_TYPE.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constraints.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constraints.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/xer_support.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/xer_decoder.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/xer_encoder.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/xer_support.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/xer_decoder.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/xer_encoder.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ANY_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BIT_STRING_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BOOLEAN_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/INTEGER_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NULL_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeEnumerated_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeInteger_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeReal_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OBJECT_IDENTIFIER_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OCTET_STRING_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OPEN_TYPE_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/REAL_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_codecs_prim_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_CHOICE_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_OF_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_xer.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SET_OF_xer.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/per_decoder.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/per_encoder.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/per_support.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/per_opentype.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/per_decoder.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/per_encoder.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/per_support.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/per_opentype.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/uper_decoder.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/uper_encoder.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/uper_support.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/uper_opentype.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/uper_decoder.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/uper_encoder.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/uper_support.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/uper_opentype.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ANY_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BIT_STRING_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BOOLEAN_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENUMERATED_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/INTEGER_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NULL_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeEnumerated_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeInteger_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeReal_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OCTET_STRING_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OPEN_TYPE_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/REAL_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_CHOICE_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_OF_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_uper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SET_OF_uper.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/aper_decoder.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/aper_encoder.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/aper_support.h
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/aper_opentype.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/aper_decoder.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/aper_encoder.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/aper_support.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/aper_opentype.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ANY_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BOOLEAN_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/ENUMERATED_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/INTEGER_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NULL_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeEnumerated_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeInteger_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeReal_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OCTET_STRING_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OPEN_TYPE_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/REAL_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_CHOICE_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_OF_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SET_OF_aper.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BIT_STRING_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BOOLEAN_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/INTEGER_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NULL_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeInteger_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeReal_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OBJECT_IDENTIFIER_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OCTET_STRING_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/REAL_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_CHOICE_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_print.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SET_OF_print.c
+ASN_MODULE_HDRS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_random_fill.h
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/asn_random_fill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BIT_STRING_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/BOOLEAN_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/INTEGER_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NULL_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeInteger_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/NativeReal_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OBJECT_IDENTIFIER_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/OCTET_STRING_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/REAL_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_CHOICE_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SEQUENCE_rfill.c
+ASN_MODULE_SRCS+=/home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/constr_SET_OF_rfill.c
 
-ASN_MODULE_CFLAGS=
+ASN_MODULE_CFLAGS=-DASN_DISABLE_BER_SUPPORT -DASN_DISABLE_OER_SUPPORT 
 
 lib_LTLIBRARIES+=libasncodec.la
 libasncodec_la_SOURCES=$(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS)
-libasncodec_la_CPPFLAGS=-I$(top_srcdir)/./../../E2_output/E2SM_KPM_v3.0_output/
+libasncodec_la_CPPFLAGS=-I$(top_srcdir)//home/hpe/o-du-l2/src/codec_utils/E2SM_KPM/
 libasncodec_la_CFLAGS=$(ASN_MODULE_CFLAGS)
 libasncodec_la_LDFLAGS=-lm
