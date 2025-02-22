@@ -4875,6 +4875,7 @@ uint8_t BuildBWPUlDedPuschCfg(PuschCfg *puschCfgDb, PUSCH_Config_t *puschCfg)
 uint8_t BuildPucchRsrcSetAddModList(PucchResrcSetCfg *rsrcSetCfgDb, \
    struct PUCCH_Config__resourceSetToAddModList *resourceSetToAddModList)
 {
+   printf("\n[du_app] Building PUCCH Resource Set Add/Modify List\n");
    uint8_t elementCnt = 0, rsrcSetIdx = 0, rsrcIdx = 0;
    PUCCH_ResourceSet_t *rsrcSet = NULLP;
 
@@ -5500,6 +5501,7 @@ uint8_t BuildDlDataToUlAckList(PucchDlDataToUlAck *dlDataToUlAckDb, struct PUCCH
  * ****************************************************************/
 uint8_t BuildBWPUlDedPucchCfg(PucchCfg *pucchCfgDb, PUCCH_Config_t *pucchCfg)
 {
+   printf("\n[du_app] Building PUCCH Config\n");
    PucchResrcSetCfg *rsrcSetCfgDb = NULLP;
    PucchResrcCfg *rsrcCfgDb = NULLP;
    PucchFormatCfg *format1Db = NULLP;
@@ -5513,6 +5515,7 @@ uint8_t BuildBWPUlDedPucchCfg(PucchCfg *pucchCfgDb, PUCCH_Config_t *pucchCfg)
    if(pucchCfgDb)
    {
       rsrcSetCfgDb = pucchCfgDb->resrcSet;
+      printf("\n[du_app] rsrcSetCfgDb->resrcSetToAddModListCount = %p\n", rsrcSetCfgDb->resrcSetToAddModListCount);
       rsrcCfgDb = pucchCfgDb->resrc;
       format1Db = pucchCfgDb->format1;
       format2Db = pucchCfgDb->format2;
@@ -5649,6 +5652,9 @@ uint8_t BuildBWPUlDedPucchCfg(PucchCfg *pucchCfgDb, PUCCH_Config_t *pucchCfg)
    }
 
    /* Scheduling Request */
+   printf("\n[Scheduling Request]");
+   // printf("\n[Scheduling Request] schReqDb = %p\n", schReqDb);
+   // printf("[Scheduling Request] schReqDb->schedAddModListCount = %d\n", schReqDb->schedAddModListCount);
    if(schReqDb && (schReqDb->schedAddModListCount != 0))
    {
       pucchCfg->schedulingRequestResourceToAddModList = NULLP;
@@ -5667,6 +5673,7 @@ uint8_t BuildBWPUlDedPucchCfg(PucchCfg *pucchCfgDb, PUCCH_Config_t *pucchCfg)
    }
 
    /* Multi CSI */
+   printf("\n[Multi CSI]");
    if(multiCsiDb && (multiCsiDb->multiCsiResrcListCount != 0))
    {
       pucchCfg->multi_CSI_PUCCH_ResourceList = NULLP;
@@ -6043,6 +6050,7 @@ uint8_t BuildInitialUlBWP(InitialUlBwp *initUlBwp, BWP_UplinkDedicated_t *ulBwp)
 
    if(initUlBwp)
    {
+      printf("Initial UL BWP is present\n");
       if(initUlBwp->pucchPresent)
          pucchCfg = &initUlBwp->pucchCfg;
       if(initUlBwp->puschPresent)
@@ -6391,6 +6399,7 @@ uint8_t BuildSpCellCfgDed(DuUeCb *ueCb, ServingCellConfig_t *srvCellCfg)
 
    if(ueCb)
    {
+      printf("ueCb is present\n");
       servCellRecfg = &ueCb->duMacUeCfg.spCellCfg.servCellCfg;
       initDlBwp = &servCellRecfg->initDlBwp;
       pdschServCellDb = &servCellRecfg->pdschServCellCfg;
@@ -9055,21 +9064,22 @@ uint8_t BuildAndSendInitialRrcMsgTransfer(uint32_t gnbDuUeF1apId, uint16_t crnti
       DU_ALLOC(f1apMsg, sizeof(F1AP_PDU_t));
       if(f1apMsg == NULLP)
       {
-	 DU_LOG(" ERROR  -->  F1AP : Memory allocation for F1AP-PDU failed");
-	 break;
+         DU_LOG(" ERROR  -->  F1AP : Memory allocation for F1AP-PDU failed");
+         break;
       }
       f1apMsg->present = F1AP_PDU_PR_initiatingMessage;
       DU_ALLOC(f1apMsg->choice.initiatingMessage,sizeof(InitiatingMessage_t));
       if(f1apMsg->choice.initiatingMessage == NULLP)
       {
-	 DU_LOG(" ERROR  -->  F1AP : Memory allocation for  F1AP-PDU failed");
-	 break;
+         DU_LOG(" ERROR  -->  F1AP : Memory allocation for  F1AP-PDU failed");
+         break;
       }
       f1apMsg->choice.initiatingMessage->procedureCode =\
 							ProcedureCode_id_InitialULRRCMessageTransfer;
       f1apMsg->choice.initiatingMessage->criticality = Criticality_ignore;
       f1apMsg->choice.initiatingMessage->value.present = \
 							 InitiatingMessage__value_PR_InitialULRRCMessageTransfer;
+      printf("f1apMsg->choice.initiatingMessage->value.present = %d\n",f1apMsg->choice.initiatingMessage->value.present);
       initULRRCMsg =\
 		    &f1apMsg->choice.initiatingMessage->value.choice.InitialULRRCMessageTransfer;
       elementCnt = 5;
@@ -9080,18 +9090,18 @@ uint8_t BuildAndSendInitialRrcMsgTransfer(uint32_t gnbDuUeF1apId, uint16_t crnti
       DU_ALLOC(initULRRCMsg->protocolIEs.list.array,initULRRCMsg->protocolIEs.list.size);
       if(initULRRCMsg->protocolIEs.list.array == NULLP)
       {
-	 DU_LOG(" ERROR  -->  F1AP : Memory allocation for\
-	       RRCSetupRequestMessageTransferIEs failed");
-	 break;
+         DU_LOG(" ERROR  -->  F1AP : Memory allocation for\
+               RRCSetupRequestMessageTransferIEs failed");
+         break;
       }
       for(ieIdx=0; ieIdx<elementCnt; ieIdx++)
       {
-	 DU_ALLOC(initULRRCMsg->protocolIEs.list.array[ieIdx],\
-	       sizeof(InitialULRRCMessageTransferIEs_t));
-	 if(initULRRCMsg->protocolIEs.list.array[ieIdx] == NULLP)
-	 {
-	    break;
-	 }
+         DU_ALLOC(initULRRCMsg->protocolIEs.list.array[ieIdx],\
+               sizeof(InitialULRRCMessageTransferIEs_t));
+         if(initULRRCMsg->protocolIEs.list.array[ieIdx] == NULLP)
+         {
+            break;
+         }
       }
       ieIdx = 0;
       /*GNB DU UE F1AP ID*/
@@ -9115,7 +9125,7 @@ uint8_t BuildAndSendInitialRrcMsgTransfer(uint32_t gnbDuUeF1apId, uint16_t crnti
 	   BuildNrcgi(&initULRRCMsg->protocolIEs.list.array[ieIdx]->value.choice.NRCGI);
       if(ret!=ROK)
       {
-	 break;
+	      break;
       }
 
       /*CRNTI*/
@@ -9126,6 +9136,7 @@ uint8_t BuildAndSendInitialRrcMsgTransfer(uint32_t gnbDuUeF1apId, uint16_t crnti
       initULRRCMsg->protocolIEs.list.array[ieIdx]->value.present =\
 								 InitialULRRCMessageTransferIEs__value_PR_C_RNTI;
       initULRRCMsg->protocolIEs.list.array[ieIdx]->value.choice.C_RNTI = crnti;
+      printf("initULRRCMsg->protocolIEs.list.array[ieIdx]->value.choice.C_RNTI = %d\n",initULRRCMsg->protocolIEs.list.array[ieIdx]->value.choice.C_RNTI);
 
       /*RRCContainer*/
       ieIdx++;
@@ -9159,18 +9170,27 @@ uint8_t BuildAndSendInitialRrcMsgTransfer(uint32_t gnbDuUeF1apId, uint16_t crnti
       {
          for(ueIdx = 0; ueIdx < MAX_NUM_UE; ueIdx++)
          {
+            if(duCb.actvCellLst[cellIdx]){
+               printf("duCb.actvCellLst[%d]->ueCb[%d].gnbDuUeF1apId = %d\n",cellIdx, ueIdx, duCb.actvCellLst[cellIdx]->ueCb[ueIdx].gnbDuUeF1apId);
+               printf("duCb.actvCellLst[%d]->ueCb[%d].crnti = %d\n",cellIdx, ueIdx, duCb.actvCellLst[cellIdx]->ueCb[ueIdx].crnti);
+            }
             if(duCb.actvCellLst[cellIdx] && (duCb.actvCellLst[cellIdx]->ueCb[ueIdx].gnbDuUeF1apId == gnbDuUeF1apId)&&\
                   (duCb.actvCellLst[cellIdx]->ueCb[ueIdx].crnti == crnti))
             {
+               printf("\nDEBUG   -->  F1AP : Found UE in DU CB\n");
                duUeCb = &duCb.actvCellLst[cellIdx]->ueCb[ueIdx];
             }
          }
       }
-
+      if(duUeCb == NULLP)
+      {
+         DU_LOG("\nERROR  -->  F1AP : UE not found in DU CB\n");
+      }
+      printf("\nDEBUG   -->  F1AP : Building DU to CU RRC Container\n");
       ret = BuildCellGroupConfigRrc(duUeCb, &initULRRCMsg->protocolIEs.list.array[ieIdx]->value.choice.DUtoCURRCContainer);
       if(ret != ROK)
       {
-	 break;
+         break;
       }
 
       xer_fprint(stdout, &asn_DEF_F1AP_PDU, f1apMsg);
@@ -9203,13 +9223,14 @@ uint8_t BuildAndSendInitialRrcMsgTransfer(uint32_t gnbDuUeF1apId, uint16_t crnti
       /* Sending  msg  */
       if(sendF1APMsg() != ROK)
       {
-	 DU_LOG("\nERROR  -->  F1AP : Sending Initial UL RRC Message Transfer Failed");
-	 ret = RFAILED;
-	 break;
+         DU_LOG("\nERROR  -->  F1AP : Sending Initial UL RRC Message Transfer Failed");
+         ret = RFAILED;
+         break;
       }
       break;
    }
    freeInitUlRrcMsgTransfer(f1apMsg);
+   printf("\n DEBUG --> END of BuildAndSendInitialRrcMsgTransfer\n");
    return ret;
 }/* End of BuildAndSendInitialRrcMsgTransfer*/
 
@@ -11950,6 +11971,7 @@ void extractSchedReqCfgToAddMod(PucchSchedReqCfg *macSchedReqCfg, struct PUCCH_C
 uint8_t extractPucchCfg(struct BWP_UplinkDedicated__pucch_Config *cuPucchCfg, PucchCfg *macPucchCfg,\
 PucchCfg *storedPucchCfg)        
 {
+   printf("\n[du_f1ap] extractPucchCfg() called, cuPucchCfg->present = %d\n", cuPucchCfg->present);
    uint8_t arrIdx;
 
    if(cuPucchCfg->present == BWP_UplinkDedicated__pucch_Config_PR_setup)
@@ -11959,6 +11981,7 @@ PucchCfg *storedPucchCfg)
          /* Resource Set Cfg */ 
 	 if(cuPucchCfg->choice.setup->resourceSetToAddModList)
 	 {
+      printf("\n[du_f1ap] extractPucchCfg() resourceSetToAddModList\n");
 	    DU_ALLOC_SHRABL_BUF(macPucchCfg->resrcSet, sizeof(PucchResrcSetCfg));
 	    if(macPucchCfg->resrcSet == NULLP)
 	    {
@@ -18011,6 +18034,7 @@ void F1APMsgHdlr(Buffer *mBuf)
          }
       case F1AP_PDU_PR_initiatingMessage:
          {
+            printf("\nDEBUG   -->  F1AP : Initiating Message Type [%d]",f1apMsg->choice.initiatingMessage->value.present);
             switch(f1apMsg->choice.initiatingMessage->value.present)
             {
                case InitiatingMessage__value_PR_Reset:

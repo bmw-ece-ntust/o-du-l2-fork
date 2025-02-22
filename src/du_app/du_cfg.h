@@ -211,15 +211,15 @@
 #define PDCCH_SEARCH_SPACE_ID_RA   1    /* Search spaced id for random access */
 #define PDCCH_SERACH_SPACE_DCI_FORMAT 0
 #define PDCCH_CTRL_RSRC_SET_ONE_ID  1
-#define PDCCH_CTRL_RSRC_SET_ONE_DURATION 2  /* Duration for control resource set id i */
+#define PDCCH_CTRL_RSRC_SET_ONE_DURATION 1  /* Duration for control resource set id i */
 #define PDCCH_CTRL_RSRC_SET_ONE_PRECOD_GRANULARITY 1   /* Precoded granularity */
-#define PDCCH_SRCH_SPC_TWO_ID 2
-#define PDCCH_SRCH_SPC_TWO_AGG_LVL1_CANDIDATE 7   /* Num of candidate at aggregation level 1 */
-#define PDCCH_SRCH_SPC_TWO_AGG_LVL2_CANDIDATE 7   /* Num of candidate at aggregation level 2 */
-#define PDCCH_SRCH_SPC_TWO_AGG_LVL4_CANDIDATE 4   /* Num of candidate at aggregation level 4 */
-#define PDCCH_SRCH_SPC_TWO_AGG_LVL8_CANDIDATE 2   /* Num of candidate at aggregation level 8 */
-#define PDCCH_SRCH_SPC_TWO_AGG_LVL16_CANDIDATE 1  /* Num of candidate at aggregation level 16 */
-#define PDCCH_SRCH_SPC_TWO_UE_SPEC_DCI_FORMAT  0  /* format 0-0 and 1-0 */
+#define PDCCH_SRCH_SPC_TWO_ID 5
+#define PDCCH_SRCH_SPC_TWO_AGG_LVL1_CANDIDATE 0   /* Num of candidate at aggregation level 1 */
+#define PDCCH_SRCH_SPC_TWO_AGG_LVL2_CANDIDATE 2   /* Num of candidate at aggregation level 2 */
+#define PDCCH_SRCH_SPC_TWO_AGG_LVL4_CANDIDATE 0   /* Num of candidate at aggregation level 4 */
+#define PDCCH_SRCH_SPC_TWO_AGG_LVL8_CANDIDATE 0   /* Num of candidate at aggregation level 8 */
+#define PDCCH_SRCH_SPC_TWO_AGG_LVL16_CANDIDATE 0  /* Num of candidate at aggregation level 16 */
+#define PDCCH_SRCH_SPC_TWO_UE_SPEC_DCI_FORMAT  1  /* format 0-1 and 1-1 */
 #define PDCCH_SYMBOL_WITHIN_SLOT 128     /* Symbol within Slot Value */
 
 
@@ -359,7 +359,7 @@
 #define T_POLL_RETRANSMIT 8       /* Enum for 45ms */ 
 #define T_POLL_RETRANSMIT_VAL 45  /* Value in ms */
 #define POLL_PDU 0                /* Enum for 4 pdus */
-#define POLL_PDU_VAL 4            /* Value of poll pdu */
+#define POLL_PDU_VAL -1            /* Value of poll pdu */
 #define POLL_BYTE 43              /* Enum for infinite poll bytes */
 #define POLL_BYTE_VAL -1          /* Value for infinite poll byte */
 #define MAX_RETX_THRESHOLD 5      /* Enum for 8 retransmissions */

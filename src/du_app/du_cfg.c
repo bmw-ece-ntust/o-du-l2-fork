@@ -1261,8 +1261,8 @@ uint8_t readVnfCfg()
    DU_ALLOC_SHRABL_BUF(nfapi_vnf_cfg->config, sizeof(nfapi_vnf_config_t));
 
    char* vnf_addr = "127.0.0.1";
-   int vnf_p5_port = 62324;
-   int vnf_p7_port = 50611;
+   int vnf_p5_port = 50001;
+   int vnf_p7_port = 50011;
 
    // pending for struct vnf
    nfapi_vnf_cfg->vnf->p7_vnfs[0].timing_window = 30;

@@ -9633,6 +9633,7 @@ uint8_t procDrbSetupList(uint32_t duId, CuUeCb *ueCb, DRBs_Setup_List_t *drbSetu
  * ****************************************************************/
 uint8_t procUeContextSetupResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, char *recvBuf, MsgLen recvBufLen)
 {
+   printf("\nINFO  -->  F1AP: Received UE Context Setup Response");
    uint8_t duIdx = 0, idx = 0, ueIdx = 0, rrcMsgType=0;
    uint8_t duUeF1apId = 0, cuUeF1apId = 0;
    DuDb *duDb = NULLP;
@@ -9806,6 +9807,7 @@ uint8_t procUeContextSetupResponse(uint32_t duId, F1AP_PDU_t *f1apMsg, char *rec
 
 uint8_t procUlRrcMsg(uint32_t duId, F1AP_PDU_t *f1apMsg)
 {
+   printf("\nINFO  -->  F1AP: Processing UL RRC Message\n");
    uint8_t  idx = 0, ret = ROK, srbId = 0, rrcMsgType = 0, duIdx=0;
    uint8_t  *rrcContainer = NULLP;
    uint16_t rrcContLen = 0;

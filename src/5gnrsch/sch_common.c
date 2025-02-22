@@ -278,7 +278,7 @@ uint8_t fillUlSchedPucchFormat(uint8_t pucchFormat, SchPucchInfo *ulSchedPucch,\
    SchPucchResrcInfo *resrcInfo, SchPucchFormatCfg *formatCfg)
 {
    uint8_t ret = ROK;
-
+   printf("\n SCH fill PUCCH Format %d", pucchFormat);
    switch(pucchFormat)
    {
       case PUCCH_FORMAT_0:
@@ -334,9 +334,12 @@ uint8_t fillUlSchedPucchDedicatedCfg(SchCellCb *cell, SchPucchCfg *pucchDedCfg,\
    ret = ROK;
    if(pucchDedCfg->resrcSet && pucchDedCfg->resrc)
    {
+      printf("pucchDedCfg is resrcSet or resrc\n");
       //Assuming one entry in the list
+      printf("pucchDedCfg->resrcSet->resrcSetToAddModListCount: %d\n", pucchDedCfg->resrcSet->resrcSetToAddModListCount);
       for(resrcSetIdx = 0; resrcSetIdx < pucchDedCfg->resrcSet->resrcSetToAddModListCount; resrcSetIdx++)
       {
+         printf("pucchDedCfg->resrc->resrcToAddModListCount: %d\n", pucchDedCfg->resrc->resrcToAddModListCount);
          for(resrcIdx = 0; resrcIdx < pucchDedCfg->resrc->resrcToAddModListCount; resrcIdx++)
          {
             if(pucchDedCfg->resrcSet->resrcSetToAddModList[resrcSetIdx].resrcList[resrcSetIdx] ==\
@@ -367,6 +370,7 @@ uint8_t fillUlSchedPucchDedicatedCfg(SchCellCb *cell, SchPucchCfg *pucchDedCfg,\
 
    if(pucchDedCfg->format1)
    {
+      printf("\n SCH fill PUCCH Format 1");
       ret = fillUlSchedPucchFormat(ulSchedPucch->pucchFormat, ulSchedPucch, NULLP, pucchDedCfg->format1);
       if(ret == RFAILED)
          return ret;
@@ -374,12 +378,14 @@ uint8_t fillUlSchedPucchDedicatedCfg(SchCellCb *cell, SchPucchCfg *pucchDedCfg,\
 
    if(!isAllocated)
    {
+      printf("is not Allocated!\n");
       return RFAILED;
    }
 
    /* setting SR and UCI flag */
    if(pucchDedCfg->schedReq)
    {
+      printf("setting SR and UCI flag \n");
       for(schedReqIdx = 0; schedReqIdx < pucchDedCfg->schedReq->schedAddModListCount; schedReqIdx++)
       {
          srPeriodicity = pucchDedCfg->schedReq->schedAddModList[schedReqIdx].periodicity;
@@ -436,7 +442,7 @@ uint16_t fillPucchResourceInfo(uint8_t ueId, SchPucchInfo *schPucchInfo, Inst in
       {
          memset(schPucchInfo, 0, sizeof(SchPucchInfo));
          DU_LOG("\nERROR  --> SCH : Filling PUCCH dedicated cfg failed at fillPucchResourceInfo()");
-	 return ret;
+	      return ret;
       }
    }
    else

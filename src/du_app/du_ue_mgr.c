@@ -527,12 +527,14 @@ uint8_t duBuildAndSendDlRrcMsgToRlc(uint16_t cellId, DuRlcUeCfg ueCfg, F1DlRrcMs
 
 uint8_t duProcDlRrcMsg(F1DlRrcMsg *dlRrcMsg)
 {
+   printf("\nDU_APP: Processing DL RRC Msg at duProcDlRrcMsg()");
    uint8_t ueIdx, ret;
    uint16_t crnti, cellId, cellIdx;
    bool ueCcchCtxtFound = false;
    bool ueFound = false;
 
    ret = ROK;
+   printf("\nDU_APP: Received DL RRC Msg with SRB ID [%d] and RRC Msg Size [%d] from F1AP", dlRrcMsg->srbId, dlRrcMsg->rrcMsgSize);
 
    if(dlRrcMsg->srbId == SRB0_LCID) //RRC connection setup
    {
@@ -543,6 +545,7 @@ uint8_t duProcDlRrcMsg(F1DlRrcMsg *dlRrcMsg)
             ueCcchCtxtFound = true;
             crnti  = duCb.ueCcchCtxt[ueIdx].crnti;
             cellId = duCb.ueCcchCtxt[ueIdx].cellId;
+            printf("\nDU_APP: Found UE with CRNTI [%d] and GNB_DU_UE_F1AP_ID [%d]", crnti, dlRrcMsg->gnbDuUeF1apId);
             break;
          }
       }
@@ -633,6 +636,7 @@ uint8_t duProcUlCcchInd(UlCcchIndInfo *ulCcchIndInfo)
    if(ulCcchIndInfo->crnti)
    {
       GET_UE_ID(ulCcchIndInfo->crnti, gnbDuUeF1apId);
+      printf("\nDU_APP: Received CRNTI [%d] and GNB_DU_UE_F1AP_ID [%d] from MAC", ulCcchIndInfo->crnti, gnbDuUeF1apId);
    }
    else
    {
@@ -641,6 +645,7 @@ uint8_t duProcUlCcchInd(UlCcchIndInfo *ulCcchIndInfo)
    }
    
    /* Store Ue mapping */
+   printf("\nDU_APP: Storing UE[%d] Mapping for GNB_DU_UE_F1AP_ID [%d] and CRNTI [%d]", duCb.numUe, gnbDuUeF1apId, ulCcchIndInfo->crnti);
    duCb.ueCcchCtxt[duCb.numUe].gnbDuUeF1apId = (uint32_t)gnbDuUeF1apId;
    duCb.ueCcchCtxt[duCb.numUe].crnti         = ulCcchIndInfo->crnti;
    duCb.ueCcchCtxt[duCb.numUe].cellId        = ulCcchIndInfo->cellId;
@@ -811,7 +816,12 @@ void fillDefaultInitUlBwp(InitialUlBwp *initUlBwp)
    uint8_t idx;
    if(initUlBwp)
    {
+      /*Filling PUCCH Config */
       initUlBwp->pucchPresent = FALSE;
+      // if(initUlBwp->pucchPresent)
+      // {
+        
+      // }
 
       /*Filling PUSCH Config */
       initUlBwp->puschPresent = TRUE;
@@ -968,7 +978,7 @@ void fillDefaultMacCellGrpInfo(DuMacUeCfg *macUeCfg)
    if(cellGrp)
    {
       macUeCfg->macCellGrpCfgPres = true;
-
+      printf("\nDEBUG  -->  DU APP : Filling Mac Cell Group Config");
       /* Filling Scheduling Request Config */
       cellGrp->schReqCfg.addModListCount = 1;
       if(cellGrp->schReqCfg.addModListCount <= MAX_NUM_SR_CFG_PER_CELL_GRP)
@@ -1299,6 +1309,7 @@ uint8_t updateDuMacUeCfg(uint16_t cellId, uint8_t gnbDuUef1apId, uint16_t crnti,
 
    if(!ueCfgDb)
    {
+      printf("\nDEBUG  -->  DU APP : Filling Default Mac Cell Group Config");
       fillDefaultMacCellGrpInfo(duMacUeCfg);
       fillDefaultPhyCellGrpInfo(duMacUeCfg);
 
@@ -1315,6 +1326,7 @@ uint8_t updateDuMacUeCfg(uint16_t cellId, uint8_t gnbDuUef1apId, uint16_t crnti,
    }
    else
    {
+      printf("\nDEBUG  -->  DU APP : Filling Mac Cell Group Config from UE DB");
       if(ueCfgDb->dataTransmissionAction == STOP_TRANSMISSION)
       {
          duMacUeCfg->transmissionAction = ueCfgDb->dataTransmissionAction; 
@@ -1333,6 +1345,7 @@ uint8_t updateDuMacUeCfg(uint16_t cellId, uint8_t gnbDuUef1apId, uint16_t crnti,
       
       if(ueCfgDb->cellGrpCfg)
       {
+         printf("\nDEBUG  -->  DU APP : (procUeRecfgCellInfo) Filling Cell Group Config from UE DB");
          ret = procUeRecfgCellInfo(duMacUeCfg, duMacDb, ueCfgDb->cellGrpCfg);
          if(ret == ROK)
          {
@@ -1360,6 +1373,7 @@ uint8_t updateDuMacUeCfg(uint16_t cellId, uint8_t gnbDuUef1apId, uint16_t crnti,
       }
       else
       {
+         printf("\nDEBUG  -->  DU APP : (else) Filling Default Mac Cell Group Config");
          fillDefaultMacCellGrpInfo(duMacUeCfg);
          fillDefaultPhyCellGrpInfo(duMacUeCfg);
          fillDefaultSpCellGrpInfo(duMacUeCfg);
@@ -1392,6 +1406,7 @@ uint8_t updateDuMacUeCfg(uint16_t cellId, uint8_t gnbDuUef1apId, uint16_t crnti,
       {
          if(!ueCfgDb->macLcCfg[dbIdx].lcConfig.ulLcCfgPres)
          {
+            printf("\nDEBUG  -->  DU APP : Filling Default UL LC Config in MAC if not present");
             /* Filling default UL LC config in MAC if not present */
             ueCfgDb->macLcCfg[dbIdx].lcConfig.ulLcCfgPres = true;
             fillDefaultUlLcCfg(&ueCfgDb->macLcCfg[dbIdx].lcConfig.ulLcCfg);
@@ -1399,6 +1414,7 @@ uint8_t updateDuMacUeCfg(uint16_t cellId, uint8_t gnbDuUef1apId, uint16_t crnti,
 
          if(duMacDb)
          {
+            printf("\nDEBUG  -->  DU APP : Filling LC Context from UE DB");
             for(lcIdx = 0; lcIdx < duMacDb->numLcs; lcIdx++)
             {
                if(ueCfgDb->macLcCfg[dbIdx].lcConfig.lcId == duMacDb->lcCfgList[lcIdx].lcConfig.lcId)
@@ -1420,6 +1436,7 @@ uint8_t updateDuMacUeCfg(uint16_t cellId, uint8_t gnbDuUef1apId, uint16_t crnti,
          if(!lcIdFound)
          {
             /* ADD/DEL CONFIG */
+            printf("\nDEBUG  -->  DU APP : Filling LC Context from UE DB");
             ret = fillMacLcCfgToAddMod(&duMacUeCfg->lcCfgList[dbIdx], &ueCfgDb->macLcCfg[dbIdx], NULL, FALSE);
          }
          if(ret == ROK)
@@ -1843,6 +1860,7 @@ uint8_t updateRlcUeCfg(uint16_t cellId, uint8_t duUeF1apId, DuUeCfg *ueCfgDb, Du
  * ****************************************************************/
 uint8_t duCreateUeCb(UeCcchCtxt *ueCcchCtxt, uint32_t gnbCuUeF1apId)
 {
+   printf("\nDEBUG  -->  DU APP : Inside duCreateUeCb()");
    uint8_t cellIdx = 0;
    uint8_t ret     = ROK;
    uint8_t ueId = 0, ueIdx = 0;
@@ -1857,7 +1875,9 @@ uint8_t duCreateUeCb(UeCcchCtxt *ueCcchCtxt, uint32_t gnbCuUeF1apId)
          ueIdx = ueId-1;
          duCb.actvCellLst[cellIdx]->ueCb[ueIdx].f1UeDb        = NULLP;
          duCb.actvCellLst[cellIdx]->ueCb[ueIdx].crnti         = ueCcchCtxt->crnti;
+         printf("\nDEBUG  -->  DU APP : crnti = %d", ueCcchCtxt->crnti);
          duCb.actvCellLst[cellIdx]->ueCb[ueIdx].gnbDuUeF1apId = ueCcchCtxt->gnbDuUeF1apId;
+         printf("\nDEBUG  -->  DU APP : gnbCuUeF1apId = %d", gnbCuUeF1apId);
          duCb.actvCellLst[cellIdx]->ueCb[ueIdx].gnbCuUeF1apId = gnbCuUeF1apId;
          duCb.actvCellLst[cellIdx]->ueCb[ueIdx].drbBitMap     = NULLP;
          duCb.actvCellLst[cellIdx]->ueCb[ueIdx].ueState       = UE_ACTIVE;
@@ -1907,6 +1927,8 @@ void fillMacUeCfg(DuMacUeCfg *duMacUeCfg, MacUeCreateReq *macUeCfg)
    macUeCfg->cellId = duMacUeCfg->cellId;
    macUeCfg->ueId = duMacUeCfg->ueId;
    macUeCfg->crnti = duMacUeCfg->crnti;
+   printf("\nDEBUG  -->  DU APP : Filling Mac Cell Group Config from UE DB (From CU)");
+   printf("\ncellId = %d, ueId = %d, crnti = %d", macUeCfg->cellId, macUeCfg->ueId, macUeCfg->crnti);
    macUeCfg->macCellGrpCfgPres = duMacUeCfg->macCellGrpCfgPres;
    if(macUeCfg->macCellGrpCfgPres)
    {
@@ -1932,6 +1954,10 @@ void fillMacUeCfg(DuMacUeCfg *duMacUeCfg, MacUeCreateReq *macUeCfg)
       macUeCfg->spCellCfg.servCellCfg.defaultDlBwpId = duMacUeCfg->spCellCfg.servCellCfg.defaultDlBwpId;
       macUeCfg->spCellCfg.servCellCfg.bwpInactivityTmr = duMacUeCfg->spCellCfg.servCellCfg.bwpInactivityTmr;
       memcpy(&macUeCfg->spCellCfg.servCellCfg.pdschServCellCfg, &duMacUeCfg->spCellCfg.servCellCfg.pdschServCellCfg, sizeof(PdschServCellCfg));
+      /*Why initUlBwp.pucchCfg enpty*/
+      printf("\nduMacUeCfg->spCellCfg.servCellCfg.initUlBwp.pucchPresent = %d\n", duMacUeCfg->spCellCfg.servCellCfg.initUlBwp.pucchPresent);
+      if(duMacUeCfg->spCellCfg.servCellCfg.initUlBwp.pucchCfg.schedReq == NULL)
+         printf("duMacUeCfg->spCellCfg.servCellCfg.initUlBwp.pucchCfg.schedReq is NULL\n");
       memcpy(&macUeCfg->spCellCfg.servCellCfg.initUlBwp, &duMacUeCfg->spCellCfg.servCellCfg.initUlBwp, sizeof(InitialUlBwp));
       macUeCfg->spCellCfg.servCellCfg.numUlBwpToAdd = duMacUeCfg->spCellCfg.servCellCfg.numUlBwpToAddOrMod;
       if(macUeCfg->spCellCfg.servCellCfg.numUlBwpToAdd > 0)
@@ -2019,6 +2045,7 @@ void fillRlcUeCfg(DuRlcUeCfg *duRlcUeCfg, RlcUeCreate *rlcUeCfg)
 
 uint8_t duBuildAndSendUeCreateReqToMac(uint16_t cellId, uint8_t gnbDuUeF1apId, uint16_t crnti, DuUeCfg *ueCfgDb, DuMacUeCfg *duMacUeCfg)
 {
+   printf("\nDEBUG   -->  DU_APP: Building UE create request to MAC");
    uint8_t  ret = ROK;
    MacUeCreateReq *macUeCfg = NULLP;
    Pst       pst;

@@ -112,6 +112,8 @@ uint8_t unpackRxData(uint16_t cellId, SlotTimingInfo slotInfo, RxDataIndPdu *rxD
                memcpy(macCb.macCell[cellIdx]->macRaCb[ueIdx].msg3Pdu, pdu, length);
 
                /* Send UL-CCCH Indication to DU APP */
+               /*[Ming Note] send MSG4 (build cellgroupconfig and send to UE)*/
+               printf("\nINFO  -->  MAC : Sending UL CCCH Indication to DU APP");
                ret = macProcUlCcchInd(macCb.macCell[cellIdx]->cellId, rxDataIndPdu->rnti, length, pdu);
                break;
             }

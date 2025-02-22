@@ -801,8 +801,10 @@ uint8_t fillOtherPucchFormatCfg(uint8_t pucchFormat, PucchFormatCfg *macFormatCf
  * ****************************************************************/
 uint8_t fillInitialUlBwpPucchCfg(PucchCfg *macPucchCfg, SchPucchCfg *schPucchCfg)
 {
+   printf("\nfillInitialUlBwpPucchCfg()");
    if(macPucchCfg->resrcSet)
    {
+      printf("\nResrcSet is present in Mac and try to fill in Sch");
       MAC_ALLOC(schPucchCfg->resrcSet, sizeof(SchPucchResrcSetCfg));
       if(schPucchCfg->resrcSet == NULLP)
       {
@@ -815,6 +817,7 @@ uint8_t fillInitialUlBwpPucchCfg(PucchCfg *macPucchCfg, SchPucchCfg *schPucchCfg
 
    if(macPucchCfg->resrc)
    {
+      printf("\nResrc is present in Mac and try to fill in Sch");
       MAC_ALLOC(schPucchCfg->resrc, sizeof(SchPucchResrcCfg));
       if(schPucchCfg->resrc == NULLP)
       {
@@ -837,6 +840,7 @@ uint8_t fillInitialUlBwpPucchCfg(PucchCfg *macPucchCfg, SchPucchCfg *schPucchCfg
 
    if(macPucchCfg->schedReq)
    {
+      printf("\nSchedReq is present");
       MAC_ALLOC(schPucchCfg->schedReq, sizeof(SchPucchSchedReqCfg));
       if(schPucchCfg->schedReq == NULLP)
       {
@@ -1119,6 +1123,7 @@ void freeUlBwpPucchCfg(SchPucchCfg *schPucchCfg)
 uint8_t fillInitialUlBwp(InitialUlBwp macInitUlBwp, SchInitialUlBwp *schInitUlBwp)
 {
    schInitUlBwp->pucchCfgPres = macInitUlBwp.pucchPresent;
+   printf("\nfillInitialUlBwp() pucchCfgPres %d", schInitUlBwp->pucchCfgPres);
    if(schInitUlBwp->pucchCfgPres)
    {
       memset(&schInitUlBwp->pucchCfg, 0, sizeof(SchPucchCfg));
