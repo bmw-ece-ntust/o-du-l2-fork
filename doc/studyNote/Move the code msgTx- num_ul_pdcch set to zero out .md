@@ -1,0 +1,1 @@
+# Move the code "msgTx->num_ul_pdcch set to zero" out of the for-loop, even... (eb52a3f4) · Commits · oai / openairinterface5G · GitLab (eurecom.fr)
