@@ -1537,11 +1537,13 @@ void schUpdateHarqFdbk(SchUeCb *ueCb, uint8_t numHarq, uint8_t *harqPayload, Slo
    }
    else
    {
+      printf("\nINFO  -->  SCH : == SCH_RA_STATE_MSG4_PENDING");
       node = hqDlMap->hqList.first;
       hqP = (SchDlHqProcCb*)node->node;
       cmLListDelFrm(&hqDlMap->hqList, &hqP->ulSlotLnk);
       schMsg4FeedbackUpdate(hqP, harqPayload[fdbkPos++]);
    }
+   printf("\nINFO  -->  SCH : END of schUpdateHarqFdbk");
 }
 /**********************************************************************
   End of file

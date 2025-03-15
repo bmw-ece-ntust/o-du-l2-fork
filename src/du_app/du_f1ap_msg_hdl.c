@@ -5264,7 +5264,14 @@ uint8_t BuildPucchSchReqAddModList(PucchSchedReqCfg *schReqDb, \
    uint8_t elementCnt = 0, schReqIdx = 0;
    SchedulingRequestResourceConfig_t *schReqRsrc;
 
-   elementCnt = schReqDb->schedAddModListCount;
+   if(schReqDb)
+   {
+      elementCnt = schReqDb->schedAddModListCount;
+   }
+   else
+   {
+       elementCnt = 1;
+   }
    schReqRsrcToAddModList->list.count = elementCnt;
    schReqRsrcToAddModList->list.size = elementCnt *sizeof(struct SchedulingRequestResourceConfig *);
 
@@ -5289,8 +5296,10 @@ uint8_t BuildPucchSchReqAddModList(PucchSchedReqCfg *schReqDb, \
    for(schReqIdx = 0; schReqIdx < schReqRsrcToAddModList->list.count; schReqIdx++)
    {
       schReqRsrc = schReqRsrcToAddModList->list.array[schReqIdx];
-      schReqRsrc->schedulingRequestResourceId = schReqDb->schedAddModList[schReqIdx].resrcId;
-      schReqRsrc->schedulingRequestID = schReqDb->schedAddModList[schReqIdx].requestId;
+      if(schReqDb)
+      {
+         schReqRsrc->schedulingRequestResourceId = schReqDb->schedAddModList[schReqIdx].resrcId;
+         schReqRsrc->schedulingRequestID = schReqDb->schedAddModList[schReqIdx].requestId;
 
       if(schReqDb->schedAddModList[schReqIdx].periodicity)
       {
@@ -5366,6 +5375,30 @@ uint8_t BuildPucchSchReqAddModList(PucchSchedReqCfg *schReqDb, \
          }
          *(schReqRsrc->resource) = schReqDb->schedAddModList[schReqIdx].resrc;
 
+          }
+      }
+      else
+      {
+          schReqRsrc->schedulingRequestResourceId = 1;
+          schReqRsrc->schedulingRequestID = 0;
+          schReqRsrc->periodicityAndOffset = NULLP;
+          DU_ALLOC(schReqRsrc->periodicityAndOffset, sizeof(struct SchedulingRequestResourceConfig__periodicityAndOffset));
+          if(schReqRsrc->periodicityAndOffset == NULLP)
+          {
+              DU_LOG("\nERROR  --> DU APP: Memory allocation failed in BuildPucchSchReqAddModList");
+              return RFAILED;
+          }
+
+          schReqRsrc->periodicityAndOffset->present = SchedulingRequestResourceConfig__periodicityAndOffset_PR_sl40;
+          schReqRsrc->periodicityAndOffset->choice.sl40 = 4;//schReqDb->schedAddModList[schReqIdx].offset;
+          schReqRsrc->resource = NULLP;
+          DU_ALLOC(schReqRsrc->resource, sizeof(PUCCH_ResourceId_t));
+          if(schReqRsrc->resource == NULLP)
+          {
+              DU_LOG("\nERROR  --> DU APP: Memory allocation failed in BuildPucchSchReqAddModList");
+              return RFAILED;
+          }
+          *(schReqRsrc->resource) = 8;
       }
    }
    return ROK;
@@ -5443,7 +5476,7 @@ uint8_t BuildDlDataToUlAckList(PucchDlDataToUlAck *dlDataToUlAckDb, struct PUCCH
    uint8_t elementCnt = 0, arrIdx = 0;
 
    if(dlDataToUlAckDb == NULLP)
-      elementCnt = 2;
+      elementCnt = 8;
    else
       elementCnt = dlDataToUlAckDb->dlDataToUlAckListCount;
 
@@ -5470,7 +5503,13 @@ uint8_t BuildDlDataToUlAckList(PucchDlDataToUlAck *dlDataToUlAckDb, struct PUCCH
    {
       arrIdx = 0;
       *(dlDataToUlACKList->list.array[arrIdx++]) = 1;
-      *(dlDataToUlACKList->list.array[arrIdx]) = 2;
+      *(dlDataToUlACKList->list.array[arrIdx++]) = 2;
+      *(dlDataToUlACKList->list.array[arrIdx++]) = 3;
+      *(dlDataToUlACKList->list.array[arrIdx++]) = 4;
+      *(dlDataToUlACKList->list.array[arrIdx++]) = 5;
+      *(dlDataToUlACKList->list.array[arrIdx++]) = 6;
+      *(dlDataToUlACKList->list.array[arrIdx++]) = 7;
+      *(dlDataToUlACKList->list.array[arrIdx]) = 8;
    }
    else
    {
@@ -5653,9 +5692,23 @@ uint8_t BuildBWPUlDedPucchCfg(PucchCfg *pucchCfgDb, PUCCH_Config_t *pucchCfg)
 
    /* Scheduling Request */
    printf("\n[Scheduling Request]");
-   // printf("\n[Scheduling Request] schReqDb = %p\n", schReqDb);
-   // printf("[Scheduling Request] schReqDb->schedAddModListCount = %d\n", schReqDb->schedAddModListCount);
    if(schReqDb && (schReqDb->schedAddModListCount != 0))
+   {
+      pucchCfg->schedulingRequestResourceToAddModList = NULLP;
+      DU_ALLOC(pucchCfg->schedulingRequestResourceToAddModList, sizeof(struct PUCCH_Config__schedulingRequestResourceToAddModList));
+      if(pucchCfg->schedulingRequestResourceToAddModList == NULLP)
+      {
+         DU_LOG("\nERROR  -->  F1AP : Memory allocation failed in BuildBWPUlDedPucchCfg");
+         return RFAILED;
+      }
+
+      if(BuildPucchSchReqAddModList(schReqDb, pucchCfg->schedulingRequestResourceToAddModList) != ROK)
+      {
+         DU_LOG("\nERROR  -->  F1AP : Memory allocation failed in BuildBWPUlDedPucchCfg");
+         return RFAILED;
+      }
+   }
+   else
    {
       pucchCfg->schedulingRequestResourceToAddModList = NULLP;
       DU_ALLOC(pucchCfg->schedulingRequestResourceToAddModList, sizeof(struct PUCCH_Config__schedulingRequestResourceToAddModList));

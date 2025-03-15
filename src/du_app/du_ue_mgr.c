@@ -1954,7 +1954,7 @@ void fillMacUeCfg(DuMacUeCfg *duMacUeCfg, MacUeCreateReq *macUeCfg)
       macUeCfg->spCellCfg.servCellCfg.defaultDlBwpId = duMacUeCfg->spCellCfg.servCellCfg.defaultDlBwpId;
       macUeCfg->spCellCfg.servCellCfg.bwpInactivityTmr = duMacUeCfg->spCellCfg.servCellCfg.bwpInactivityTmr;
       memcpy(&macUeCfg->spCellCfg.servCellCfg.pdschServCellCfg, &duMacUeCfg->spCellCfg.servCellCfg.pdschServCellCfg, sizeof(PdschServCellCfg));
-      /*Why initUlBwp.pucchCfg enpty*/
+      /*Why initUlBwp.pucchCfg.schedReq enpty*/
       printf("\nduMacUeCfg->spCellCfg.servCellCfg.initUlBwp.pucchPresent = %d\n", duMacUeCfg->spCellCfg.servCellCfg.initUlBwp.pucchPresent);
       if(duMacUeCfg->spCellCfg.servCellCfg.initUlBwp.pucchCfg.schedReq == NULL)
          printf("duMacUeCfg->spCellCfg.servCellCfg.initUlBwp.pucchCfg.schedReq is NULL\n");

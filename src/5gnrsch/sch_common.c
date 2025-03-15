@@ -794,7 +794,8 @@ uint16_t schAllocPucchResource(SchCellCb *cell, SlotTimingInfo pucchTime, uint16
    {
       /* set HARQ flag to true */
       schUlSlotInfo->schPucchInfo.harqInfo.harqBitLength = 1; /* 1 bit for HARQ */
-      ADD_DELTA_TO_TIME(pucchTime, pucchTime, 3, cell->numSlots); /* SLOT_DELAY=3 */
+      // ADD_DELTA_TO_TIME(pucchTime, pucchTime, 1, cell->numSlots); /* SLOT_DELAY=3 */
+      DU_LOG("\nINFO  -->  SCH : PUCCH Resource allocated for UE [%d] at slot [%d]", crnti, pucchTime.slot);
       cmLListAdd2Tail(&(ueCb->hqDlmap[pucchTime.slot]->hqList), &hqP->ulSlotLnk);
    }
    return ROK;
@@ -1114,7 +1115,7 @@ SchPdschConfig pdschDedCfg, uint8_t ulAckListCount, uint8_t *UlAckTbl)
       memset(k0K1InfoTbl, 0, sizeof(SchK0K1TimingInfoTbl));
       k0K1InfoTbl->tblSize = cell->numSlots;
       totalCfgSlot = calculateSlotPatternLength(cell->cellCfg.ssbScs, cell->cellCfg.tddCfg.tddPeriod);
-      
+      printf("\nINFO  -->  SCH : Total Slot Pattern Length is %d", totalCfgSlot);
       /* Storing time domain resource allocation list based on common or 
        * dedicated configuration availability. */
       if(pdschCfgCmnPres == true)
@@ -1137,6 +1138,7 @@ SchPdschConfig pdschDedCfg, uint8_t ulAckListCount, uint8_t *UlAckTbl)
       /* Checking all possible indexes for K0 and K1 values. */
       for(slotIdx = 0; slotIdx < cell->numSlots; slotIdx++)
       {
+         printf("CHECK slot: %d\n", slotIdx);
          /* If current slot is UL or FLEXI then Skip because PDCCH is sent only in DL slots. */
          slotCfg = schGetSlotSymbFrmt(slotIdx%totalCfgSlot, cell->slotFrmtBitMap);
          if(slotCfg == UL_SLOT || slotCfg == FLEXI_SLOT)
@@ -1212,6 +1214,7 @@ SchPdschConfig pdschDedCfg, uint8_t ulAckListCount, uint8_t *UlAckTbl)
                {
                   tmpSlot = (slotIdx+k0TmpVal+k1TmpVal) % totalCfgSlot;
                   slotCfg =  schGetSlotSymbFrmt(tmpSlot, cell->slotFrmtBitMap);
+                  if(k0TmpVal ==0) printf("CHECK K1 SLOT: %d -> %d\n",tmpSlot,slotCfg);
                   if(slotCfg == DL_SLOT) 
                   {
                      continue;
@@ -1229,9 +1232,12 @@ SchPdschConfig pdschDedCfg, uint8_t ulAckListCount, uint8_t *UlAckTbl)
                   }
                   if(ulSlotPresent == true || slotCfg ==  UL_SLOT)
                   {
+                     if(numK0==0) printf("\nINFO  -->  SCH : Add K1 into k0k1TimingInfo[%d] k0Indexes[%d] k1Indexes[%d] is %d <-\t", slotIdx, numK0, numK1, k1Index);
                      k0K1InfoTbl->k0k1TimingInfo[slotIdx].k0Indexes[numK0].k1TimingInfo.k1Indexes[numK1++] = k1Index;
                      /* TODO Store K1 index where harq feedback will be received
                       * in harq table. */
+                  }else if(slotCfg ==  FLEXI_SLOT){
+                     printf("\n\n\n!!!!!!WHY this is TRUE????\n\n\n");
                   }
                }
             }

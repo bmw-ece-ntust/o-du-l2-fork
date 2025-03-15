@@ -464,7 +464,7 @@ bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, 
             *pdschSymblLen = ueCb->ueCfg.spCellCfg.servCellRecfg.initDlBwp.pdschCfg.timeDomRsrcAllociList[k0Index].symbolLength;
          }
       }
-
+      printf("k0Val = %d\n", k0Val);
       ADD_DELTA_TO_TIME((*pdcchTime), (*pdschTime), k0Val, cell->numSlots);
 #ifdef NR_TDD
       if(schGetSlotSymbFrmt(pdschTime->slot % cell->numSlotsInPeriodicity, cell->slotFrmtBitMap) != DL_SLOT)
@@ -506,6 +506,8 @@ bool findValidK0K1Value(SchCellCb *cell, SlotTimingInfo currTime, uint8_t ueId, 
          if(hqP)
          {
             ADD_DELTA_TO_TIME((*pucchTime), hqP->pucchTime, 0, cell->numSlots);
+            printf("k1Val = %d\n", k1Val);
+            hqP->k1 = k1Val-1;
          }
          pdcchTime->cellId = cell->cellId;
          pdschTime->cellId = cell->cellId;

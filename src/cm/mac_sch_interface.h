@@ -104,7 +104,7 @@
 #define MAX_NUM_CONFIG_SLOTS 160  /*Max number of slots as per the numerology*/
 #define MAX_NUM_K0_IDX 16 /* Max number of pdsch time domain downlink allocation */
 #define MAX_NUM_K1_IDX 8  /* As per spec 38.213 section 9.2.3 Max number of PDSCH-to-HARQ resource indication */
-#define MIN_NUM_K1_IDX 0  /* Min K1 values */
+#define MIN_NUM_K1_IDX 3  /* Min K1 values */
 #define MAX_NUM_K2_IDX 16 /* PUSCH time domain UL resource allocation list */
 #define DEFAULT_K0_VALUE 0 /* As per 38.331, PDSCH-TimeDomainResourceAllocation field descriptions */
 /* As per 38.331, PUSCH-TimeDomainResourceAllocationList field descriptions */

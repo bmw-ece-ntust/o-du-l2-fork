@@ -4752,6 +4752,9 @@ void OAI_OSC_fillDlMsgDlDciPdu(nfapi_nr_dl_dci_pdu_t *dlDciPtr, PdcchCfg *pdcchI
       coresetSize = pdcchInfo->coresetCfg.coreSetSize;
       rbStart = pdcchInfo->dci.pdschCfg.pdschFreqAlloc.startPrb;
       rbLen = pdcchInfo->dci.pdschCfg.pdschFreqAlloc.numPrb;
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] coresetSize:%d\n",coresetSize);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] rbStart:%d\n",rbStart);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] rbLen:%d\n",rbLen);
       uint16_t BWPsize = coresetSize;
       if((rbLen >=1) && (rbLen <= BWPsize - rbStart)) {
          if((rbLen - 1) <= floor(BWPsize / 2))
@@ -4764,17 +4767,28 @@ void OAI_OSC_fillDlMsgDlDciPdu(nfapi_nr_dl_dci_pdu_t *dlDciPtr, PdcchCfg *pdcchI
 
       /* Fetching DCI field values */
       dciFormatId      = dlMsgSchInfo->dciFormatId;     /* Always set to 1 for DL */
-      timeDomResAssign = 0; //pdcchInfo->dci.pdschCfg.pdschTimeAlloc.rowIndex -1;
+      timeDomResAssign = pdcchInfo->dci.pdschCfg.pdschTimeAlloc.rowIndex;
       VRB2PRBMap       = pdcchInfo->dci.pdschCfg.pdschFreqAlloc.vrbPrbMapping;
-      modNCodScheme    = 0; //pdcchInfo->dci.pdschCfg.codeword[0].mcsIndex;
+      modNCodScheme    = pdcchInfo->dci.pdschCfg.codeword[0].mcsIndex;
       ndi              = dlMsgSchInfo->transportBlock[0].ndi;
       redundancyVer    = pdcchInfo->dci.pdschCfg.codeword[0].rvIndex;
       harqProcessNum   = dlMsgSchInfo->harqProcNum;
       dlAssignmentIdx  = dlMsgSchInfo->dlAssignIdx;
       pucchTpc         = dlMsgSchInfo->pucchTpc;
       pucchResoInd     = dlMsgSchInfo->pucchResInd;
-      harqFeedbackInd  = 2;//dlMsgSchInfo->harqFeedbackInd;
-
+      harqFeedbackInd  = dlMsgSchInfo->harqFeedbackInd; //[Ming Note] It mean K1 value, OAI send:5
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] dciFormatId:%d\n",dciFormatId);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] freqDomResAssign:%d\n",freqDomResAssign);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] timeDomResAssign:%d\n",timeDomResAssign);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] VRB2PRBMap:%d\n",VRB2PRBMap);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] modNCodScheme:%d\n",modNCodScheme);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] ndi:%d\n",ndi);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] redundancyVer:%d\n",redundancyVer);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] harqProcessNum:%d\n",harqProcessNum);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] dlAssignmentIdx:%d\n",dlAssignmentIdx);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] pucchTpc:%d\n",pucchTpc);
+      DU_LOG("\nINFO  -->  LWR_MAC : [K1] pucchResoInd:%d\n",pucchResoInd);
+      printf("[K1] harqFeedbackInd:%d\n",dlMsgSchInfo->harqFeedbackInd);
       /* Reversing bits in each DCI field */
       // dciFormatId      = reverseBits(dciFormatId, dciFormatIdSize);
       // freqDomResAssign = reverseBits(freqDomResAssign, freqDomResAssignSize);
@@ -6567,7 +6581,6 @@ uint16_t OAI_OSC_fillUlDciReq(SlotTimingInfo currTimingInfo)
       GET_CELL_IDX(currTimingInfo.cellId, cellIdx);
       memcpy(&ulDciReqTimingInfo, &currTimingInfo, sizeof(SlotTimingInfo));
       currDlSlot = &macCb.macCell[cellIdx]->dlSlot[ulDciReqTimingInfo.slot % macCb.macCell[cellIdx]->numOfSlots];
-      
       ulDciReq = (nfapi_nr_ul_dci_request_t *)malloc(sizeof(nfapi_nr_ul_dci_request_t));
       memset(ulDciReq, 0, sizeof(nfapi_nr_ul_dci_request_t));
 
@@ -6576,9 +6589,15 @@ uint16_t OAI_OSC_fillUlDciReq(SlotTimingInfo currTimingInfo)
 
       ulDciReq->SFN = ulDciReqTimingInfo.sfn;
       ulDciReq->Slot = ulDciReqTimingInfo.slot;
-   
-
-      if(currDlSlot->dlInfo.ulGrant != NULLP)
+      // typedef struct dciInfo
+      // {
+      //    uint16_t       crnti;          /* CRNTI */
+      //    BwpCfg         bwpCfg;         /* BWP Cfg */
+      //    CoresetCfg     coresetCfg;     /* Coreset1 Cfg */
+      //    DciFormat      dciFormatInfo;  /* Dci Format */
+      //    DlDCI          dciInfo;        /* DlDCI */
+      // }DciInfo;
+      if(currDlSlot->dlInfo.ulGrant != NULLP) /* UL grant in response to BSR */
       {
          ulDciReq->numPdus = 1;  // No. of PDCCH PDUs
          if(ulDciReq->numPdus > 0)
