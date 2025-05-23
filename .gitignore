@@ -23,3 +23,4 @@ build/odu/obj/odu/*.o
 build/odu/obj/ric_stub/
 build/odu/obj/ric_stub/*.o
 bin/odu/
+/build
