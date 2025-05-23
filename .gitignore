@@ -7,3 +7,4 @@ build/odu/obj
 build/odu/lib
 build/odu/bin
 .vscode
+/build
