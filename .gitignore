@@ -12,7 +12,5 @@ bin/ric_stub/ric_stub
 
 bin
 libs
-build/odu/obj
-build/odu/lib
-build/odu/bin
+build/
 .vscode
